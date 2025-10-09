@@ -56,9 +56,24 @@ export default function EventPage() {
   };
 
   const fetchEvent = async () => {
+    if (!params.id) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       const response = await fetch(`/api/events?id=${params.id}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch event: ${response.status}`);
+      }
       const data = await response.json();
+      
+      if (data.error) {
+        console.error('Event not found:', data.error);
+        setLoading(false);
+        return;
+      }
+      
       setEvent(data);
 
       if (data.status === 'resolved' && data.resolution) {

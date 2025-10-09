@@ -39,10 +39,14 @@ export default function Home() {
   const fetchEvents = async () => {
     try {
       const response = await fetch('/api/events');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch events: ${response.status}`);
+      }
       const data = await response.json();
-      setEvents(data);
+      setEvents(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Failed to fetch events:', error);
+      setEvents([]);
     } finally {
       setLoading(false);
     }
