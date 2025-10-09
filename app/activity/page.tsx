@@ -9,7 +9,6 @@ export default function ActivityPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string>('');
 
   useEffect(() => {
     loadActivities();
@@ -19,9 +18,7 @@ export default function ActivityPage() {
     try {
       setLoading(true);
       setError(null);
-      setDebugInfo('Fetching activities...');
       
-      console.log('[Activity Page] Fetching from /api/activity');
       const response = await fetch('/api/activity', { 
         cache: 'no-store',
         headers: {
@@ -29,38 +26,24 @@ export default function ActivityPage() {
         }
       });
       
-      console.log('[Activity Page] Response status:', response.status);
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        console.error('[Activity Page] Error response:', errorData);
         setError(`Failed to load: ${errorData.error || errorData.message || 'Unknown error'}`);
-        setDebugInfo(JSON.stringify(errorData, null, 2));
         setLoading(false);
         return;
       }
       
       const data = await response.json();
-      console.log('[Activity Page] Received data:', data);
-      console.log('[Activity Page] Data type:', typeof data);
-      console.log('[Activity Page] Is array?:', Array.isArray(data));
-      console.log('[Activity Page] Length:', data?.length);
       
       if (Array.isArray(data)) {
         setActivities(data);
-        setDebugInfo(`Loaded ${data.length} activities successfully`);
-        console.log('[Activity Page] Set activities:', data.length);
       } else {
-        console.error('[Activity Page] Data is not an array:', data);
         setError('Invalid data format received');
-        setDebugInfo(`Expected array, got: ${typeof data}`);
       }
       
       setLoading(false);
     } catch (err: any) {
-      console.error('[Activity Page] Fetch error:', err);
       setError(`Connection error: ${err.message}`);
-      setDebugInfo(err.toString());
       setLoading(false);
     }
   };
@@ -133,32 +116,17 @@ export default function ActivityPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-extralight text-gray-900 mb-2">
-            Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
-          </h1>
-          <p className="text-gray-600 font-light">Recent events, bets, and resolutions</p>
-        </div>
-        <button
-          onClick={loadActivities}
-          disabled={loading}
-          className="px-4 py-2 bg-orange-600 text-white text-sm font-light rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          {loading ? 'Loading...' : 'Refresh'}
-        </button>
+      <div className="mb-6">
+        <h1 className="text-3xl font-extralight text-gray-900 mb-2">
+          Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
+        </h1>
+        <p className="text-gray-600 font-light">Recent events, bets, and resolutions</p>
       </div>
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
           <p className="text-red-800 font-medium mb-2">⚠️ Error</p>
-          <p className="text-red-700 font-light mb-2">{error}</p>
-          {debugInfo && (
-            <details className="text-xs text-red-600 font-mono">
-              <summary className="cursor-pointer">Debug Info</summary>
-              <pre className="mt-2 p-2 bg-red-100 rounded overflow-auto">{debugInfo}</pre>
-            </details>
-          )}
+          <p className="text-red-700 font-light">{error}</p>
         </div>
       )}
 
@@ -173,12 +141,6 @@ export default function ActivityPage() {
           <p className="text-gray-500 font-light text-sm">
             Start by creating an event and placing bets!
           </p>
-          {debugInfo && (
-            <details className="text-xs text-gray-500 font-mono mt-4">
-              <summary className="cursor-pointer">Debug Info</summary>
-              <pre className="mt-2 p-2 bg-gray-100 rounded overflow-auto text-left">{debugInfo}</pre>
-            </details>
-          )}
         </div>
       ) : (
         <div className="space-y-3">

@@ -290,7 +290,7 @@ export default function EventPage() {
         <div>
           <h2 className="text-2xl font-light text-gray-900 mb-4 border-b-2 border-orange-600 pb-2 inline-block">Ledger</h2>
           <div className="mt-6">
-            <Ledger bets={event.bets} />
+            <Ledger bets={event.bets} onBetDeleted={fetchEvent} />
           </div>
         </div>
       </div>

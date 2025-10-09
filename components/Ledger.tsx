@@ -1,14 +1,49 @@
 'use client';
 
+import { useState } from 'react';
 import { Bet } from '@/lib/types';
 import { formatTimestamp, formatAmount } from '@/lib/utils';
 
 interface LedgerProps {
   bets: Bet[];
+  onBetDeleted?: () => void;
 }
 
-export default function Ledger({ bets }: LedgerProps) {
+export default function Ledger({ bets, onBetDeleted }: LedgerProps) {
+  const [deletingBets, setDeletingBets] = useState<Set<string>>(new Set());
   const sortedBets = [...bets].sort((a, b) => b.timestamp - a.timestamp);
+
+  const handleDeleteBet = async (betId: string) => {
+    if (!confirm('Are you sure you want to delete this bet? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeletingBets(prev => new Set(prev).add(betId));
+
+    try {
+      const response = await fetch(`/api/bets?id=${betId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete bet');
+      }
+
+      if (onBetDeleted) {
+        onBetDeleted();
+      }
+    } catch (error: any) {
+      console.error('Failed to delete bet:', error);
+      alert(`Failed to delete bet: ${error.message}`);
+    } finally {
+      setDeletingBets(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(betId);
+        return newSet;
+      });
+    }
+  };
 
   return (
     <div className="space-y-3">
@@ -36,9 +71,19 @@ export default function Ledger({ bets }: LedgerProps) {
                   )}
                 </div>
               </div>
-              <span className="text-xs text-gray-400 ml-2 font-light">
-                {formatTimestamp(bet.timestamp)}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400 font-light">
+                  {formatTimestamp(bet.timestamp)}
+                </span>
+                <button
+                  onClick={() => handleDeleteBet(bet.id)}
+                  disabled={deletingBets.has(bet.id)}
+                  className="text-xs text-red-600 hover:text-red-800 font-light px-2 py-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Delete bet"
+                >
+                  {deletingBets.has(bet.id) ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
             </div>
           </div>
         ))

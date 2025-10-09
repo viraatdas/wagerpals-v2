@@ -81,3 +81,52 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(bets);
 }
 
+export async function DELETE(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const bet_id = searchParams.get('id');
+
+  if (!bet_id) {
+    return NextResponse.json({ error: 'Bet ID is required' }, { status: 400 });
+  }
+
+  try {
+    // Get the bet first to update user's total_bet and remove activity
+    const bet = await db.bets.get(bet_id);
+    if (!bet) {
+      return NextResponse.json({ error: 'Bet not found' }, { status: 404 });
+    }
+
+    // Update user's total_bet
+    const user = await db.users.get(bet.user_id);
+    if (user) {
+      await db.users.update(bet.user_id, {
+        total_bet: Math.max(0, user.total_bet - bet.amount),
+      });
+    }
+
+    // Remove related activity entry
+    try {
+      await db.activities.deleteByBet(
+        bet.event_id,
+        bet.username,
+        bet.side,
+        bet.amount,
+        bet.timestamp
+      );
+    } catch (error: any) {
+      console.error('[Bets API] Failed to delete related activity:', error);
+    }
+
+    // Delete the bet
+    await db.bets.delete(bet_id);
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('[Bets API] Failed to delete bet:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete bet' },
+      { status: 500 }
+    );
+  }
+}
+

@@ -49,24 +49,14 @@ export const db = {
     },
     
     update: async (id: string, data: Partial<User>): Promise<User | null> => {
-      const updates: string[] = [];
-      const values: any[] = [];
-      
       if (data.net_total !== undefined) {
-        updates.push(`net_total = ${data.net_total}`);
+        await sql`UPDATE users SET net_total = ${data.net_total} WHERE id = ${id}`;
       }
       if (data.total_bet !== undefined) {
-        updates.push(`total_bet = ${data.total_bet}`);
+        await sql`UPDATE users SET total_bet = ${data.total_bet} WHERE id = ${id}`;
       }
       if (data.streak !== undefined) {
-        updates.push(`streak = ${data.streak}`);
-      }
-      
-      if (updates.length > 0) {
-        await sql.query(
-          `UPDATE users SET ${updates.join(', ')} WHERE id = $1`,
-          [id]
-        );
+        await sql`UPDATE users SET streak = ${data.streak} WHERE id = ${id}`;
       }
       
       return await db.users.get(id);
@@ -149,26 +139,23 @@ export const db = {
     },
     
     update: async (id: string, data: Partial<Event>): Promise<Event | null> => {
-      const updates: string[] = [];
-      
       if (data.status !== undefined) {
-        updates.push(`status = '${data.status}'`);
+        await sql`UPDATE events SET status = ${data.status} WHERE id = ${id}`;
       }
       if (data.resolution !== undefined) {
         if (data.resolution) {
-          updates.push(`winning_side = '${data.resolution.winning_side}'`);
-          updates.push(`resolved_at = ${data.resolution.resolved_at}`);
+          await sql`
+            UPDATE events 
+            SET winning_side = ${data.resolution.winning_side}, resolved_at = ${data.resolution.resolved_at}
+            WHERE id = ${id}
+          `;
         } else {
-          updates.push(`winning_side = NULL`);
-          updates.push(`resolved_at = NULL`);
+          await sql`
+            UPDATE events 
+            SET winning_side = NULL, resolved_at = NULL
+            WHERE id = ${id}
+          `;
         }
-      }
-      
-      if (updates.length > 0) {
-        await sql.query(
-          `UPDATE events SET ${updates.join(', ')} WHERE id = $1`,
-          [id]
-        );
       }
       
       return await db.events.get(id);
@@ -262,6 +249,10 @@ export const db = {
       `;
       return bet;
     },
+    
+    delete: async (id: string): Promise<void> => {
+      await sql`DELETE FROM bets WHERE id = ${id}`;
+    },
   },
   
   activities: {
@@ -299,6 +290,18 @@ export const db = {
         )
       `;
       return activity;
+    },
+    
+    deleteByBet: async (eventId: string, username: string, side: string, amount: number, timestamp: number): Promise<void> => {
+      await sql`
+        DELETE FROM activities 
+        WHERE type = 'bet' 
+          AND event_id = ${eventId} 
+          AND username = ${username}
+          AND side = ${side}
+          AND amount = ${amount}
+          AND timestamp = ${timestamp}
+      `;
     },
   },
 };
