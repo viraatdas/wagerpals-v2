@@ -62,8 +62,8 @@ export default function Activity() {
           {activities.length === 0 ? (
             <p className="text-center text-gray-600 py-12 font-light">No activity yet</p>
           ) : (
-          activities.map((activity) => (
-            <Link key={activity.id} href={`/events/${activity.event_id}`}>
+          activities.map((activity, index) => (
+            <Link key={`${activity.timestamp}-${activity.event_id}-${index}`} href={`/events/${activity.event_id}`}>
               <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
                 {activity.type === 'bet' ? (
                   <div className="flex justify-between items-start">
@@ -91,7 +91,7 @@ export default function Activity() {
                         <span className="text-gray-700">"{activity.event_title}"</span>
                       </p>
                       <p className="text-sm text-gray-600 mt-1 font-light">
-                        {activity.resolution_summary}
+                        Winner: <span className="font-medium">{activity.winning_side}</span>
                       </p>
                     </div>
                     <span className="text-xs text-gray-400 ml-2 whitespace-nowrap font-light">

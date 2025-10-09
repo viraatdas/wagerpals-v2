@@ -225,7 +225,7 @@ export default function EventPage() {
               If this event has been resolved, what has it been resolved to?
             </h3>
             <div className="flex gap-2 flex-wrap">
-              {event.sides.map((side) => (
+              {[event.side_a, event.side_b].map((side) => (
                 <button
                   key={side}
                   onClick={() => handleResolve(side)}
@@ -240,7 +240,7 @@ export default function EventPage() {
         )}
 
         <div className="grid md:grid-cols-2 gap-4 mb-6">
-          {event.sides.map((side) => {
+          {[event.side_a, event.side_b].map((side) => {
             const stats = event.side_stats[side];
             return (
               <div
@@ -260,7 +260,7 @@ export default function EventPage() {
         {event.status === 'active' && userId && username && (
           <div className="mb-6">
             <BetForm
-              sides={event.sides}
+              sides={[event.side_a, event.side_b]}
               eventId={event.id}
               userId={userId}
               username={username}

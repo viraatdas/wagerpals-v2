@@ -70,11 +70,7 @@ export default function UsersPage() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4 mt-4">
-                    <div>
-                      <div className="text-xs text-gray-500 font-light mb-1">Events Joined</div>
-                      <div className="text-xl font-light text-gray-900">{user.events_joined}</div>
-                    </div>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
                     <div>
                       <div className="text-xs text-gray-500 font-light mb-1">Net Total</div>
                       <div
@@ -91,7 +87,7 @@ export default function UsersPage() {
                     </div>
                     <div>
                       <div className="text-xs text-gray-500 font-light mb-1">Win Streak</div>
-                      <div className="text-xl font-light text-gray-900">{user.streak}</div>
+                      <div className="text-xl font-light text-gray-900">🔥 {user.streak}</div>
                     </div>
                   </div>
                 </div>

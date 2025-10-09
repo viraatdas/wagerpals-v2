@@ -9,14 +9,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
   }
 
-  const event = db.events.get(event_id);
+  const event = await db.events.get(event_id);
   if (!event) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 });
   }
 
-  // Delete the event
-  db.events.delete(event_id);
+  // Delete the event (CASCADE will delete bets)
+  await db.events.delete(event_id);
 
   return NextResponse.json({ success: true });
 }
-

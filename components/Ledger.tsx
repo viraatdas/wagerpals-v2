@@ -35,9 +35,6 @@ export default function Ledger({ bets }: LedgerProps) {
                     </span>
                   )}
                 </div>
-                {bet.note && (
-                  <p className="text-sm text-gray-600 mt-2 font-light italic">{bet.note}</p>
-                )}
               </div>
               <span className="text-xs text-gray-400 ml-2 font-light">
                 {formatTimestamp(bet.timestamp)}

@@ -35,7 +35,7 @@ export default function Explore() {
       case 'most-joined':
         return [...filtered].sort((a, b) => b.total_bets - a.total_bets);
       case 'new':
-        return [...filtered].sort((a, b) => b.created_at - a.created_at);
+        return [...filtered].sort((a, b) => b.end_time - a.end_time);
       default:
         return filtered;
     }

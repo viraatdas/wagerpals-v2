@@ -2,71 +2,111 @@
 
 A social ledger for bets. There are witnesses and all viewable among your friends.
 
-## Getting Started
-
-First, install dependencies:
-
-```bash
-npm install
-```
-
-Then, run the development server:
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the app.
-
 ## Features
 
-- **Create Events**: Set up prediction events with custom sides and deadlines
-- **Place Bets**: Join events by picking a side and wagering an amount
-- **Live Ledger**: See all participants and their predictions in real-time
-- **Event Resolution**: Resolve events and see net results & payment breakdowns
-- **Activity Feed**: Follow all bets and resolutions across the platform
-- **Explore**: Browse events by ending soon, most joined, or newest
+- 🎯 **Create Events**: Set up prediction events with custom sides and deadlines
+- 💰 **Place Bets**: Join events by picking a side and wagering an amount
+- 📊 **Live Ledger**: See all participants and their predictions in real-time
+- 🏆 **Event Resolution**: Resolve events and see net results & payment breakdowns
+- 📱 **Activity Feed**: Follow all bets and resolutions across the platform (auto-refreshes)
+- 👥 **User Profiles**: Track stats, streaks, and net totals
+- 🗑️ **Event Management**: Delete or unresolve events as needed
+- ✅ **Persistent Storage**: All data saved in Vercel Postgres database
 
 ## Stack
 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
+- **Database**: Vercel Postgres (persistent storage)
 - **Deployment**: Vercel
+
+## Getting Started
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Set Up Database
+
+See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for detailed instructions on setting up Vercel Postgres.
+
+**Quick summary:**
+1. Create a Postgres database in your Vercel project dashboard
+2. Copy environment variables to `.env.local`
+3. Run `npm run db:init` to create tables
+
+### 3. Run Development Server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser.
+
+### 4. Deploy to Vercel
+
+```bash
+npx vercel --prod --yes
+```
+
+Environment variables are automatically synced to your Vercel deployment.
 
 ## How it Works
 
 ### Authentication
-No complex auth required! Just enter a username when you first visit. It's stored locally and created in the database.
+Simple username-based auth! Just enter a username when you first visit. It's stored in cookies and created in the database.
 
 ### Event Lifecycle
-1. Create an event with a title, sides (2-4 options), and end time
-2. Share the event link with friends
+1. Create an event with a title, two sides, and end time
+2. Share with friends
 3. Anyone can place bets until the deadline
-4. Late bets are marked as "Late" and don't count in results
-5. After the deadline, anyone can resolve the event
+4. Late bets are marked and don't count in resolution
+5. Anyone can resolve at any time
 6. See net results and payment suggestions
+7. Events can be unresolved if needed
 
 ### Betting Logic
 - Winners split the total pot proportionally to their bets
 - Net results show who gained/lost and by how much
-- Payment suggestions optimize transfers between participants
+- User balances and streaks update automatically on resolution
 
-## Deploy on Vercel
+## Database
 
-The easiest way to deploy is to use [Vercel](https://vercel.com):
+✅ **All data now persists!** Your events, bets, and user profiles are stored in Vercel Postgres and survive deployments.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/wagerpals)
+Tables:
+- `users` - User profiles with stats
+- `events` - Betting events
+- `bets` - Individual wagers
+- `activities` - Activity feed items
 
-## Future Enhancements
+See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for schema details.
 
-- User profiles with stats and history
-- Badges and achievements
-- Reactions on events and bets
-- Event templates and quick starts
-- Social sharing with preview images
-- Real database (PostgreSQL, Vercel KV, etc.)
-- Real-time updates with WebSockets
+## Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run db:init` - Initialize database schema
+- `npm start` - Start production server
+
+## Architecture
+
+```
+/app              # Next.js pages and API routes
+  /api            # API endpoints
+  /[page]         # Page components
+/components       # Reusable React components
+/lib              # Utilities and database layer
+  db.ts           # Database interface with Vercel Postgres
+  types.ts        # TypeScript types
+  utils.ts        # Helper functions
+  schema.sql      # Database schema
+/scripts          # Utility scripts
+  init-db.ts      # Database initialization
+```
 
 ## License
 

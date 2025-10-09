@@ -56,7 +56,7 @@ export default function Home() {
 
     const endedEvents = events
       .filter((e) => e.status === 'resolved' || (e.status === 'active' && e.end_time <= now))
-      .sort((a, b) => b.created_at - a.created_at);
+      .sort((a, b) => b.end_time - a.end_time);
 
     return { ongoingEvents, endedEvents };
   };

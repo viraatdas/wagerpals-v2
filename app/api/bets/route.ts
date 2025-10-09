@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
-  const event = db.events.get(event_id);
+  const event = await db.events.get(event_id);
   if (!event) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 });
   }
@@ -26,16 +26,14 @@ export async function POST(request: NextRequest) {
     username,
     side,
     amount: parseInt(amount),
-    note: note?.trim(),
     timestamp,
     is_late: isLate,
   };
 
-  db.bets.create(newBet);
+  await db.bets.create(newBet);
 
   // Add to activity feed
-  db.activities.add({
-    id: generateId(),
+  await db.activities.add({
     type: 'bet',
     timestamp,
     event_id,
@@ -44,14 +42,6 @@ export async function POST(request: NextRequest) {
     side,
     amount: parseInt(amount),
   });
-
-  // Update user stats
-  const user = db.users.get(user_id);
-  if (user && !isLate) {
-    db.users.update(user_id, {
-      events_joined: user.events_joined + 1,
-    });
-  }
 
   return NextResponse.json(newBet);
 }
@@ -62,13 +52,16 @@ export async function GET(request: NextRequest) {
   const user_id = searchParams.get('user_id');
 
   if (event_id) {
-    return NextResponse.json(db.bets.getByEvent(event_id));
+    const bets = await db.bets.getByEvent(event_id);
+    return NextResponse.json(bets);
   }
 
   if (user_id) {
-    return NextResponse.json(db.bets.getByUser(user_id));
+    const bets = await db.bets.getByUser(user_id);
+    return NextResponse.json(bets);
   }
 
-  return NextResponse.json(db.bets.getAll());
+  const bets = await db.bets.getAll();
+  return NextResponse.json(bets);
 }
 

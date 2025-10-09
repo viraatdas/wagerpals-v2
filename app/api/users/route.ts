@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   const id = searchParams.get('id');
 
   if (username) {
-    const user = db.users.getByUsername(username);
+    const user = await db.users.getByUsername(username);
     if (user) {
       return NextResponse.json(user);
     }
@@ -17,14 +17,15 @@ export async function GET(request: NextRequest) {
   }
 
   if (id) {
-    const user = db.users.get(id);
+    const user = await db.users.get(id);
     if (user) {
       return NextResponse.json(user);
     }
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-  return NextResponse.json(db.users.getAll());
+  const users = await db.users.getAll();
+  return NextResponse.json(users);
 }
 
 export async function POST(request: NextRequest) {
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Username is required' }, { status: 400 });
   }
 
-  const existing = db.users.getByUsername(username);
+  const existing = await db.users.getByUsername(username);
   if (existing) {
     return NextResponse.json(existing);
   }
@@ -43,13 +44,11 @@ export async function POST(request: NextRequest) {
   const newUser: User = {
     id: generateId(),
     username: username.trim(),
-    created_at: Date.now(),
-    events_joined: 0,
     net_total: 0,
     streak: 0,
   };
 
-  db.users.create(newUser);
+  await db.users.create(newUser);
   return NextResponse.json(newUser);
 }
 

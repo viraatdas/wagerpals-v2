@@ -44,7 +44,7 @@ export default function EventCard({ event }: EventCardProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          {event.sides.map((side) => {
+          {[event.side_a, event.side_b].map((side) => {
             const stats = event.side_stats[side];
             return (
               <div

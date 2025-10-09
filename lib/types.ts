@@ -1,8 +1,6 @@
 export interface User {
   id: string;
   username: string;
-  created_at: number;
-  events_joined: number;
   net_total: number;
   streak: number;
 }
@@ -10,16 +8,14 @@ export interface User {
 export interface Event {
   id: string;
   title: string;
-  sides: string[];
+  description?: string;
+  side_a: string;
+  side_b: string;
   end_time: number;
-  created_at: number;
-  created_by: string;
   status: 'active' | 'resolved';
   resolution?: {
     winning_side: string;
-    note?: string;
     resolved_at: number;
-    resolved_by: string;
   };
 }
 
@@ -30,13 +26,11 @@ export interface Bet {
   username: string;
   side: string;
   amount: number;
-  note?: string;
   timestamp: number;
   is_late: boolean;
 }
 
 export interface ActivityItem {
-  id: string;
   type: 'bet' | 'resolution';
   timestamp: number;
   event_id: string;
@@ -44,7 +38,7 @@ export interface ActivityItem {
   username?: string;
   side?: string;
   amount?: number;
-  resolution_summary?: string;
+  winning_side?: string;
 }
 
 export interface EventWithStats extends Event {
@@ -65,4 +59,3 @@ export interface Payment {
   to: string;
   amount: number;
 }
-

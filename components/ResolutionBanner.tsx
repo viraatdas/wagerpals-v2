@@ -28,10 +28,6 @@ export default function ResolutionBanner({ event, netResults }: ResolutionBanner
         </div>
       </div>
 
-      {event.resolution.note && (
-        <p className="text-gray-700 mb-4 italic font-light">{event.resolution.note}</p>
-      )}
-
       <div className="grid md:grid-cols-2 gap-4">
         <div>
           <h4 className="font-light text-gray-900 mb-2 border-b border-gray-200 pb-1">Net Results</h4>
