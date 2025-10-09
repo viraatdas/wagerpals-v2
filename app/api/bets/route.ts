@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
     timestamp,
     event_id,
     event_title: event.title,
+    user_id,
     username,
     side,
     amount: parseInt(amount),

@@ -273,6 +273,7 @@ export const db = {
         type: row.type,
         event_id: row.event_id,
         event_title: row.event_title,
+        user_id: row.user_id || undefined,
         username: row.username,
         side: row.side,
         amount: row.amount ? parseFloat(row.amount) : undefined,
@@ -284,11 +285,12 @@ export const db = {
     
     add: async (activity: ActivityItem): Promise<ActivityItem> => {
       await sql`
-        INSERT INTO activities (type, event_id, event_title, username, side, amount, note, winning_side, timestamp)
+        INSERT INTO activities (type, event_id, event_title, user_id, username, side, amount, note, winning_side, timestamp)
         VALUES (
           ${activity.type},
           ${activity.event_id},
           ${activity.event_title},
+          ${activity.user_id || null},
           ${activity.username || null},
           ${activity.side || null},
           ${activity.amount || null},

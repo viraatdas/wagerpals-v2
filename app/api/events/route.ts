@@ -98,6 +98,7 @@ export async function POST(request: NextRequest) {
       timestamp,
       event_id: newEvent.id,
       event_title: newEvent.title,
+      user_id: creator_user_id,
       username: creator_username,
     };
     

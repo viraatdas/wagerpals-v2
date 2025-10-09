@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ActivityItem } from '@/lib/types';
 import { formatTimestamp } from '@/lib/utils';
@@ -8,62 +8,37 @@ import { formatTimestamp } from '@/lib/utils';
 export default function ActivityPage() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadActivities = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Add timestamp to force cache bust
-      const timestamp = new Date().getTime();
-      const response = await fetch(`/api/activity?t=${timestamp}`, { 
-        cache: 'no-store',
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-        }
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        setError(`Failed to load: ${errorData.error || errorData.message || 'Unknown error'}`);
-        setLoading(false);
-        return;
-      }
-      
-      const data = await response.json();
-      
-      if (Array.isArray(data)) {
-        setActivities(data);
-      } else {
-        setError('Invalid data format received');
-      }
-      
-      setLoading(false);
-    } catch (err: any) {
-      setError(`Connection error: ${err.message}`);
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
-    loadActivities();
+    // Initial fetch
+    fetchActivities();
 
-    // Refresh activities when user returns to the page/tab
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        loadActivities();
+    // Auto-refresh every 3 seconds
+    const interval = setInterval(() => {
+      fetchActivities();
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchActivities = async () => {
+    try {
+      const response = await fetch('/api/activity', {
+        cache: 'no-store',
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setActivities(data);
+        }
       }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [loadActivities]);
+    } catch (error) {
+      console.error('Failed to fetch activities:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const renderActivity = (activity: ActivityItem, index: number) => {
     if (activity.type === 'bet') {
@@ -136,50 +111,27 @@ export default function ActivityPage() {
     );
   };
 
-  return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-6 flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-extralight text-gray-900 mb-2">
-            Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
-          </h1>
-          <p className="text-gray-600 font-light">Recent events, bets, and resolutions</p>
-        </div>
-        <button
-          onClick={loadActivities}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          <svg 
-            className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
-            />
-          </svg>
-          {loading ? 'Refreshing...' : 'Refresh'}
-        </button>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
-          <p className="text-red-800 font-medium mb-2">⚠️ Error</p>
-          <p className="text-red-700 font-light">{error}</p>
-        </div>
-      )}
-
-      {loading && activities.length === 0 ? (
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-600 border-t-transparent"></div>
           <p className="text-gray-600 font-light mt-4">Loading activities...</p>
         </div>
-      ) : activities.length === 0 ? (
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-extralight text-gray-900 mb-2">
+        Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
+      </h1>
+      <p className="text-gray-600 font-light mb-8">
+        Recent events, bets, and resolutions • Auto-updates every 3s
+      </p>
+
+      {activities.length === 0 ? (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
           <p className="text-gray-600 font-light text-lg mb-2">No activity yet</p>
           <p className="text-gray-500 font-light text-sm">
@@ -200,7 +152,7 @@ export default function ActivityPage() {
           ))}
           
           <div className="text-center text-xs text-gray-400 pt-4">
-            Showing {activities.length} activities
+            Showing {activities.length} {activities.length === 50 ? '(limit reached)' : ''} activities
           </div>
         </div>
       )}

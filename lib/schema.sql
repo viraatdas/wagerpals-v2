@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS activities (
   type TEXT NOT NULL,
   event_id TEXT NOT NULL,
   event_title TEXT NOT NULL,
+  user_id TEXT REFERENCES users(id),
   username TEXT,
   side TEXT,
   amount DECIMAL(10,2),

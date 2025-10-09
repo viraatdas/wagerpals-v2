@@ -60,6 +60,7 @@ async function initDatabase() {
         type TEXT NOT NULL,
         event_id TEXT NOT NULL,
         event_title TEXT NOT NULL,
+        user_id TEXT REFERENCES users(id),
         username TEXT,
         side TEXT,
         amount DECIMAL(10,2),
@@ -74,6 +75,7 @@ async function initDatabase() {
     await sql`CREATE INDEX IF NOT EXISTS idx_bets_event_id ON bets(event_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_bets_user_id ON bets(user_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_activities_timestamp ON activities(timestamp DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_activities_user_id ON activities(user_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_events_status ON events(status)`;
 
     console.log('✅ Database initialized successfully!');
