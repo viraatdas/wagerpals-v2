@@ -46,14 +46,32 @@ export async function POST(request: NextRequest) {
   });
 
   // Add to activity feed
-  await db.activities.add({
-    type: 'resolution',
+  const activityData = {
+    type: 'resolution' as const,
     timestamp: resolved_at,
     event_id,
     event_title: event.title,
     username: 'System',
     winning_side,
-  });
+  };
+  
+  console.log('[Resolve API] Adding resolution to activity feed:', activityData);
+  
+  try {
+    await db.activities.add(activityData);
+    console.log('[Resolve API] Successfully added to activity feed');
+    
+    // Verify the activity was added
+    const allActivities = await db.activities.getAll();
+    console.log('[Resolve API] Total activities in DB after insert:', allActivities.length);
+    if (allActivities.length > 0) {
+      console.log('[Resolve API] Most recent activity:', allActivities[0]);
+    }
+  } catch (error: any) {
+    console.error('[Resolve API] Failed to add to activity feed:', error);
+    console.error('[Resolve API] Error message:', error.message);
+    console.error('[Resolve API] Error stack:', error.stack);
+  }
 
   const updatedEvent = await db.events.get(event_id);
 

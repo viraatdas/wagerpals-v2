@@ -95,24 +95,30 @@ export async function POST(request: NextRequest) {
 
   // Add to activity feed if creator info is provided
   if (creator_username) {
-    console.log('[Events API] Adding event creation to activity feed:', {
-      type: 'event_created',
+    const activityData = {
+      type: 'event_created' as const,
+      timestamp,
       event_id: newEvent.id,
       event_title: newEvent.title,
       username: creator_username,
-    });
+    };
+    
+    console.log('[Events API] Adding event creation to activity feed:', activityData);
     
     try {
-      await db.activities.add({
-        type: 'event_created',
-        timestamp,
-        event_id: newEvent.id,
-        event_title: newEvent.title,
-        username: creator_username,
-      });
+      await db.activities.add(activityData);
       console.log('[Events API] Successfully added to activity feed');
-    } catch (error) {
+      
+      // Verify the activity was added
+      const allActivities = await db.activities.getAll();
+      console.log('[Events API] Total activities in DB after insert:', allActivities.length);
+      if (allActivities.length > 0) {
+        console.log('[Events API] Most recent activity:', allActivities[0]);
+      }
+    } catch (error: any) {
       console.error('[Events API] Failed to add to activity feed:', error);
+      console.error('[Events API] Error message:', error.message);
+      console.error('[Events API] Error stack:', error.stack);
     }
   } else {
     console.log('[Events API] No creator_username provided, skipping activity feed');

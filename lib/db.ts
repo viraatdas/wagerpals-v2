@@ -278,20 +278,43 @@ export const db = {
     },
     
     add: async (activity: ActivityItem): Promise<ActivityItem> => {
-      await sql`
-        INSERT INTO activities (type, event_id, event_title, username, side, amount, winning_side, timestamp)
-        VALUES (
-          ${activity.type},
-          ${activity.event_id},
-          ${activity.event_title},
-          ${activity.username},
-          ${activity.side || null},
-          ${activity.amount || null},
-          ${activity.winning_side || null},
-          ${activity.timestamp}
-        )
-      `;
-      return activity;
+      console.log('[DB] Inserting activity:', JSON.stringify(activity));
+      
+      try {
+        const result = await sql`
+          INSERT INTO activities (type, event_id, event_title, username, side, amount, winning_side, timestamp)
+          VALUES (
+            ${activity.type},
+            ${activity.event_id},
+            ${activity.event_title},
+            ${activity.username || null},
+            ${activity.side || null},
+            ${activity.amount || null},
+            ${activity.winning_side || null},
+            ${activity.timestamp}
+          )
+          RETURNING *
+        `;
+        
+        console.log('[DB] Activity inserted successfully, ID:', result.rows[0]?.id);
+        
+        // Verify it was actually inserted
+        const verifyResult = await sql`
+          SELECT COUNT(*) as count FROM activities WHERE timestamp = ${activity.timestamp}
+        `;
+        console.log('[DB] Verification count for timestamp', activity.timestamp, ':', verifyResult.rows[0]?.count);
+        
+        return activity;
+      } catch (error: any) {
+        console.error('[DB] Error inserting activity:', error);
+        console.error('[DB] Error details:', {
+          message: error.message,
+          code: error.code,
+          detail: error.detail,
+          stack: error.stack,
+        });
+        throw error;
+      }
     },
   },
 };
