@@ -169,32 +169,37 @@ export default function CreateEvent() {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="endDate" className="block text-sm font-light text-gray-700 mb-3 border-b border-gray-200 pb-1">
-                End Date
-              </label>
-              <input
-                type="date"
-                id="endDate"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-4 py-2 font-light border-b-2 border-gray-300 focus:border-orange-500 outline-none transition-colors bg-transparent"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="endTime" className="block text-sm font-light text-gray-700 mb-3 border-b border-gray-200 pb-1">
-                End Time
-              </label>
-              <input
-                type="time"
-                id="endTime"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-4 py-2 font-light border-b-2 border-gray-300 focus:border-orange-500 outline-none transition-colors bg-transparent"
-                required
-              />
+          <div>
+            <label className="block text-sm font-light text-gray-700 mb-3 border-b border-gray-200 pb-1">
+              When does this end?
+            </label>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500 text-lg">
+                  📅
+                </div>
+                <input
+                  type="date"
+                  id="endDate"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 font-light border-2 border-gray-200 rounded-xl focus:border-orange-500 outline-none transition-colors bg-white hover:border-gray-300"
+                  required
+                />
+              </div>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500 text-lg">
+                  ⏰
+                </div>
+                <input
+                  type="time"
+                  id="endTime"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 font-light border-2 border-gray-200 rounded-xl focus:border-orange-500 outline-none transition-colors bg-white hover:border-gray-300"
+                  required
+                />
+              </div>
             </div>
           </div>
 

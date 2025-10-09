@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import EventCard from '@/components/EventCard';
-import { Event } from '@/lib/types';
-
-type EventWithStats = Event & {
-  side_stats: Record<string, { count: number; total: number }>;
-  total_bets: number;
-};
+import { EventWithStats } from '@/lib/types';
 
 export default function Explore() {
   const [events, setEvents] = useState<EventWithStats[]>([]);

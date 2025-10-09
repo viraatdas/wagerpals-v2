@@ -3,13 +3,8 @@
 import { useEffect, useState } from 'react';
 import EventCard from '@/components/EventCard';
 import UsernameModal from '@/components/UsernameModal';
-import { Event } from '@/lib/types';
+import { EventWithStats } from '@/lib/types';
 import { getCookie, setCookie } from '@/lib/cookies';
-
-type EventWithStats = Event & {
-  side_stats: Record<string, { count: number; total: number }>;
-  total_bets: number;
-};
 
 export default function Home() {
   const [events, setEvents] = useState<EventWithStats[]>([]);

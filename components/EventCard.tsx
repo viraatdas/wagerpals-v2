@@ -8,18 +8,13 @@ interface EventCardProps {
   event: Event & {
     side_stats: Record<string, { count: number; total: number }>;
     total_bets: number;
+    total_participants: number;
   };
 }
 
 export default function EventCard({ event }: EventCardProps) {
   const timeLeft = formatTimeLeft(event.end_time);
   const isEnded = event.end_time < Date.now();
-  
-  // Calculate total participants
-  const totalParticipants = Object.values(event.side_stats).reduce(
-    (sum, stats) => sum + stats.count,
-    0
-  );
 
   return (
     <Link href={`/events/${event.id}`}>
@@ -44,7 +39,7 @@ export default function EventCard({ event }: EventCardProps) {
             {isEnded ? 'Ended' : `Ends in ${timeLeft}`}
           </span>
           <span className="text-xs text-gray-700 font-medium">
-            👥 {totalParticipants} {totalParticipants === 1 ? 'person' : 'people'}
+            👥 {event.total_participants} {event.total_participants === 1 ? 'person' : 'people'}
           </span>
         </div>
 

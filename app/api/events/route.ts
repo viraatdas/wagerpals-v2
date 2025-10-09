@@ -27,11 +27,15 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    // Count unique participants (including late bets)
+    const uniqueParticipants = new Set(bets.map(b => b.user_id)).size;
+
     return NextResponse.json({
       ...event,
       bets,
       side_stats: sideStats,
       total_bets: bets.filter(b => !b.is_late).length,
+      total_participants: uniqueParticipants,
     });
   }
 
@@ -51,10 +55,14 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    // Count unique participants (including late bets)
+    const uniqueParticipants = new Set(bets.map(b => b.user_id)).size;
+
     return {
       ...event,
       side_stats: sideStats,
       total_bets: bets.filter(b => !b.is_late).length,
+      total_participants: uniqueParticipants,
     };
   });
 

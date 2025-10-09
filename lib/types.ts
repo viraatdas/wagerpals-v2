@@ -51,6 +51,7 @@ export interface EventWithStats extends Event {
   total_bets: number;
   side_stats: Record<string, { count: number; total: number }>;
   bets: Bet[];
+  total_participants: number;
 }
 
 export interface NetResult {
