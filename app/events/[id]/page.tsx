@@ -9,6 +9,7 @@ import ResolutionBanner from '@/components/ResolutionBanner';
 import UsernameModal from '@/components/UsernameModal';
 import { EventWithStats, NetResult } from '@/lib/types';
 import { calculateNetResults } from '@/lib/utils';
+import { getCookie, setCookie } from '@/lib/cookies';
 
 export default function EventPage() {
   const params = useParams();
@@ -22,8 +23,8 @@ export default function EventPage() {
   const [showUsernameModal, setShowUsernameModal] = useState(false);
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem('userId');
-    const storedUsername = localStorage.getItem('username');
+    const storedUserId = getCookie('userId');
+    const storedUsername = getCookie('username');
 
     if (!storedUserId || !storedUsername) {
       setShowUsernameModal(true);
@@ -44,8 +45,8 @@ export default function EventPage() {
       });
 
       const user = await response.json();
-      localStorage.setItem('userId', user.id);
-      localStorage.setItem('username', user.username);
+      setCookie('userId', user.id, 365);
+      setCookie('username', user.username, 365);
       setUserId(user.id);
       setUsername(user.username);
       setShowUsernameModal(false);

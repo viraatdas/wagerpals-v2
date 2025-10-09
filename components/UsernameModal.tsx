@@ -23,7 +23,10 @@ export default function UsernameModal({ onSubmit }: UsernameModalProps) {
           <h2 className="text-3xl font-extralight text-gray-900 mb-2">
             Welcome to <span className="font-semibold text-orange-600">WagerPals</span>
           </h2>
-          <p className="text-gray-600 font-light">Enter your username to get started</p>
+          <p className="text-gray-600 font-light">Enter your username to continue</p>
+          <p className="text-sm text-gray-500 font-light mt-2">
+            Returning user? Just enter your existing username
+          </p>
         </div>
 
         <form onSubmit={handleSubmit}>

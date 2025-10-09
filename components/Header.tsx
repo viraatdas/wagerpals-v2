@@ -2,9 +2,22 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { getCookie, deleteCookie } from '@/lib/cookies';
 
 export default function Header() {
   const pathname = usePathname();
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUsername(getCookie('username'));
+  }, []);
+
+  const handleLogout = () => {
+    deleteCookie('userId');
+    deleteCookie('username');
+    window.location.reload();
+  };
 
   const isActive = (path: string) => {
     return pathname === path;
@@ -55,6 +68,17 @@ export default function Header() {
             >
               Create Event
             </Link>
+            {username && (
+              <div className="flex items-center gap-3 ml-2 pl-6 border-l border-gray-300">
+                <span className="text-sm font-light text-gray-700">@{username}</span>
+                <button
+                  onClick={handleLogout}
+                  className="text-xs font-light text-gray-500 hover:text-orange-600 transition-colors"
+                >
+                  Switch User
+                </button>
+              </div>
+            )}
           </nav>
         </div>
       </div>

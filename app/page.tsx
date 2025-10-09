@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import EventCard from '@/components/EventCard';
 import UsernameModal from '@/components/UsernameModal';
 import { Event } from '@/lib/types';
+import { getCookie, setCookie } from '@/lib/cookies';
 
 type EventWithStats = Event & {
   side_stats: Record<string, { count: number; total: number }>;
@@ -16,7 +17,7 @@ export default function Home() {
   const [showUsernameModal, setShowUsernameModal] = useState(false);
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem('username');
+    const storedUsername = getCookie('username');
     if (!storedUsername) {
       setShowUsernameModal(true);
     }
@@ -32,8 +33,8 @@ export default function Home() {
       });
 
       const user = await response.json();
-      localStorage.setItem('userId', user.id);
-      localStorage.setItem('username', user.username);
+      setCookie('userId', user.id, 365);
+      setCookie('username', user.username, 365);
       setShowUsernameModal(false);
     } catch (error) {
       console.error('Failed to create user:', error);

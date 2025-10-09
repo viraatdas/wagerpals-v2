@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import UsernameModal from '@/components/UsernameModal';
+import { getCookie, setCookie } from '@/lib/cookies';
 
 export default function CreateEvent() {
   const router = useRouter();
@@ -16,8 +17,8 @@ export default function CreateEvent() {
   const [showUsernameModal, setShowUsernameModal] = useState(false);
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem('userId');
-    const storedUsername = localStorage.getItem('username');
+    const storedUserId = getCookie('userId');
+    const storedUsername = getCookie('username');
 
     if (!storedUserId || !storedUsername) {
       setShowUsernameModal(true);
@@ -36,8 +37,8 @@ export default function CreateEvent() {
       });
 
       const user = await response.json();
-      localStorage.setItem('userId', user.id);
-      localStorage.setItem('username', user.username);
+      setCookie('userId', user.id, 365);
+      setCookie('username', user.username, 365);
       setUserId(user.id);
       setUsername(user.username);
       setShowUsernameModal(false);
