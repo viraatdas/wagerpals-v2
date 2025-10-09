@@ -153,13 +153,13 @@ export default function EventPage() {
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="absolute top-0 right-0 text-3xl hover:scale-110 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute top-0 right-0 px-3 py-1 text-sm font-light text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="Delete event"
           >
-            🛑
+            Delete
           </button>
           
-          <h1 className="text-3xl font-light text-gray-900 mb-3 pr-12">{event.title}</h1>
+          <h1 className="text-3xl font-light text-gray-900 mb-3 pr-20">{event.title}</h1>
           <div className="flex items-center gap-4">
             <div className={`px-3 py-1 rounded-lg text-sm font-light ${
               isEnded ? 'bg-gray-100 text-gray-600' : 'bg-orange-100 text-orange-800'
@@ -181,11 +181,8 @@ export default function EventPage() {
         {canResolve && (
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
             <h3 className="font-light text-orange-900 mb-2">
-              {isEnded ? 'Event has ended - Time to resolve!' : 'Resolve this event'}
+              If this event has been resolved, what has it been resolved to?
             </h3>
-            <p className="text-sm text-orange-800 mb-3 font-light">
-              Anyone can resolve by selecting the winning side:
-            </p>
             <div className="flex gap-2 flex-wrap">
               {event.sides.map((side) => (
                 <button
