@@ -42,10 +42,10 @@ export interface ActivityItem {
 }
 
 export interface EventWithStats extends Event {
-  total_bets: number;
   side_stats: Record<string, { count: number; total: number }>;
-  bets: Bet[];
+  total_bets: number;
   total_participants: number;
+  bets: Bet[];
 }
 
 export interface NetResult {

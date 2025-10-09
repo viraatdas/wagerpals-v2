@@ -3,6 +3,8 @@ import { db } from '@/lib/db';
 import { generateId } from '@/lib/utils';
 import { User } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const username = searchParams.get('username');

@@ -3,6 +3,8 @@ import { db } from '@/lib/db';
 import { generateId } from '@/lib/utils';
 import { Bet } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { event_id, user_id, username, side, amount, note } = body;

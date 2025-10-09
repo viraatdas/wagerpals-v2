@@ -2,14 +2,10 @@
 
 import Link from 'next/link';
 import { formatTimeLeft } from '@/lib/utils';
-import { Event } from '@/lib/types';
+import { EventWithStats } from '@/lib/types';
 
 interface EventCardProps {
-  event: Event & {
-    side_stats: Record<string, { count: number; total: number }>;
-    total_bets: number;
-    total_participants: number;
-  };
+  event: Omit<EventWithStats, 'bets'>;
 }
 
 export default function EventCard({ event }: EventCardProps) {
