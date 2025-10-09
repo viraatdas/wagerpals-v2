@@ -129,11 +129,33 @@ export default function ActivityPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-extralight text-gray-900 mb-2">
-          Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
-        </h1>
-        <p className="text-gray-600 font-light">Recent events, bets, and resolutions</p>
+      <div className="mb-6 flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-extralight text-gray-900 mb-2">
+            Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
+          </h1>
+          <p className="text-gray-600 font-light">Recent events, bets, and resolutions</p>
+        </div>
+        <button
+          onClick={loadActivities}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          <svg 
+            className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+            />
+          </svg>
+          {loading ? 'Refreshing...' : 'Refresh'}
+        </button>
       </div>
 
       {error && (
