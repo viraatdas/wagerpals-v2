@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { ActivityItem } from '@/lib/types';
 import { formatTimestamp } from '@/lib/utils';
@@ -10,11 +10,7 @@ export default function ActivityPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadActivities();
-  }, []);
-
-  const loadActivities = async () => {
+  const loadActivities = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -46,7 +42,24 @@ export default function ActivityPage() {
       setError(`Connection error: ${err.message}`);
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadActivities();
+
+    // Refresh activities when user returns to the page/tab
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadActivities();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [loadActivities]);
 
   const renderActivity = (activity: ActivityItem, index: number) => {
     if (activity.type === 'bet') {

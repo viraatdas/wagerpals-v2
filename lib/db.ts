@@ -262,7 +262,7 @@ export const db = {
         FROM activities a
         LEFT JOIN events e ON a.event_id = e.id
         ORDER BY COALESCE(e.end_time, a.timestamp) DESC, a.timestamp DESC
-        LIMIT 100
+        LIMIT 10
       `;
       
       return result.rows.map(row => ({

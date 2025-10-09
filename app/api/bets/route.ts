@@ -34,6 +34,14 @@ export async function POST(request: NextRequest) {
 
   await db.bets.create(newBet);
 
+  // Update user's total_bet (including late bets)
+  const user = await db.users.get(user_id);
+  if (user) {
+    await db.users.update(user_id, {
+      total_bet: user.total_bet + parseInt(amount),
+    });
+  }
+
   // Add to activity feed
   const activityData = {
     type: 'bet' as const,
@@ -88,14 +96,12 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Bet not found' }, { status: 404 });
     }
 
-    // Update user's total_bet (only if bet is NOT late)
-    if (!bet.is_late) {
-      const user = await db.users.get(bet.user_id);
-      if (user) {
-        await db.users.update(bet.user_id, {
-          total_bet: Math.max(0, user.total_bet - bet.amount),
-        });
-      }
+    // Update user's total_bet (including late bets)
+    const user = await db.users.get(bet.user_id);
+    if (user) {
+      await db.users.update(bet.user_id, {
+        total_bet: Math.max(0, user.total_bet - bet.amount),
+      });
     }
 
     // Remove related activity entry

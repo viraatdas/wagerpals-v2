@@ -21,21 +21,20 @@ export async function GET(request: NextRequest) {
       [event.side_b]: { count: 0, total: 0 },
     };
 
+    // Include all bets (including late bets) in side stats
     bets.forEach(bet => {
-      if (!bet.is_late) {
-        sideStats[bet.side].count++;
-        sideStats[bet.side].total += bet.amount;
-      }
+      sideStats[bet.side].count++;
+      sideStats[bet.side].total += bet.amount;
     });
 
-    // Count unique participants (including late bets)
+    // Count unique participants
     const uniqueParticipants = new Set(bets.map(b => b.user_id)).size;
 
     return NextResponse.json({
       ...event,
       bets,
       side_stats: sideStats,
-      total_bets: bets.filter(b => !b.is_late).length,
+      total_bets: bets.length,
       total_participants: uniqueParticipants,
     });
   }
@@ -49,20 +48,19 @@ export async function GET(request: NextRequest) {
         [event.side_b]: { count: 0, total: 0 },
       };
 
+      // Include all bets (including late bets) in side stats
       bets.forEach(bet => {
-        if (!bet.is_late) {
-          sideStats[bet.side].count++;
-          sideStats[bet.side].total += bet.amount;
-        }
+        sideStats[bet.side].count++;
+        sideStats[bet.side].total += bet.amount;
       });
 
-      // Count unique participants (including late bets)
+      // Count unique participants
       const uniqueParticipants = new Set(bets.map(b => b.user_id)).size;
 
       return {
         ...event,
         side_stats: sideStats,
-        total_bets: bets.filter(b => !b.is_late).length,
+        total_bets: bets.length,
         total_participants: uniqueParticipants,
       };
     })
