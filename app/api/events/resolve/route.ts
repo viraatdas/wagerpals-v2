@@ -46,17 +46,12 @@ export async function POST(request: NextRequest) {
   });
 
   // Add to activity feed
-  const summaryParts = netResults
-    .filter(r => Math.abs(r.net) > 0)
-    .sort((a, b) => b.net - a.net)
-    .slice(0, 3)
-    .map(r => `@${r.username} ${r.net > 0 ? '+' : ''}${r.net}`);
-
   await db.activities.add({
     type: 'resolution',
     timestamp: resolved_at,
     event_id,
     event_title: event.title,
+    username: 'System',
     winning_side,
   });
 

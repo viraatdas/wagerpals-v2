@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS activities (
   type TEXT NOT NULL,
   event_id TEXT NOT NULL,
   event_title TEXT NOT NULL,
-  username TEXT NOT NULL,
+  username TEXT,
   side TEXT,
   amount DECIMAL(10,2),
   winning_side TEXT,
