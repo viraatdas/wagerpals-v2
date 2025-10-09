@@ -84,14 +84,27 @@ export default function CreateEvent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title.trim(),
-          sides: sides.filter((s) => s.trim()),
+          side_a: sides[0].trim(),
+          side_b: sides[1].trim(),
           end_time: endDateTime,
-          created_by: userId,
         }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to create event:', errorData);
+        alert('Failed to create event. Please try again.');
+        return;
+      }
+
       const event = await response.json();
-      router.push(`/events/${event.id}`);
+      
+      if (event && event.id) {
+        router.push(`/events/${event.id}`);
+      } else {
+        console.error('No event ID returned:', event);
+        alert('Event created but could not navigate to it.');
+      }
     } catch (error) {
       console.error('Failed to create event:', error);
     } finally {

@@ -13,11 +13,6 @@ export default function Activity() {
   useEffect(() => {
     fetchActivities();
     
-    // Auto-refresh every 3 seconds
-    const interval = setInterval(() => {
-      fetchActivities();
-    }, 3000);
-    
     // Refetch when page becomes visible (user switches tabs/windows)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -28,7 +23,6 @@ export default function Activity() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
     return () => {
-      clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
@@ -65,7 +59,7 @@ export default function Activity() {
         <h1 className="text-3xl font-extralight text-gray-900 mb-2">
           Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
         </h1>
-        <p className="text-gray-600 font-light">Recent bets and resolutions · Auto-refreshes every 3s</p>
+        <p className="text-gray-600 font-light">Recent bets and resolutions</p>
       </div>
 
       {error ? (
