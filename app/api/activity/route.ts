@@ -28,24 +28,41 @@ export async function GET() {
     console.log('[Activity API] Raw count from database:', countResult.rows[0]?.count);
     
     // Try raw query first to see what's in the database
+    console.log('[Activity API] About to execute raw SELECT query...');
     const rawActivities = await sql`SELECT * FROM activities ORDER BY timestamp DESC LIMIT 10`;
     console.log('[Activity API] Raw query returned:', rawActivities.rows.length, 'activities');
     if (rawActivities.rows.length > 0) {
-      console.log('[Activity API] Raw activities:', JSON.stringify(rawActivities.rows, null, 2));
+      console.log('[Activity API] First raw activity:', JSON.stringify(rawActivities.rows[0], null, 2));
     }
     
-    const activities = await db.activities.getAll();
-    console.log('[Activity API] Found activities after getAll():', activities.length);
+    // Bypass db.activities.getAll() and manually map the raw results
+    console.log('[Activity API] Manually mapping raw activities...');
+    const manuallyMappedActivities = rawActivities.rows.map((row: any) => ({
+      type: row.type,
+      event_id: row.event_id,
+      event_title: row.event_title,
+      username: row.username,
+      side: row.side,
+      amount: row.amount ? parseFloat(row.amount) : undefined,
+      winning_side: row.winning_side,
+      timestamp: parseInt(row.timestamp),
+    }));
+    console.log('[Activity API] Manually mapped:', manuallyMappedActivities.length, 'activities');
     
-    if (activities.length > 0) {
-      console.log('[Activity API] Processed activities:', JSON.stringify(activities, null, 2));
-    } else if (countResult.rows[0]?.count > 0) {
+    // Also try getAll() for comparison
+    console.log('[Activity API] Now trying db.activities.getAll()...');
+    const activities = await db.activities.getAll();
+    console.log('[Activity API] getAll() returned:', activities.length, 'activities');
+    
+    if (countResult.rows[0]?.count > 0 && activities.length === 0) {
       console.error('[Activity API] ⚠️  COUNT MISMATCH: DB has', countResult.rows[0]?.count, 'but getAll() returned 0');
+      console.log('[Activity API] Returning manually mapped activities instead');
+      return NextResponse.json(manuallyMappedActivities);
     }
     
     console.log('[Activity API] ========== END FETCH ==========');
     
-    return NextResponse.json(activities);
+    return NextResponse.json(activities.length > 0 ? activities : manuallyMappedActivities);
   } catch (error: any) {
     console.error('[Activity API] Error fetching activities:', error);
     console.error('[Activity API] Error details:', {
