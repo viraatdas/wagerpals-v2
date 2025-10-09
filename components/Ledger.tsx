@@ -93,6 +93,11 @@ export default function Ledger({ bets, onBetDeleted }: LedgerProps) {
                     </span>
                   )}
                 </div>
+                {bet.note && (
+                  <p className="text-sm text-gray-600 mt-2 font-light italic">
+                    "{bet.note}"
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-400 font-light">

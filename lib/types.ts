@@ -27,6 +27,7 @@ export interface Bet {
   username: string;
   side: string;
   amount: number;
+  note?: string;
   timestamp: number;
   is_late: boolean;
 }
@@ -39,6 +40,7 @@ export interface ActivityItem {
   username?: string;
   side?: string;
   amount?: number;
+  note?: string;
   winning_side?: string;
 }
 

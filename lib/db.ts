@@ -178,6 +178,7 @@ export const db = {
         username: row.username,
         side: row.side,
         amount: parseFloat(row.amount),
+        note: row.note || undefined,
         is_late: row.is_late,
         timestamp: parseInt(row.timestamp),
       };
@@ -196,6 +197,7 @@ export const db = {
         username: row.username,
         side: row.side,
         amount: parseFloat(row.amount),
+        note: row.note || undefined,
         is_late: row.is_late,
         timestamp: parseInt(row.timestamp),
       }));
@@ -214,6 +216,7 @@ export const db = {
         username: row.username,
         side: row.side,
         amount: parseFloat(row.amount),
+        note: row.note || undefined,
         is_late: row.is_late,
         timestamp: parseInt(row.timestamp),
       }));
@@ -228,6 +231,7 @@ export const db = {
         username: row.username,
         side: row.side,
         amount: parseFloat(row.amount),
+        note: row.note || undefined,
         is_late: row.is_late,
         timestamp: parseInt(row.timestamp),
       }));
@@ -235,7 +239,7 @@ export const db = {
     
     create: async (bet: Bet): Promise<Bet> => {
       await sql`
-        INSERT INTO bets (id, event_id, user_id, username, side, amount, is_late, timestamp)
+        INSERT INTO bets (id, event_id, user_id, username, side, amount, note, is_late, timestamp)
         VALUES (
           ${bet.id},
           ${bet.event_id},
@@ -243,6 +247,7 @@ export const db = {
           ${bet.username},
           ${bet.side},
           ${bet.amount},
+          ${bet.note || null},
           ${bet.is_late},
           ${bet.timestamp}
         )
@@ -271,6 +276,7 @@ export const db = {
         username: row.username,
         side: row.side,
         amount: row.amount ? parseFloat(row.amount) : undefined,
+        note: row.note || undefined,
         winning_side: row.winning_side,
         timestamp: parseInt(row.timestamp),
       }));
@@ -278,7 +284,7 @@ export const db = {
     
     add: async (activity: ActivityItem): Promise<ActivityItem> => {
       await sql`
-        INSERT INTO activities (type, event_id, event_title, username, side, amount, winning_side, timestamp)
+        INSERT INTO activities (type, event_id, event_title, username, side, amount, note, winning_side, timestamp)
         VALUES (
           ${activity.type},
           ${activity.event_id},
@@ -286,6 +292,7 @@ export const db = {
           ${activity.username || null},
           ${activity.side || null},
           ${activity.amount || null},
+          ${activity.note || null},
           ${activity.winning_side || null},
           ${activity.timestamp}
         )

@@ -65,7 +65,7 @@ export default function ActivityPage() {
     if (activity.type === 'bet') {
       return (
         <div className="flex justify-between items-start">
-          <div>
+          <div className="flex-1">
             <p className="text-gray-900 font-light">
               <span className="font-medium text-blue-600">@{activity.username || 'Unknown'}</span>
               {' bet '}
@@ -75,6 +75,11 @@ export default function ActivityPage() {
               {' in '}
               <span className="text-gray-700">"{activity.event_title}"</span>
             </p>
+            {activity.note && (
+              <p className="text-sm text-gray-600 mt-1 font-light italic">
+                "{activity.note}"
+              </p>
+            )}
           </div>
           <span className="text-xs text-gray-400 ml-2 whitespace-nowrap font-light">
             {formatTimestamp(activity.timestamp)}

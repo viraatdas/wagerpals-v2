@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
     username,
     side,
     amount: parseInt(amount),
+    note: note || undefined,
     timestamp,
     is_late: isLate,
   };
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
     username,
     side,
     amount: parseInt(amount),
+    note: note || undefined,
   };
   
   try {

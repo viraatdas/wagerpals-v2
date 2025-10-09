@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS bets (
   username TEXT NOT NULL,
   side TEXT NOT NULL,
   amount DECIMAL(10,2) NOT NULL,
+  note TEXT,
   is_late BOOLEAN DEFAULT FALSE,
   timestamp BIGINT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -46,6 +47,7 @@ CREATE TABLE IF NOT EXISTS activities (
   username TEXT,
   side TEXT,
   amount DECIMAL(10,2),
+  note TEXT,
   winning_side TEXT,
   timestamp BIGINT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
