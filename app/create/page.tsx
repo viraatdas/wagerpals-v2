@@ -79,17 +79,22 @@ export default function CreateEvent() {
     try {
       const endDateTime = new Date(`${endDate}T${endTime}`).getTime();
 
+      const eventData = {
+        title: title.trim(),
+        side_a: sides[0].trim(),
+        side_b: sides[1].trim(),
+        end_time: endDateTime,
+        creator_user_id: userId,
+        creator_username: username,
+      };
+
+      console.log('[Create Page] Creating event with data:', eventData);
+      console.log('[Create Page] Username:', username, 'UserId:', userId);
+
       const response = await fetch('/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: title.trim(),
-          side_a: sides[0].trim(),
-          side_b: sides[1].trim(),
-          end_time: endDateTime,
-          creator_user_id: userId,
-          creator_username: username,
-        }),
+        body: JSON.stringify(eventData),
       });
 
       if (!response.ok) {
