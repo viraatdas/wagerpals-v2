@@ -45,7 +45,7 @@ export default function EventCard({ event }: EventCardProps) {
 
         <div className="grid grid-cols-2 gap-2">
           {[event.side_a, event.side_b].map((side) => {
-            const stats = event.side_stats[side];
+            const stats = event.side_stats[side] || { count: 0, total: 0 };
             return (
               <div
                 key={side}
@@ -53,7 +53,7 @@ export default function EventCard({ event }: EventCardProps) {
               >
                 <div className="text-sm font-light text-gray-700">{side}</div>
                 <div className="text-xs text-gray-500 mt-1 font-light">
-                  {stats.count} · ${stats.total}
+                  {stats.count} {stats.count === 1 ? 'bet' : 'bets'} · ${stats.total}
                 </div>
               </div>
             );

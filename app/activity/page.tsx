@@ -37,11 +37,15 @@ export default function Activity() {
       const response = await fetch('/api/activity', { 
         cache: 'no-store' // Ensure we get fresh data
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
-      setActivities(data);
+      setActivities(Array.isArray(data) ? data : []);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch activities:', error);
+      setActivities([]);
       setLoading(false);
     }
   };
