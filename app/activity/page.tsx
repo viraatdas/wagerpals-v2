@@ -11,11 +11,27 @@ export default function Activity() {
 
   useEffect(() => {
     fetchActivities();
+    
+    // Refetch when page becomes visible (user switches tabs/windows)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchActivities();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const fetchActivities = async () => {
+    setLoading(true);
     try {
-      const response = await fetch('/api/activity');
+      const response = await fetch('/api/activity', { 
+        cache: 'no-store' // Ensure we get fresh data
+      });
       const data = await response.json();
       setActivities(data);
     } catch (error) {
@@ -25,25 +41,31 @@ export default function Activity() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <p className="text-center text-gray-600">Loading...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-extralight text-gray-900 mb-2">
-        Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
-      </h1>
-      <p className="text-gray-600 font-light mb-6">Recent bets and resolutions</p>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-extralight text-gray-900 mb-2">
+            Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
+          </h1>
+          <p className="text-gray-600 font-light">Recent bets and resolutions</p>
+        </div>
+        <button
+          onClick={fetchActivities}
+          disabled={loading}
+          className="px-4 py-2 text-sm font-light text-orange-600 hover:bg-orange-50 rounded-lg transition-colors disabled:opacity-50"
+        >
+          {loading ? 'Refreshing...' : '🔄 Refresh'}
+        </button>
+      </div>
 
-      <div className="space-y-3">
-        {activities.length === 0 ? (
-          <p className="text-center text-gray-600 py-12 font-light">No activity yet</p>
-        ) : (
+      {loading && activities.length === 0 ? (
+        <p className="text-center text-gray-600 py-12 font-light">Loading...</p>
+      ) : (
+        <div className="space-y-3">
+          {activities.length === 0 ? (
+            <p className="text-center text-gray-600 py-12 font-light">No activity yet</p>
+          ) : (
           activities.map((activity) => (
             <Link key={activity.id} href={`/events/${activity.event_id}`}>
               <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
@@ -84,8 +106,9 @@ export default function Activity() {
               </div>
             </Link>
           ))
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
