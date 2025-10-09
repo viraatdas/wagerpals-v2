@@ -8,6 +8,7 @@ import { formatTimestamp } from '@/lib/utils';
 export default function Activity() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchActivities();
@@ -38,13 +39,21 @@ export default function Activity() {
         cache: 'no-store' // Ensure we get fresh data
       });
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.status === 500) {
+          setError('Database not configured. Please follow SETUP_INSTRUCTIONS.md');
+        } else {
+          setError(`Failed to load activities (HTTP ${response.status})`);
+        }
+        setLoading(false);
+        return;
       }
       const data = await response.json();
       setActivities(Array.isArray(data) ? data : []);
+      setError(null);
       setLoading(false);
-    } catch (error) {
-      console.error('Failed to fetch activities:', error);
+    } catch (err) {
+      console.error('Failed to fetch activities:', err);
+      setError('Unable to connect to the server. Check console for details.');
       setActivities([]);
       setLoading(false);
     }
@@ -59,12 +68,20 @@ export default function Activity() {
         <p className="text-gray-600 font-light">Recent bets and resolutions · Auto-refreshes every 3s</p>
       </div>
 
-      {loading && activities.length === 0 ? (
+      {error ? (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <p className="text-red-800 font-medium mb-2">⚠️ Database Error</p>
+          <p className="text-red-700 font-light mb-4">{error}</p>
+          <p className="text-sm text-red-600 font-light">
+            Follow the instructions in <code className="bg-red-100 px-2 py-1 rounded">SETUP_INSTRUCTIONS.md</code> to set up Vercel Postgres.
+          </p>
+        </div>
+      ) : loading && activities.length === 0 ? (
         <p className="text-center text-gray-600 py-12 font-light">Loading...</p>
       ) : (
         <div className="space-y-3">
           {activities.length === 0 ? (
-            <p className="text-center text-gray-600 py-12 font-light">No activity yet</p>
+            <p className="text-center text-gray-600 py-12 font-light">No activity yet. Start by creating an event and placing bets!</p>
           ) : (
           activities.map((activity, index) => (
             <Link key={`${activity.timestamp}-${activity.event_id}-${index}`} href={`/events/${activity.event_id}`}>
