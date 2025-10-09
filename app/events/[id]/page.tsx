@@ -7,9 +7,19 @@ import BetForm from '@/components/BetForm';
 import Ledger from '@/components/Ledger';
 import ResolutionBanner from '@/components/ResolutionBanner';
 import UsernameModal from '@/components/UsernameModal';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import { EventWithStats, NetResult } from '@/lib/types';
 import { calculateNetResults } from '@/lib/utils';
 import { getCookie, setCookie } from '@/lib/cookies';
+
+type ConfirmationModalConfig = {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  confirmText: string;
+  type: 'danger' | 'warning' | 'success';
+  onConfirm: () => void;
+};
 
 export default function EventPage() {
   const params = useParams();
@@ -21,6 +31,14 @@ export default function EventPage() {
   const [deleting, setDeleting] = useState(false);
   const [netResults, setNetResults] = useState<NetResult[]>([]);
   const [showUsernameModal, setShowUsernameModal] = useState(false);
+  const [confirmationModal, setConfirmationModal] = useState<ConfirmationModalConfig>({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: '',
+    type: 'danger',
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     const storedUserId = getCookie('userId');
@@ -93,9 +111,18 @@ export default function EventPage() {
   const handleResolve = async (winningSide: string) => {
     if (!event || !userId) return;
 
-    const confirmed = confirm(`Are you sure you want to resolve this event as "${winningSide}"? This will calculate and update all user balances.`);
-    if (!confirmed) return;
+    setConfirmationModal({
+      isOpen: true,
+      title: 'Resolve Event',
+      message: `Are you sure you want to resolve this event as "${winningSide}"? This will calculate and update all user balances.`,
+      confirmText: 'Resolve',
+      type: 'success',
+      onConfirm: () => confirmResolve(winningSide),
+    });
+  };
 
+  const confirmResolve = async (winningSide: string) => {
+    setConfirmationModal(prev => ({ ...prev, isOpen: false }));
     setResolving(true);
 
     try {
@@ -103,7 +130,7 @@ export default function EventPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          event_id: event.id,
+          event_id: event!.id,
           winning_side: winningSide,
           resolved_by: userId,
         }),
@@ -122,9 +149,18 @@ export default function EventPage() {
   const handleUnresolve = async () => {
     if (!event || !userId) return;
 
-    const confirmed = confirm(`Are you sure you want to unresolve this event? This will reverse all balance changes.`);
-    if (!confirmed) return;
+    setConfirmationModal({
+      isOpen: true,
+      title: 'Unresolve Event',
+      message: 'Are you sure you want to unresolve this event? This will reverse all balance changes.',
+      confirmText: 'Unresolve',
+      type: 'warning',
+      onConfirm: confirmUnresolve,
+    });
+  };
 
+  const confirmUnresolve = async () => {
+    setConfirmationModal(prev => ({ ...prev, isOpen: false }));
     setResolving(true);
 
     try {
@@ -132,7 +168,7 @@ export default function EventPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          event_id: event.id,
+          event_id: event!.id,
         }),
       });
 
@@ -149,9 +185,18 @@ export default function EventPage() {
   const handleDelete = async () => {
     if (!event) return;
 
-    const confirmed = confirm(`Are you sure you want to delete "${event.title}"? This cannot be undone.`);
-    if (!confirmed) return;
+    setConfirmationModal({
+      isOpen: true,
+      title: 'Delete Event',
+      message: `Are you sure you want to delete "${event.title}"? This action cannot be undone and will remove all associated bets.`,
+      confirmText: 'Delete',
+      type: 'danger',
+      onConfirm: confirmDelete,
+    });
+  };
 
+  const confirmDelete = async () => {
+    setConfirmationModal(prev => ({ ...prev, isOpen: false }));
     setDeleting(true);
 
     try {
@@ -159,7 +204,7 @@ export default function EventPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          event_id: event.id,
+          event_id: event!.id,
         }),
       });
 
@@ -195,6 +240,17 @@ export default function EventPage() {
   return (
     <>
       {showUsernameModal && <UsernameModal onSubmit={handleUsernameSubmit} />}
+      
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        onClose={() => setConfirmationModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmationModal.onConfirm}
+        title={confirmationModal.title}
+        message={confirmationModal.message}
+        confirmText={confirmationModal.confirmText}
+        type={confirmationModal.type}
+        loading={deleting || resolving}
+      />
       
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-6 relative">

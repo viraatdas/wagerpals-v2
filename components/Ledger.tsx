@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Bet } from '@/lib/types';
 import { formatTimestamp, formatAmount } from '@/lib/utils';
+import ConfirmationModal from './ConfirmationModal';
 
 interface LedgerProps {
   bets: Bet[];
@@ -11,17 +12,21 @@ interface LedgerProps {
 
 export default function Ledger({ bets, onBetDeleted }: LedgerProps) {
   const [deletingBets, setDeletingBets] = useState<Set<string>>(new Set());
+  const [betToDelete, setBetToDelete] = useState<string | null>(null);
   const sortedBets = [...bets].sort((a, b) => b.timestamp - a.timestamp);
 
   const handleDeleteBet = async (betId: string) => {
-    if (!confirm('Are you sure you want to delete this bet? This action cannot be undone.')) {
-      return;
-    }
+    setBetToDelete(betId);
+  };
 
-    setDeletingBets(prev => new Set(prev).add(betId));
+  const confirmDeleteBet = async () => {
+    if (!betToDelete) return;
+
+    setBetToDelete(null);
+    setDeletingBets(prev => new Set(prev).add(betToDelete));
 
     try {
-      const response = await fetch(`/api/bets?id=${betId}`, {
+      const response = await fetch(`/api/bets?id=${betToDelete}`, {
         method: 'DELETE',
       });
 
@@ -39,18 +44,36 @@ export default function Ledger({ bets, onBetDeleted }: LedgerProps) {
     } finally {
       setDeletingBets(prev => {
         const newSet = new Set(prev);
-        newSet.delete(betId);
+        newSet.delete(betToDelete);
         return newSet;
       });
     }
   };
 
+  const getBetDetails = (betId: string) => {
+    const bet = bets.find(b => b.id === betId);
+    if (!bet) return '';
+    return `@${bet.username}'s $${bet.amount} bet on ${bet.side}`;
+  };
+
   return (
-    <div className="space-y-3">
-      {sortedBets.length === 0 ? (
-        <p className="text-gray-500 text-center py-8 font-light">No entries yet. Be the first!</p>
-      ) : (
-        sortedBets.map((bet) => (
+    <>
+      <ConfirmationModal
+        isOpen={betToDelete !== null}
+        onClose={() => setBetToDelete(null)}
+        onConfirm={confirmDeleteBet}
+        title="Delete Bet"
+        message={`Are you sure you want to delete ${betToDelete ? getBetDetails(betToDelete) : 'this bet'}? This action cannot be undone.`}
+        confirmText="Delete"
+        type="danger"
+        loading={betToDelete !== null && deletingBets.has(betToDelete)}
+      />
+      
+      <div className="space-y-3">
+        {sortedBets.length === 0 ? (
+          <p className="text-gray-500 text-center py-8 font-light">No entries yet. Be the first!</p>
+        ) : (
+          sortedBets.map((bet) => (
           <div
             key={bet.id}
             className={`bg-white border rounded-lg p-4 ${
@@ -86,9 +109,9 @@ export default function Ledger({ bets, onBetDeleted }: LedgerProps) {
               </div>
             </div>
           </div>
-        ))
-      )}
-    </div>
+          ))
+        )}
+      </div>
+    </>
   );
 }
-
