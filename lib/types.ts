@@ -31,7 +31,7 @@ export interface Bet {
 }
 
 export interface ActivityItem {
-  type: 'bet' | 'resolution';
+  type: 'bet' | 'resolution' | 'event_created';
   timestamp: number;
   event_id: string;
   event_title: string;

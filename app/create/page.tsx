@@ -87,6 +87,8 @@ export default function CreateEvent() {
           side_a: sides[0].trim(),
           side_b: sides[1].trim(),
           end_time: endDateTime,
+          creator_user_id: userId,
+          creator_username: username,
         }),
       });
 

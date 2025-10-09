@@ -73,11 +73,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { title, description, side_a, side_b, end_time } = body;
+  const { title, description, side_a, side_b, end_time, creator_user_id, creator_username } = body;
 
   if (!title || !side_a || !side_b || !end_time) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
+
+  const timestamp = Date.now();
 
   const newEvent: Event = {
     id: generateId(),
@@ -90,5 +92,17 @@ export async function POST(request: NextRequest) {
   };
 
   await db.events.create(newEvent);
+
+  // Add to activity feed if creator info is provided
+  if (creator_username) {
+    await db.activities.add({
+      type: 'event_created',
+      timestamp,
+      event_id: newEvent.id,
+      event_title: newEvent.title,
+      username: creator_username,
+    });
+  }
+
   return NextResponse.json(newEvent);
 }

@@ -60,7 +60,7 @@ export default function Activity() {
           <h1 className="text-3xl font-extralight text-gray-900 mb-2">
             Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
           </h1>
-          <p className="text-gray-600 font-light">Recent bets and resolutions</p>
+          <p className="text-gray-600 font-light">Recent events, bets, and resolutions</p>
         </div>
         <button
           onClick={fetchActivities}
@@ -99,6 +99,19 @@ export default function Activity() {
                         <span className="font-medium">{activity.side}</span>
                         {' '}
                         <span className="font-semibold text-orange-600">(+${activity.amount})</span>
+                      </p>
+                    </div>
+                    <span className="text-xs text-gray-400 ml-2 whitespace-nowrap font-light">
+                      {formatTimestamp(activity.timestamp)}
+                    </span>
+                  </div>
+                ) : activity.type === 'event_created' ? (
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-gray-900 font-light">
+                        <span className="font-medium">@{activity.username}</span>
+                        {' created '}
+                        <span className="text-gray-700">"{activity.event_title}"</span>
                       </p>
                     </div>
                     <span className="text-xs text-gray-400 ml-2 whitespace-nowrap font-light">
