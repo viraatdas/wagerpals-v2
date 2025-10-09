@@ -38,7 +38,7 @@ export function calculateNetResults(bets: Bet[], winningSide: string): NetResult
   return Object.entries(userTotals).map(([user_id, data]) => ({
     user_id,
     username: data.username,
-    net: Math.round(data.won - data.bet),
+    net: Math.round((data.won - data.bet) * 100) / 100, // Round to 2 decimal places then to whole dollars
   }));
 }
 

@@ -12,6 +12,11 @@ export default function Activity() {
   useEffect(() => {
     fetchActivities();
     
+    // Auto-refresh every 3 seconds
+    const interval = setInterval(() => {
+      fetchActivities();
+    }, 3000);
+    
     // Refetch when page becomes visible (user switches tabs/windows)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -22,41 +27,32 @@ export default function Activity() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
     return () => {
+      clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
   const fetchActivities = async () => {
-    setLoading(true);
     try {
       const response = await fetch('/api/activity', { 
         cache: 'no-store' // Ensure we get fresh data
       });
       const data = await response.json();
       setActivities(data);
+      setLoading(false);
     } catch (error) {
       console.error('Failed to fetch activities:', error);
-    } finally {
       setLoading(false);
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-extralight text-gray-900 mb-2">
-            Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
-          </h1>
-          <p className="text-gray-600 font-light">Recent bets and resolutions</p>
-        </div>
-        <button
-          onClick={fetchActivities}
-          disabled={loading}
-          className="px-4 py-2 text-sm font-light text-orange-600 hover:bg-orange-50 rounded-lg transition-colors disabled:opacity-50"
-        >
-          {loading ? 'Refreshing...' : '🔄 Refresh'}
-        </button>
+      <div className="mb-6">
+        <h1 className="text-3xl font-extralight text-gray-900 mb-2">
+          Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
+        </h1>
+        <p className="text-gray-600 font-light">Recent bets and resolutions · Auto-refreshes every 3s</p>
       </div>
 
       {loading && activities.length === 0 ? (

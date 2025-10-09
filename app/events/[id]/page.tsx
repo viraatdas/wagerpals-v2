@@ -75,6 +75,9 @@ export default function EventPage() {
   const handleResolve = async (winningSide: string) => {
     if (!event || !userId) return;
 
+    const confirmed = confirm(`Are you sure you want to resolve this event as "${winningSide}"? This will calculate and update all user balances.`);
+    if (!confirmed) return;
+
     setResolving(true);
 
     try {
@@ -93,6 +96,33 @@ export default function EventPage() {
       }
     } catch (error) {
       console.error('Failed to resolve event:', error);
+    } finally {
+      setResolving(false);
+    }
+  };
+
+  const handleUnresolve = async () => {
+    if (!event || !userId) return;
+
+    const confirmed = confirm(`Are you sure you want to unresolve this event? This will reverse all balance changes.`);
+    if (!confirmed) return;
+
+    setResolving(true);
+
+    try {
+      const response = await fetch('/api/events/unresolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_id: event.id,
+        }),
+      });
+
+      if (response.ok) {
+        fetchEvent();
+      }
+    } catch (error) {
+      console.error('Failed to unresolve event:', error);
     } finally {
       setResolving(false);
     }
@@ -175,7 +205,18 @@ export default function EventPage() {
         </div>
 
         {event.status === 'resolved' && netResults.length > 0 && (
-          <ResolutionBanner event={event} netResults={netResults} />
+          <>
+            <ResolutionBanner event={event} netResults={netResults} />
+            <div className="mb-6">
+              <button
+                onClick={handleUnresolve}
+                disabled={resolving}
+                className="px-4 py-2 bg-yellow-600 text-white text-sm font-light rounded-lg hover:bg-yellow-700 disabled:bg-gray-300 transition-colors"
+              >
+                {resolving ? 'Unresolving...' : 'Unresolve Event'}
+              </button>
+            </div>
+          </>
         )}
 
         {canResolve && (
