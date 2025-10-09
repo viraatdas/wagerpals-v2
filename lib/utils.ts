@@ -106,3 +106,37 @@ export function formatAmount(amount: number): string {
   return amount >= 0 ? `+${amount}` : `${amount}`;
 }
 
+// Username utilities
+export function normalizeUsername(username: string): string {
+  return username.toLowerCase().trim();
+}
+
+export function validateUsername(username: string): { valid: boolean; error?: string } {
+  const trimmed = username.trim();
+  
+  if (trimmed.length === 0) {
+    return { valid: false, error: 'Username is required' };
+  }
+  
+  if (trimmed.length < 2) {
+    return { valid: false, error: 'Username must be at least 2 characters' };
+  }
+  
+  if (trimmed.length > 20) {
+    return { valid: false, error: 'Username must be 20 characters or less' };
+  }
+  
+  // Only allow alphanumeric characters and underscores
+  const validPattern = /^[a-zA-Z0-9_]+$/;
+  if (!validPattern.test(trimmed)) {
+    return { valid: false, error: 'Username can only contain letters, numbers, and underscores' };
+  }
+  
+  return { valid: true };
+}
+
+export function sanitizeUsername(username: string): string {
+  // Remove all characters except alphanumeric and underscore
+  return username.replace(/[^a-zA-Z0-9_]/g, '').trim();
+}
+

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { generateId } from '@/lib/utils';
+import { generateId, validateUsername, normalizeUsername } from '@/lib/utils';
 import { User } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -38,14 +38,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Username is required' }, { status: 400 });
   }
 
-  const existing = await db.users.getByUsername(username);
+  // Validate username format
+  const validation = validateUsername(username);
+  if (!validation.valid) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
+  }
+
+  // Normalize username for storage (lowercase)
+  const normalizedUsername = normalizeUsername(username);
+
+  // Check if user already exists (case-insensitive)
+  const existing = await db.users.getByUsername(normalizedUsername);
   if (existing) {
     return NextResponse.json(existing);
   }
 
   const newUser: User = {
     id: generateId(),
-    username: username.trim(),
+    username: normalizedUsername,
     net_total: 0,
     total_bet: 0,
     streak: 0,

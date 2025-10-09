@@ -29,25 +29,26 @@ export default function CreateEvent() {
   }, []);
 
   const handleUsernameSubmit = async (newUsername: string) => {
-    try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: newUsername }),
-      });
+    const response = await fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: newUsername }),
+    });
 
-      const user = await response.json();
-      setCookie('userId', user.id, 365);
-      setCookie('username', user.username, 365);
-      setUserId(user.id);
-      setUsername(user.username);
-      setShowUsernameModal(false);
-      
-      // Notify Header component to update
-      window.dispatchEvent(new Event('userLoggedIn'));
-    } catch (error) {
-      console.error('Failed to create user:', error);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to create user');
     }
+
+    setCookie('userId', data.id, 365);
+    setCookie('username', data.username, 365);
+    setUserId(data.id);
+    setUsername(data.username);
+    setShowUsernameModal(false);
+    
+    // Notify Header component to update
+    window.dispatchEvent(new Event('userLoggedIn'));
   };
 
   const handleSideChange = (index: number, value: string) => {

@@ -1,18 +1,45 @@
 'use client';
 
 import { useState } from 'react';
+import { validateUsername } from '@/lib/utils';
 
 interface UsernameModalProps {
-  onSubmit: (username: string) => void;
+  onSubmit: (username: string) => Promise<void>;
 }
 
 export default function UsernameModal({ onSubmit }: UsernameModalProps) {
   const [username, setUsername] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setUsername(value);
+    
+    // Real-time validation
+    if (value.trim().length > 0) {
+      const validation = validateUsername(value);
+      setError(validation.valid ? null : validation.error || null);
+    } else {
+      setError(null);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const validation = validateUsername(username);
+    
+    if (!validation.valid) {
+      setError(validation.error || 'Invalid username');
+      return;
+    }
+    
     if (username.trim()) {
-      onSubmit(username.trim());
+      try {
+        setError(null);
+        await onSubmit(username.trim());
+      } catch (error: any) {
+        setError(error.message || 'Failed to create username');
+      }
     }
   };
 
@@ -34,17 +61,25 @@ export default function UsernameModal({ onSubmit }: UsernameModalProps) {
             <input
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 text-lg font-light border-b-2 border-gray-300 focus:border-orange-500 outline-none transition-colors bg-transparent"
+              onChange={handleChange}
+              className={`w-full px-4 py-3 text-lg font-light border-b-2 ${
+                error ? 'border-red-500' : 'border-gray-300 focus:border-orange-500'
+              } outline-none transition-colors bg-transparent`}
               placeholder="your username"
               autoFocus
               required
             />
+            {error && (
+              <p className="text-red-500 text-sm mt-2 font-light">{error}</p>
+            )}
+            <p className="text-xs text-gray-400 mt-2 font-light">
+              Letters, numbers, and underscores only
+            </p>
           </div>
 
           <button
             type="submit"
-            disabled={!username.trim()}
+            disabled={!username.trim() || !!error}
             className="w-full bg-orange-600 text-white py-3 rounded-xl font-light text-lg hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all hover:shadow-lg"
           >
             Continue

@@ -20,23 +20,24 @@ export default function Home() {
   }, []);
 
   const handleUsernameSubmit = async (username: string) => {
-    try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username }),
-      });
+    const response = await fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username }),
+    });
 
-      const user = await response.json();
-      setCookie('userId', user.id, 365);
-      setCookie('username', user.username, 365);
-      setShowUsernameModal(false);
-      
-      // Notify Header component to update
-      window.dispatchEvent(new Event('userLoggedIn'));
-    } catch (error) {
-      console.error('Failed to create user:', error);
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to create user');
     }
+
+    setCookie('userId', data.id, 365);
+    setCookie('username', data.username, 365);
+    setShowUsernameModal(false);
+    
+    // Notify Header component to update
+    window.dispatchEvent(new Event('userLoggedIn'));
   };
 
   const fetchEvents = async () => {
