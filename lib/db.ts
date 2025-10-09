@@ -258,11 +258,10 @@ export const db = {
   activities: {
     getAll: async (): Promise<ActivityItem[]> => {
       const result = await sql`
-        SELECT a.* 
-        FROM activities a
-        LEFT JOIN events e ON a.event_id = e.id
-        ORDER BY COALESCE(e.end_time, a.timestamp) DESC, a.timestamp DESC
-        LIMIT 10
+        SELECT * 
+        FROM activities
+        ORDER BY timestamp DESC
+        LIMIT 50
       `;
       
       return result.rows.map(row => ({
