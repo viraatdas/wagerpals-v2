@@ -35,15 +35,29 @@ export async function POST(request: NextRequest) {
   await db.bets.create(newBet);
 
   // Add to activity feed
-  await db.activities.add({
+  console.log('[Bets API] Adding bet to activity feed:', {
     type: 'bet',
-    timestamp,
     event_id,
     event_title: event.title,
     username,
     side,
     amount: parseInt(amount),
   });
+  
+  try {
+    await db.activities.add({
+      type: 'bet',
+      timestamp,
+      event_id,
+      event_title: event.title,
+      username,
+      side,
+      amount: parseInt(amount),
+    });
+    console.log('[Bets API] Successfully added to activity feed');
+  } catch (error) {
+    console.error('[Bets API] Failed to add to activity feed:', error);
+  }
 
   return NextResponse.json(newBet);
 }
