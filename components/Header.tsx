@@ -10,7 +10,19 @@ export default function Header() {
   const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
+    // Initial load
     setUsername(getCookie('username'));
+
+    // Listen for login events
+    const handleUserLogin = () => {
+      setUsername(getCookie('username'));
+    };
+
+    window.addEventListener('userLoggedIn', handleUserLogin);
+
+    return () => {
+      window.removeEventListener('userLoggedIn', handleUserLogin);
+    };
   }, []);
 
   const handleLogout = () => {

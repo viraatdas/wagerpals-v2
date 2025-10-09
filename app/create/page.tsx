@@ -42,6 +42,9 @@ export default function CreateEvent() {
       setUserId(user.id);
       setUsername(user.username);
       setShowUsernameModal(false);
+      
+      // Notify Header component to update
+      window.dispatchEvent(new Event('userLoggedIn'));
     } catch (error) {
       console.error('Failed to create user:', error);
     }

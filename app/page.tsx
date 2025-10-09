@@ -31,6 +31,9 @@ export default function Home() {
       setCookie('userId', user.id, 365);
       setCookie('username', user.username, 365);
       setShowUsernameModal(false);
+      
+      // Notify Header component to update
+      window.dispatchEvent(new Event('userLoggedIn'));
     } catch (error) {
       console.error('Failed to create user:', error);
     }
