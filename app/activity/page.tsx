@@ -55,11 +55,19 @@ export default function Activity() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-extralight text-gray-900 mb-2">
-          Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
-        </h1>
-        <p className="text-gray-600 font-light">Recent bets and resolutions</p>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-extralight text-gray-900 mb-2">
+            Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
+          </h1>
+          <p className="text-gray-600 font-light">Recent bets and resolutions</p>
+        </div>
+        <button
+          onClick={fetchActivities}
+          className="px-4 py-2 bg-orange-600 text-white text-sm font-light rounded-lg hover:bg-orange-700 transition-colors"
+        >
+          Refresh
+        </button>
       </div>
 
       {error ? (
