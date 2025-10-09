@@ -34,16 +34,6 @@ export async function POST(request: NextRequest) {
 
   await db.bets.create(newBet);
 
-  // Update user's total_bet (only if bet is NOT late)
-  if (!isLate) {
-    const user = await db.users.get(user_id);
-    if (user) {
-      await db.users.update(user_id, {
-        total_bet: user.total_bet + parseInt(amount),
-      });
-    }
-  }
-
   // Add to activity feed
   const activityData = {
     type: 'bet' as const,
