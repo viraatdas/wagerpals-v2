@@ -11,6 +11,7 @@ export const db = {
         id: row.id,
         username: row.username,
         net_total: parseFloat(row.net_total),
+        total_bet: parseFloat(row.total_bet || 0),
         streak: row.streak,
       };
     },
@@ -23,6 +24,7 @@ export const db = {
         id: row.id,
         username: row.username,
         net_total: parseFloat(row.net_total),
+        total_bet: parseFloat(row.total_bet || 0),
         streak: row.streak,
       };
     },
@@ -33,14 +35,15 @@ export const db = {
         id: row.id,
         username: row.username,
         net_total: parseFloat(row.net_total),
+        total_bet: parseFloat(row.total_bet || 0),
         streak: row.streak,
       }));
     },
     
     create: async (user: User): Promise<User> => {
       await sql`
-        INSERT INTO users (id, username, net_total, streak)
-        VALUES (${user.id}, ${user.username}, ${user.net_total}, ${user.streak})
+        INSERT INTO users (id, username, net_total, total_bet, streak)
+        VALUES (${user.id}, ${user.username}, ${user.net_total}, ${user.total_bet}, ${user.streak})
       `;
       return user;
     },
@@ -51,6 +54,9 @@ export const db = {
       
       if (data.net_total !== undefined) {
         updates.push(`net_total = ${data.net_total}`);
+      }
+      if (data.total_bet !== undefined) {
+        updates.push(`total_bet = ${data.total_bet}`);
       }
       if (data.streak !== undefined) {
         updates.push(`streak = ${data.streak}`);
@@ -260,73 +266,39 @@ export const db = {
   
   activities: {
     getAll: async (): Promise<ActivityItem[]> => {
-      console.log('[DB activities.getAll] Starting query...');
       const result = await sql`
         SELECT * FROM activities 
         ORDER BY timestamp DESC 
         LIMIT 100
       `;
-      console.log('[DB activities.getAll] Query completed. Rows returned:', result.rows.length);
-      console.log('[DB activities.getAll] Raw result.rows:', JSON.stringify(result.rows));
       
-      const mapped = result.rows.map(row => {
-        console.log('[DB activities.getAll] Mapping row:', JSON.stringify(row));
-        const activity = {
-          type: row.type,
-          event_id: row.event_id,
-          event_title: row.event_title,
-          username: row.username,
-          side: row.side,
-          amount: row.amount ? parseFloat(row.amount) : undefined,
-          winning_side: row.winning_side,
-          timestamp: parseInt(row.timestamp),
-        };
-        console.log('[DB activities.getAll] Mapped to:', JSON.stringify(activity));
-        return activity;
-      });
-      
-      console.log('[DB activities.getAll] Final mapped array length:', mapped.length);
-      return mapped;
+      return result.rows.map(row => ({
+        type: row.type,
+        event_id: row.event_id,
+        event_title: row.event_title,
+        username: row.username,
+        side: row.side,
+        amount: row.amount ? parseFloat(row.amount) : undefined,
+        winning_side: row.winning_side,
+        timestamp: parseInt(row.timestamp),
+      }));
     },
     
     add: async (activity: ActivityItem): Promise<ActivityItem> => {
-      console.log('[DB] Inserting activity:', JSON.stringify(activity));
-      
-      try {
-        const result = await sql`
-          INSERT INTO activities (type, event_id, event_title, username, side, amount, winning_side, timestamp)
-          VALUES (
-            ${activity.type},
-            ${activity.event_id},
-            ${activity.event_title},
-            ${activity.username || null},
-            ${activity.side || null},
-            ${activity.amount || null},
-            ${activity.winning_side || null},
-            ${activity.timestamp}
-          )
-          RETURNING *
-        `;
-        
-        console.log('[DB] Activity inserted successfully, ID:', result.rows[0]?.id);
-        
-        // Verify it was actually inserted
-        const verifyResult = await sql`
-          SELECT COUNT(*) as count FROM activities WHERE timestamp = ${activity.timestamp}
-        `;
-        console.log('[DB] Verification count for timestamp', activity.timestamp, ':', verifyResult.rows[0]?.count);
-        
-        return activity;
-      } catch (error: any) {
-        console.error('[DB] Error inserting activity:', error);
-        console.error('[DB] Error details:', {
-          message: error.message,
-          code: error.code,
-          detail: error.detail,
-          stack: error.stack,
-        });
-        throw error;
-      }
+      await sql`
+        INSERT INTO activities (type, event_id, event_title, username, side, amount, winning_side, timestamp)
+        VALUES (
+          ${activity.type},
+          ${activity.event_id},
+          ${activity.event_title},
+          ${activity.username || null},
+          ${activity.side || null},
+          ${activity.amount || null},
+          ${activity.winning_side || null},
+          ${activity.timestamp}
+        )
+      `;
+      return activity;
     },
   },
 };

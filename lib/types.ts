@@ -2,6 +2,7 @@ export interface User {
   id: string;
   username: string;
   net_total: number;
+  total_bet: number;
   streak: number;
 }
 

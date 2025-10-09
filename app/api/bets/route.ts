@@ -34,6 +34,14 @@ export async function POST(request: NextRequest) {
 
   await db.bets.create(newBet);
 
+  // Update user's total_bet (even if bet is late)
+  const user = await db.users.get(user_id);
+  if (user) {
+    await db.users.update(user_id, {
+      total_bet: user.total_bet + parseInt(amount),
+    });
+  }
+
   // Add to activity feed
   const activityData = {
     type: 'bet' as const,
@@ -45,22 +53,10 @@ export async function POST(request: NextRequest) {
     amount: parseInt(amount),
   };
   
-  console.log('[Bets API] Adding bet to activity feed:', activityData);
-  
   try {
     await db.activities.add(activityData);
-    console.log('[Bets API] Successfully added to activity feed');
-    
-    // Verify the activity was added
-    const allActivities = await db.activities.getAll();
-    console.log('[Bets API] Total activities in DB after insert:', allActivities.length);
-    if (allActivities.length > 0) {
-      console.log('[Bets API] Most recent activity:', allActivities[0]);
-    }
   } catch (error: any) {
     console.error('[Bets API] Failed to add to activity feed:', error);
-    console.error('[Bets API] Error message:', error.message);
-    console.error('[Bets API] Error stack:', error.stack);
   }
 
   return NextResponse.json(newBet);

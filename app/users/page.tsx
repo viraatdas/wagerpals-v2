@@ -70,7 +70,13 @@ export default function UsersPage() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div className="grid grid-cols-3 gap-4 mt-4">
+                    <div>
+                      <div className="text-xs text-gray-500 font-light mb-1">Total Bet</div>
+                      <div className="text-xl font-medium text-blue-600">
+                        ${user.total_bet}
+                      </div>
+                    </div>
                     <div>
                       <div className="text-xs text-gray-500 font-light mb-1">Net Total</div>
                       <div

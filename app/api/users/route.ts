@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
     id: generateId(),
     username: username.trim(),
     net_total: 0,
+    total_bet: 0,
     streak: 0,
   };
 
