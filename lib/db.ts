@@ -17,7 +17,7 @@ export const db = {
     },
     
     getByUsername: async (username: string): Promise<User | null> => {
-      const result = await sql`SELECT * FROM users WHERE username = ${username}`;
+      const result = await sql`SELECT * FROM users WHERE LOWER(username) = LOWER(${username})`;
       if (result.rows.length === 0) return null;
       const row = result.rows[0];
       return {
@@ -305,7 +305,7 @@ export const db = {
         DELETE FROM activities 
         WHERE type = 'bet' 
           AND event_id = ${eventId} 
-          AND username = ${username}
+          AND LOWER(username) = LOWER(${username})
           AND side = ${side}
           AND amount = ${amount}
           AND timestamp = ${timestamp}

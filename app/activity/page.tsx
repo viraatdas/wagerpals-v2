@@ -15,10 +15,14 @@ export default function ActivityPage() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('/api/activity', { 
+      // Add timestamp to force cache bust
+      const timestamp = new Date().getTime();
+      const response = await fetch(`/api/activity?t=${timestamp}`, { 
         cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
         }
       });
       

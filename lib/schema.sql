@@ -58,4 +58,5 @@ CREATE INDEX IF NOT EXISTS idx_bets_event_id ON bets(event_id);
 CREATE INDEX IF NOT EXISTS idx_bets_user_id ON bets(user_id);
 CREATE INDEX IF NOT EXISTS idx_activities_timestamp ON activities(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_events_status ON events(status);
+CREATE INDEX IF NOT EXISTS idx_users_username_lower ON users(LOWER(username));
 
