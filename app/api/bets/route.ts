@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { generateId } from '@/lib/utils';
 import { Bet } from '@/lib/types';
+import { sendPushToAllSubscribers } from '@/lib/push';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,6 +61,20 @@ export async function POST(request: NextRequest) {
     await db.activities.add(activityData);
   } catch (error: any) {
     console.error('[Bets API] Failed to add to activity feed:', error);
+  }
+
+  // Send push notification
+  try {
+    const lateText = isLate ? ' (late bet)' : '';
+    await sendPushToAllSubscribers({
+      title: `💰 New Bet Placed${lateText}`,
+      body: `${username} bet $${amount} on "${side}" - ${event.title}`,
+      url: `/events/${event_id}`,
+      eventId: event_id,
+      tag: `bet-${newBet.id}`,
+    });
+  } catch (error: any) {
+    console.error('[Bets API] Failed to send push notifications:', error);
   }
 
   return NextResponse.json(newBet);

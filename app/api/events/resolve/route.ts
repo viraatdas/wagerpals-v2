@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { calculateNetResults } from '@/lib/utils';
+import { sendPushToAllSubscribers } from '@/lib/push';
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -59,6 +60,19 @@ export async function POST(request: NextRequest) {
     await db.activities.add(activityData);
   } catch (error: any) {
     console.error('[Resolve API] Failed to add to activity feed:', error);
+  }
+
+  // Send push notification
+  try {
+    await sendPushToAllSubscribers({
+      title: '🏆 Event Resolved!',
+      body: `"${event.title}" - Winner: ${winning_side}`,
+      url: `/events/${event_id}`,
+      eventId: event_id,
+      tag: `resolution-${event_id}`,
+    });
+  } catch (error: any) {
+    console.error('[Resolve API] Failed to send push notifications:', error);
   }
 
   const updatedEvent = await db.events.get(event_id);
