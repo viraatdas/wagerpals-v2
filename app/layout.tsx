@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "WagerPals - Social Betting Ledger",
+  title: "WagerPals - Polymarket for friends",
   description: "A public, lightweight place where friends create events and share a ledger of bets",
 };
 
