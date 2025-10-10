@@ -1,34 +1,23 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useUser } from '@stackframe/stack';
 import { useEffect, useState } from 'react';
-import { getCookie, deleteCookie } from '@/lib/cookies';
 
 export default function Header() {
   const pathname = usePathname();
-  const [username, setUsername] = useState<string | null>(null);
+  const router = useRouter();
+  const user = useUser({ or: 'redirect', to: '/auth/signin' });
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Initial load
-    setUsername(getCookie('username'));
-
-    // Listen for login events
-    const handleUserLogin = () => {
-      setUsername(getCookie('username'));
-    };
-
-    window.addEventListener('userLoggedIn', handleUserLogin);
-
-    return () => {
-      window.removeEventListener('userLoggedIn', handleUserLogin);
-    };
+    setMounted(true);
   }, []);
 
-  const handleLogout = () => {
-    deleteCookie('userId');
-    deleteCookie('username');
-    window.location.reload();
+  const handleLogout = async () => {
+    await user?.signOut();
+    router.push('/auth/signin');
   };
 
   const isActive = (path: string) => {
@@ -91,25 +80,27 @@ export default function Header() {
               <span className="hidden sm:inline">Create Event</span>
               <span className="sm:hidden">Create</span>
             </Link>
-            {username && (
+            {user && (
               <div className="hidden md:flex items-center gap-3 ml-2 pl-6 border-l border-gray-300">
-                <span className="text-sm font-light text-gray-700">@{username}</span>
+                <span className="text-sm font-light text-gray-700">
+                  {user.displayName || user.primaryEmail || 'User'}
+                </span>
                 <button
                   onClick={handleLogout}
                   className="text-xs font-light text-gray-500 hover:text-orange-600 transition-colors"
                 >
-                  Switch User
+                  Sign Out
                 </button>
               </div>
             )}
-            {username && (
+            {user && (
               <div className="md:hidden flex items-center ml-1">
                 <button
                   onClick={handleLogout}
                   className="text-xs font-light text-gray-600 hover:text-orange-600 transition-colors"
-                  title={`@${username} - Switch User`}
+                  title={`${user.displayName || user.primaryEmail} - Sign Out`}
                 >
-                  @{username}
+                  {user.displayName?.split(' ')[0] || 'User'}
                 </button>
               </div>
             )}

@@ -49,6 +49,9 @@ export const db = {
     },
     
     update: async (id: string, data: Partial<User>): Promise<User | null> => {
+      if (data.username !== undefined) {
+        await sql`UPDATE users SET username = ${data.username} WHERE id = ${id}`;
+      }
       if (data.net_total !== undefined) {
         await sql`UPDATE users SET net_total = ${data.net_total} WHERE id = ${id}`;
       }

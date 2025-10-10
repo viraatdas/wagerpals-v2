@@ -2,25 +2,25 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@stackframe/stack';
 import EventCard from '@/components/EventCard';
 import { EventWithStats } from '@/lib/types';
-import { getCookie } from '@/lib/cookies';
+
+export const dynamic = 'force-dynamic';
 
 export default function AllEventsPage() {
   const router = useRouter();
+  const user = useUser();
   const [groupedEvents, setGroupedEvents] = useState<{ group: any; events: EventWithStats[] }[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState('');
 
   useEffect(() => {
-    const storedUserId = getCookie('userId');
-    if (!storedUserId) {
-      router.push('/');
+    if (!user) {
+      router.push('/auth/signin');
       return;
     }
-    setUserId(storedUserId);
-    fetchAllEvents(storedUserId);
-  }, []);
+    fetchAllEvents(user.id);
+  }, [user, router]);
 
   const fetchAllEvents = async (uid: string) => {
     try {
@@ -53,6 +53,10 @@ export default function AllEventsPage() {
     const ended = events.filter((e) => e.status === 'resolved' || (e.status === 'active' && e.end_time <= now));
     return { ongoing, ended };
   };
+
+  if (!user) {
+    return null; // Will redirect to signin
+  }
 
   if (loading) {
     return (

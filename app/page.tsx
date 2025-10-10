@@ -2,60 +2,51 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import UsernameModal from '@/components/UsernameModal';
+import { useUser } from '@stackframe/stack';
 import PushNotificationPrompt from '@/components/PushNotificationPrompt';
 import InstallPrompt from '@/components/InstallPrompt';
 import { Group } from '@/lib/types';
-import { getCookie, setCookie } from '@/lib/cookies';
+
+export const dynamic = 'force-dynamic';
 
 export default function Home() {
   const router = useRouter();
+  const user = useUser();
   const [groups, setGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [groupCode, setGroupCode] = useState('');
-  const [userId, setUserId] = useState('');
-  const [username, setUsername] = useState('');
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
 
   useEffect(() => {
-    const storedUserId = getCookie('userId');
-    const storedUsername = getCookie('username');
-    
-    if (!storedUserId || !storedUsername) {
-      setShowUsernameModal(true);
-    } else {
-      setUserId(storedUserId);
-      setUsername(storedUsername);
-      fetchGroups(storedUserId);
+    if (!user) {
+      router.push('/auth/signin');
+      return;
     }
-  }, []);
-
-  const handleUsernameSubmit = async (newUsername: string) => {
-    const response = await fetch('/api/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: newUsername }),
-    });
-
-    const data = await response.json();
     
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to create user');
+    // Create or update user in our database
+    createOrUpdateUser();
+    fetchGroups(user.id);
+  }, [user, router]);
+
+  const createOrUpdateUser = async () => {
+    if (!user) return;
+    
+    try {
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          id: user.id,
+          username: user.displayName || user.primaryEmail || 'User',
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to create/update user:', error);
     }
-
-    setCookie('userId', data.id, 365);
-    setCookie('username', data.username, 365);
-    setUserId(data.id);
-    setUsername(data.username);
-    setShowUsernameModal(false);
-    fetchGroups(data.id);
-    
-    window.dispatchEvent(new Event('userLoggedIn'));
   };
 
   const fetchGroups = async (uid: string) => {
@@ -74,7 +65,7 @@ export default function Home() {
 
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!groupName.trim() || !userId) return;
+    if (!groupName.trim() || !user) return;
 
     setCreating(true);
     try {
@@ -83,7 +74,7 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: groupName.trim(),
-          created_by: userId,
+          created_by: user.id,
         }),
       });
 
@@ -102,7 +93,7 @@ export default function Home() {
 
   const handleJoinGroup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!groupCode.trim() || !userId) return;
+    if (!groupCode.trim() || !user) return;
 
     setJoining(true);
     try {
@@ -111,7 +102,7 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           group_id: groupCode.trim(),
-          user_id: userId,
+          user_id: user.id,
         }),
       });
 
@@ -121,7 +112,7 @@ export default function Home() {
         alert('Join request submitted! Waiting for admin approval.');
         setShowJoinModal(false);
         setGroupCode('');
-        fetchGroups(userId);
+        fetchGroups(user.id);
       } else {
         alert(data.error || 'Failed to join group');
       }
@@ -141,9 +132,12 @@ export default function Home() {
     );
   }
 
+  if (!user) {
+    return null; // Will redirect to signin
+  }
+
   return (
     <>
-      {showUsernameModal && <UsernameModal onSubmit={handleUsernameSubmit} />}
       <PushNotificationPrompt />
       <InstallPrompt />
 
