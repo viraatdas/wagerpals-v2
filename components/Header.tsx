@@ -3,17 +3,11 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useUser } from '@stackframe/stack';
-import { useEffect, useState } from 'react';
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const user = useUser();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleLogout = async () => {
     await user?.signOut();

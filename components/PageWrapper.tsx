@@ -1,13 +1,11 @@
 'use client';
 
-import { StackProvider } from "@stackframe/stack";
-import { stackServerApp } from "@/lib/stack";
-import { ReactNode, Suspense } from "react";
-import Header from "./Header";
+import { Suspense } from 'react';
+import Header from './Header';
 
-export function ClientProviders({ children }: { children: ReactNode }) {
+export function PageWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <StackProvider app={stackServerApp}>
+    <>
       <Suspense fallback={
         <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
           <div className="max-w-6xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
@@ -22,7 +20,7 @@ export function ClientProviders({ children }: { children: ReactNode }) {
         <Header />
       </Suspense>
       {children}
-    </StackProvider>
+    </>
   );
 }
 

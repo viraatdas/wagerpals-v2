@@ -30,7 +30,6 @@ export default function RootLayout({
       <body className={inter.className}>
         <ClientProviders>
           <ServiceWorkerRegistration />
-          <Header />
           <main className="min-h-screen bg-gray-50">
             {children}
           </main>
