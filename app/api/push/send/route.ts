@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const result = await sendPushToAllSubscribers(payload);
 
     return NextResponse.json({
-      success: true,
+      sent: true,
       ...result,
     });
   } catch (error) {
