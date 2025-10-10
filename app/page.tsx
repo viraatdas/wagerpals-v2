@@ -89,7 +89,7 @@ export default function Home() {
             Welcome to <span className="font-semibold text-orange-600">WagerPals</span>
           </h1>
           <p className="text-lg text-gray-600 font-light">
-            A social ledger for bets with your friends
+            Polymarket for your friends.
           </p>
         </div>
 

@@ -30,7 +30,7 @@ export const db = {
     },
     
     getAll: async (): Promise<User[]> => {
-      const result = await sql`SELECT * FROM users ORDER BY net_total DESC`;
+      const result = await sql`SELECT * FROM users ORDER BY net_total DESC, total_bet DESC`;
       return result.rows.map(row => ({
         id: row.id,
         username: row.username,

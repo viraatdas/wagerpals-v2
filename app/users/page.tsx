@@ -24,7 +24,14 @@ export default function UsersPage() {
     }
   };
 
-  const sortedUsers = [...users].sort((a, b) => b.net_total - a.net_total);
+  const sortedUsers = [...users].sort((a, b) => {
+    // Primary sort: net_total (descending)
+    if (b.net_total !== a.net_total) {
+      return b.net_total - a.net_total;
+    }
+    // Secondary sort: total_bet (descending)
+    return b.total_bet - a.total_bet;
+  });
 
   if (loading) {
     return (
@@ -58,11 +65,6 @@ export default function UsersPage() {
                     <span className="text-2xl font-light text-gray-900">
                       @{user.username}
                     </span>
-                    {index === 0 && (
-                      <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-light rounded">
-                        Top Earner
-                      </span>
-                    )}
                     {user.streak > 0 && (
                       <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-light rounded">
                         🔥 {user.streak} streak
