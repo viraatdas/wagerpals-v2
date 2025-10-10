@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { generateId, validateUsername, normalizeUsername } from '@/lib/utils';
 import { User } from '@/lib/types';
+import { sendPushToAllSubscribers } from '@/lib/push';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,6 +63,19 @@ export async function POST(request: NextRequest) {
   };
 
   await db.users.create(newUser);
+
+  // Send push notification for new user
+  try {
+    await sendPushToAllSubscribers({
+      title: '👋 New User Joined!',
+      body: `${normalizedUsername} just joined WagerPals!`,
+      url: '/users',
+      tag: `user-${newUser.id}`,
+    });
+  } catch (error: any) {
+    console.error('[Users API] Failed to send push notifications:', error);
+  }
+
   return NextResponse.json(newUser);
 }
 
