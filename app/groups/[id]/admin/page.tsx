@@ -2,25 +2,25 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getCookie } from '@/lib/cookies';
+import { useUser } from '@stackframe/stack';
+
+export const dynamic = 'force-dynamic';
 
 export default function GroupAdminPage() {
   const params = useParams();
   const router = useRouter();
+  const user = useUser();
   const [group, setGroup] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState('');
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    const storedUserId = getCookie('userId');
-    if (!storedUserId) {
-      router.push('/');
+    if (!user) {
+      router.push('/auth/signin');
       return;
     }
-    setUserId(storedUserId);
-    fetchGroup(storedUserId);
-  }, [params.id]);
+    fetchGroup(user.id);
+  }, [params.id, user, router]);
 
   const fetchGroup = async (uid: string) => {
     try {
@@ -44,6 +44,8 @@ export default function GroupAdminPage() {
   };
 
   const handleMemberAction = async (action: string, targetUserId: string) => {
+    if (!user) return;
+    
     setProcessing(true);
     try {
       const response = await fetch('/api/groups/members', {
@@ -53,12 +55,12 @@ export default function GroupAdminPage() {
           action,
           group_id: params.id,
           target_user_id: targetUserId,
-          admin_user_id: userId,
+          admin_user_id: user.id,
         }),
       });
 
       if (response.ok) {
-        fetchGroup(userId);
+        fetchGroup(user.id);
       } else {
         const data = await response.json();
         alert(data.error || 'Failed to perform action');
@@ -70,6 +72,10 @@ export default function GroupAdminPage() {
       setProcessing(false);
     }
   };
+
+  if (!user) {
+    return null; // Will redirect to signin
+  }
 
   if (loading) {
     return (
@@ -159,7 +165,7 @@ export default function GroupAdminPage() {
                   </p>
                 </div>
               </div>
-              {member.user_id !== group.created_by && member.user_id !== userId && (
+              {member.user_id !== group.created_by && member.user_id !== user.id && (
                 <div className="flex gap-2">
                   {member.role === 'member' ? (
                     <button

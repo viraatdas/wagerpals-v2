@@ -1,17 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { useUser } from '@stackframe/stack';
 import Countdown from '@/components/Countdown';
 import BetForm from '@/components/BetForm';
 import Ledger from '@/components/Ledger';
 import CommentForm from '@/components/CommentForm';
 import ResolutionBanner from '@/components/ResolutionBanner';
-import UsernameModal from '@/components/UsernameModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { EventWithStats, NetResult, Comment } from '@/lib/types';
 import { calculateNetResults } from '@/lib/utils';
-import { getCookie, setCookie } from '@/lib/cookies';
+
+export const dynamic = 'force-dynamic';
 
 type ConfirmationModalConfig = {
   isOpen: boolean;
@@ -24,15 +25,14 @@ type ConfirmationModalConfig = {
 
 export default function EventPage() {
   const params = useParams();
+  const router = useRouter();
+  const user = useUser();
   const [event, setEvent] = useState<EventWithStats | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState('');
-  const [username, setUsername] = useState('');
   const [resolving, setResolving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [netResults, setNetResults] = useState<NetResult[]>([]);
-  const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [confirmationModal, setConfirmationModal] = useState<ConfirmationModalConfig>({
     isOpen: false,
     title: '',
@@ -43,41 +43,12 @@ export default function EventPage() {
   });
 
   useEffect(() => {
-    const storedUserId = getCookie('userId');
-    const storedUsername = getCookie('username');
-
-    if (!storedUserId || !storedUsername) {
-      setShowUsernameModal(true);
-    } else {
-      setUserId(storedUserId);
-      setUsername(storedUsername);
+    if (!user) {
+      router.push('/auth/signin');
+      return;
     }
-
     fetchEvent();
-  }, [params.id]);
-
-  const handleUsernameSubmit = async (newUsername: string) => {
-    const response = await fetch('/api/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: newUsername }),
-    });
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to create user');
-    }
-
-    setCookie('userId', data.id, 365);
-    setCookie('username', data.username, 365);
-    setUserId(data.id);
-    setUsername(data.username);
-    setShowUsernameModal(false);
-    
-    // Notify Header component to update
-    window.dispatchEvent(new Event('userLoggedIn'));
-  };
+  }, [params.id, user, router]);
 
   const fetchEvent = async () => {
     if (!params.id) {
@@ -121,7 +92,7 @@ export default function EventPage() {
   };
 
   const handleResolve = async (winningSide: string) => {
-    if (!event || !userId) return;
+    if (!event || !user) return;
 
     setConfirmationModal({
       isOpen: true,
@@ -134,6 +105,8 @@ export default function EventPage() {
   };
 
   const confirmResolve = async (winningSide: string) => {
+    if (!user) return;
+    
     setConfirmationModal(prev => ({ ...prev, isOpen: false }));
     setResolving(true);
 
@@ -144,7 +117,7 @@ export default function EventPage() {
         body: JSON.stringify({
           event_id: event!.id,
           winning_side: winningSide,
-          resolved_by: userId,
+          resolved_by: user.id,
         }),
       });
 
@@ -159,7 +132,7 @@ export default function EventPage() {
   };
 
   const handleUnresolve = async () => {
-    if (!event || !userId) return;
+    if (!event || !user) return;
 
     setConfirmationModal({
       isOpen: true,
@@ -230,6 +203,10 @@ export default function EventPage() {
     }
   };
 
+  if (!user) {
+    return null; // Will redirect to signin
+  }
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -248,11 +225,10 @@ export default function EventPage() {
 
   const isEnded = event.end_time < Date.now();
   const canResolve = event.status === 'active';
+  const username = user.displayName || user.primaryEmail || 'User';
 
   return (
     <>
-      {showUsernameModal && <UsernameModal onSubmit={handleUsernameSubmit} />}
-      
       <ConfirmationModal
         isOpen={confirmationModal.isOpen}
         onClose={() => setConfirmationModal(prev => ({ ...prev, isOpen: false }))}
@@ -343,24 +319,24 @@ export default function EventPage() {
           })}
         </div>
 
-        {event.status === 'active' && userId && username && (
+        {event.status === 'active' && user && (
           <div className="mb-6">
             <BetForm
               sides={[event.side_a, event.side_b]}
               eventId={event.id}
-              userId={userId}
+              userId={user.id}
               username={username}
               onBetPlaced={fetchEvent}
             />
           </div>
         )}
 
-        {userId && username && (
+        {user && (
           <div className="mb-6">
             <h3 className="text-lg font-light text-gray-900 mb-3">Add a Comment</h3>
             <CommentForm
               eventId={event.id}
-              userId={userId}
+              userId={user.id}
               username={username}
               onCommentPosted={fetchEvent}
             />

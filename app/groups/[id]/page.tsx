@@ -2,28 +2,28 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useUser } from '@stackframe/stack';
 import EventCard from '@/components/EventCard';
 import { EventWithStats } from '@/lib/types';
-import { getCookie } from '@/lib/cookies';
+
+export const dynamic = 'force-dynamic';
 
 export default function GroupPage() {
   const params = useParams();
   const router = useRouter();
+  const user = useUser();
   const [group, setGroup] = useState<any>(null);
   const [events, setEvents] = useState<EventWithStats[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const storedUserId = getCookie('userId');
-    if (!storedUserId) {
-      router.push('/');
+    if (!user) {
+      router.push('/auth/signin');
       return;
     }
-    setUserId(storedUserId);
-    fetchGroupAndEvents(storedUserId);
-  }, [params.id]);
+    fetchGroupAndEvents(user.id);
+  }, [params.id, user, router]);
 
   const fetchGroupAndEvents = async (uid: string) => {
     try {
@@ -83,6 +83,10 @@ export default function GroupPage() {
 
     return { trendingEvents, ongoingEvents, endedEvents };
   };
+
+  if (!user) {
+    return null; // Will redirect to signin
+  }
 
   if (loading) {
     return (

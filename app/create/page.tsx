@@ -2,65 +2,34 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import UsernameModal from '@/components/UsernameModal';
-import { getCookie, setCookie } from '@/lib/cookies';
+import { useUser } from '@stackframe/stack';
 
 function CreateEventForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const user = useUser();
   const [title, setTitle] = useState('');
   const [sides, setSides] = useState(['Yes', 'No']);
   const [endDate, setEndDate] = useState('');
   const [endTime, setEndTime] = useState('');
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState('');
-  const [username, setUsername] = useState('');
-  const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [groups, setGroups] = useState<any[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState('');
 
   useEffect(() => {
-    const storedUserId = getCookie('userId');
-    const storedUsername = getCookie('username');
-
-    if (!storedUserId || !storedUsername) {
-      setShowUsernameModal(true);
-    } else {
-      setUserId(storedUserId);
-      setUsername(storedUsername);
-      fetchGroups(storedUserId);
+    if (!user) {
+      router.push('/auth/signin');
+      return;
     }
+
+    fetchGroups(user.id);
 
     // Get groupId from URL if present
     const groupIdFromUrl = searchParams.get('groupId');
     if (groupIdFromUrl) {
       setSelectedGroupId(groupIdFromUrl);
     }
-  }, [searchParams]);
-
-  const handleUsernameSubmit = async (newUsername: string) => {
-    const response = await fetch('/api/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: newUsername }),
-    });
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to create user');
-    }
-
-    setCookie('userId', data.id, 365);
-    setCookie('username', data.username, 365);
-    setUserId(data.id);
-    setUsername(data.username);
-    setShowUsernameModal(false);
-    fetchGroups(data.id);
-    
-    // Notify Header component to update
-    window.dispatchEvent(new Event('userLoggedIn'));
-  };
+  }, [searchParams, user, router]);
 
   const fetchGroups = async (uid: string) => {
     try {
@@ -94,7 +63,7 @@ function CreateEventForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || sides.some((s) => !s.trim()) || !endDate || !endTime || !userId || !selectedGroupId) {
+    if (!title || sides.some((s) => !s.trim()) || !endDate || !endTime || !user || !selectedGroupId) {
       alert('Please fill in all fields and select a group');
       return;
     }
@@ -103,6 +72,7 @@ function CreateEventForm() {
 
     try {
       const endDateTime = new Date(`${endDate}T${endTime}`).getTime();
+      const username = user.displayName || user.primaryEmail || 'User';
 
       const eventData = {
         title: title.trim(),
@@ -110,7 +80,7 @@ function CreateEventForm() {
         side_b: sides[1].trim(),
         end_time: endDateTime,
         group_id: selectedGroupId,
-        creator_user_id: userId,
+        creator_user_id: user.id,
         creator_username: username,
       };
 
@@ -145,15 +115,8 @@ function CreateEventForm() {
     }
   };
 
-  if (!userId) {
-    return (
-      <>
-        {showUsernameModal && <UsernameModal onSubmit={handleUsernameSubmit} />}
-        <div className="max-w-2xl mx-auto px-4 py-8">
-          <p className="text-center text-gray-600 font-light">Loading...</p>
-        </div>
-      </>
-    );
+  if (!user) {
+    return null; // Will redirect to signin
   }
 
   return (
