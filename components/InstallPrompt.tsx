@@ -106,8 +106,8 @@ export default function InstallPrompt() {
                     1
                   </div>
                   <div className="flex-1">
-                    <p className="text-gray-900 font-medium text-sm">Tap the Share button</p>
-                    <p className="text-gray-500 text-xs mt-1">Look for <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-500 text-white rounded text-xs mx-1">↑</span> at the bottom of Safari</p>
+                    <p className="text-gray-900 font-medium text-sm">Tap the "..." menu</p>
+                    <p className="text-gray-500 text-xs mt-1">Look for <span className="font-mono">...</span> at the bottom of Safari</p>
                   </div>
                 </div>
 
@@ -116,14 +116,24 @@ export default function InstallPrompt() {
                     2
                   </div>
                   <div className="flex-1">
-                    <p className="text-gray-900 font-medium text-sm">Scroll down in the menu</p>
-                    <p className="text-gray-500 text-xs mt-1">Find and tap "Add to Home Screen"</p>
+                    <p className="text-gray-900 font-medium text-sm">Tap the Share button</p>
+                    <p className="text-gray-500 text-xs mt-1">Then look for the <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-500 text-white rounded text-xs mx-1">↑</span> share icon</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 bg-white rounded-xl p-3 shadow-sm">
                   <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 text-orange-600 font-bold">
                     3
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-gray-900 font-medium text-sm">Tap "Add to Home Screen"</p>
+                    <p className="text-gray-500 text-xs mt-1">Scroll down in the share menu to find it</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 bg-white rounded-xl p-3 shadow-sm">
+                  <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 text-orange-600 font-bold">
+                    4
                   </div>
                   <div className="flex-1">
                     <p className="text-gray-900 font-medium text-sm">Tap "Add" to confirm</p>

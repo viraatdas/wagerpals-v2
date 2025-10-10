@@ -103,38 +103,31 @@ export default function PushNotificationPrompt() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 max-w-sm bg-gradient-to-br from-white to-orange-50 rounded-xl shadow-2xl border-2 border-orange-500 z-50 overflow-hidden animate-fade-in">
-      {/* Orange accent bar */}
-      <div className="h-1 bg-gradient-to-r from-orange-500 to-red-500"></div>
-      
-      <div className="p-5">
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
-              <span className="text-2xl">🔔</span>
-            </div>
-          </div>
-          <div className="flex-1">
-            <h3 className="text-2xl font-extrabold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2">
-              Want Notifications?
-            </h3>
-            <p className="text-sm text-gray-700 leading-relaxed font-medium">
-              Get notified when new bets are created, placed, and resolved!
-            </p>
-            <div className="mt-4 flex flex-col gap-2">
-              <button
-                onClick={subscribeToPushNotifications}
-                className="w-full px-5 py-3 bg-gradient-to-r from-orange-600 to-orange-500 text-white font-semibold rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
-              >
-                Yes, Enable Notifications
-              </button>
-              <button
-                onClick={dismissPrompt}
-                className="w-full px-5 py-2 text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors"
-              >
-                Maybe Later
-              </button>
-            </div>
+    <div className="fixed bottom-4 right-4 max-w-sm bg-white rounded-lg shadow-lg p-4 border-2 border-orange-600 z-50">
+      <div className="flex items-start">
+        <div className="flex-shrink-0">
+          <span className="text-2xl">🔔</span>
+        </div>
+        <div className="ml-3 flex-1">
+          <h3 className="text-lg font-bold text-gray-900">
+            Want notifications?
+          </h3>
+          <p className="mt-2 text-sm text-gray-600">
+            Get push notifications for new bets!
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              onClick={subscribeToPushNotifications}
+              className="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700"
+            >
+              Enable
+            </button>
+            <button
+              onClick={dismissPrompt}
+              className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300"
+            >
+              Later
+            </button>
           </div>
         </div>
       </div>
