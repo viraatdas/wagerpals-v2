@@ -48,18 +48,23 @@ export async function sendPushNotification(
       },
     };
 
+    console.log(`[Push] Sending to: ${endpoint.substring(0, 50)}...`);
+    
     await webpush.sendNotification(
       subscription,
       JSON.stringify(payload)
     );
 
+    console.log(`[Push] ✅ Success for: ${endpoint.substring(0, 50)}...`);
     return true;
   } catch (error: any) {
-    console.error('Error sending push notification:', error);
+    console.error(`[Push] ❌ Error for ${endpoint.substring(0, 50)}...`);
+    console.error(`[Push] Status: ${error.statusCode}, Message: ${error.message}`);
+    console.error(`[Push] Body: ${error.body}`);
     
     // If subscription is no longer valid, remove it from database
     if (error.statusCode === 410 || error.statusCode === 404) {
-      console.log('Subscription no longer valid, removing from database');
+      console.log('[Push] Subscription no longer valid, removing from database');
       await db.pushSubscriptions.delete(endpoint);
     }
     
