@@ -11,11 +11,11 @@ export async function GET() {
     privateKeyLength: privateKey.length,
     publicKeyFirst10: publicKey.substring(0, 10),
     publicKeyLast10: publicKey.substring(publicKey.length - 10),
+    fullPublicKey: publicKey, // Show the full key for debugging
     hasEquals: publicKey.includes('='),
     hasPadding: publicKey.endsWith('='),
     hasPlus: publicKey.includes('+'),
     hasSlash: publicKey.includes('/'),
-    // These should be URL-safe characters
     hasUnderscore: publicKey.includes('_'),
     hasDash: publicKey.includes('-'),
   });
