@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
+export const dynamic = 'force-dynamic';
+
 export default function IOSTest() {
   const [checks, setChecks] = useState({
     isIOS: false,
