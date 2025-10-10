@@ -179,3 +179,4 @@ See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for schema details.
 ## License
 
 MIT
+# wagerpals-v2
