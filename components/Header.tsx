@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const user = useUser({ or: 'redirect', to: '/auth/signin' });
+  const user = useUser();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
