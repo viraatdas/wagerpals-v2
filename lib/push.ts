@@ -13,12 +13,23 @@ let vapidDetailsSet = false;
 // Set VAPID details only when needed (at runtime, not during build)
 function ensureVapidDetails() {
   if (!vapidDetailsSet && VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
-    webpush.setVapidDetails(
-      VAPID_SUBJECT,
-      VAPID_PUBLIC_KEY,
-      VAPID_PRIVATE_KEY
-    );
-    vapidDetailsSet = true;
+    console.log('[VAPID] Setting VAPID details...');
+    console.log('[VAPID] Public key length:', VAPID_PUBLIC_KEY.length);
+    console.log('[VAPID] Public key first 20:', VAPID_PUBLIC_KEY.substring(0, 20));
+    console.log('[VAPID] Public key last 20:', VAPID_PUBLIC_KEY.substring(VAPID_PUBLIC_KEY.length - 20));
+    
+    try {
+      webpush.setVapidDetails(
+        VAPID_SUBJECT,
+        VAPID_PUBLIC_KEY,
+        VAPID_PRIVATE_KEY
+      );
+      console.log('[VAPID] ✅ VAPID details set successfully');
+      vapidDetailsSet = true;
+    } catch (error: any) {
+      console.error('[VAPID] ❌ Failed to set VAPID details:', error.message);
+      throw error;
+    }
   }
 }
 
