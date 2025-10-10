@@ -7,12 +7,19 @@ const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '';
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:admin@wagerpals.com';
 
-if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
-  webpush.setVapidDetails(
-    VAPID_SUBJECT,
-    VAPID_PUBLIC_KEY,
-    VAPID_PRIVATE_KEY
-  );
+// Track if VAPID details have been set
+let vapidDetailsSet = false;
+
+// Set VAPID details only when needed (at runtime, not during build)
+function ensureVapidDetails() {
+  if (!vapidDetailsSet && VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+      VAPID_SUBJECT,
+      VAPID_PUBLIC_KEY,
+      VAPID_PRIVATE_KEY
+    );
+    vapidDetailsSet = true;
+  }
 }
 
 export interface PushNotificationPayload {
@@ -30,6 +37,9 @@ export async function sendPushNotification(
   payload: PushNotificationPayload
 ): Promise<boolean> {
   try {
+    // Set VAPID details at runtime, not during build
+    ensureVapidDetails();
+
     const subscription = {
       endpoint,
       keys: {
