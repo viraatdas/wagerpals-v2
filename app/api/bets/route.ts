@@ -21,6 +21,9 @@ export async function POST(request: NextRequest) {
 
   const timestamp = Date.now();
   const isLate = timestamp > event.end_time;
+  
+  // Parse and round amount to 2 decimal places
+  const parsedAmount = Math.round(parseFloat(amount) * 100) / 100;
 
   const newBet: Bet = {
     id: generateId(),
@@ -28,7 +31,7 @@ export async function POST(request: NextRequest) {
     user_id,
     username,
     side,
-    amount: parseInt(amount),
+    amount: parsedAmount,
     note: note || undefined,
     timestamp,
     is_late: isLate,
@@ -40,7 +43,7 @@ export async function POST(request: NextRequest) {
   const user = await db.users.get(user_id);
   if (user) {
     await db.users.update(user_id, {
-      total_bet: user.total_bet + parseInt(amount),
+      total_bet: Math.round((user.total_bet + parsedAmount) * 100) / 100,
     });
   }
 
@@ -53,7 +56,7 @@ export async function POST(request: NextRequest) {
     user_id,
     username,
     side,
-    amount: parseInt(amount),
+    amount: parsedAmount,
     note: note || undefined,
   };
   
@@ -68,7 +71,7 @@ export async function POST(request: NextRequest) {
     const lateText = isLate ? ' (late bet)' : '';
     await sendPushToAllSubscribers({
       title: `💰 New Bet Placed${lateText}`,
-      body: `${username} bet $${amount} on "${side}" - ${event.title}`,
+      body: `${username} bet $${parsedAmount.toFixed(2)} on "${side}" - ${event.title}`,
       url: `/events/${event_id}`,
       eventId: event_id,
       tag: `bet-${newBet.id}`,
@@ -118,7 +121,7 @@ export async function DELETE(request: NextRequest) {
     const user = await db.users.get(bet.user_id);
     if (user) {
       await db.users.update(bet.user_id, {
-        total_bet: Math.max(0, user.total_bet - bet.amount),
+        total_bet: Math.max(0, Math.round((user.total_bet - bet.amount) * 100) / 100),
       });
     }
 

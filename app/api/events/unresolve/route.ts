@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     const user = await db.users.get(result.user_id);
     if (user) {
       // Reverse the net total change
-      const newTotal = user.net_total - result.net;
+      const newTotal = Math.round((user.net_total - result.net) * 100) / 100;
       // Reverse streak (approximation - we can't perfectly restore it)
       const newStreak = result.net > 0 && user.streak > 0 ? user.streak - 1 : user.streak;
       await db.users.update(result.user_id, {

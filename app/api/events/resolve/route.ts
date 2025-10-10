@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   for (const result of netResults) {
     const user = await db.users.get(result.user_id);
     if (user) {
-      const newTotal = user.net_total + result.net;
+      const newTotal = Math.round((user.net_total + result.net) * 100) / 100;
       const newStreak = result.net > 0 ? user.streak + 1 : 0;
       await db.users.update(result.user_id, {
         net_total: newTotal,

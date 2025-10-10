@@ -67,7 +67,7 @@ export default function ResolutionBanner({ event, netResults }: ResolutionBanner
                   {' → '}
                   <span className="font-medium">{payment.to}</span>
                   {': '}
-                  <span className="font-semibold">${payment.amount}</span>
+                  <span className="font-semibold">${payment.amount.toFixed(2)}</span>
                 </div>
               ))}
             </div>

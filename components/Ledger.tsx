@@ -53,7 +53,7 @@ export default function Ledger({ bets, onBetDeleted }: LedgerProps) {
   const getBetDetails = (betId: string) => {
     const bet = bets.find(b => b.id === betId);
     if (!bet) return '';
-    return `@${bet.username}'s $${bet.amount} bet on ${bet.side}`;
+    return `@${bet.username}'s $${bet.amount.toFixed(2)} bet on ${bet.side}`;
   };
 
   return (
@@ -86,7 +86,7 @@ export default function Ledger({ bets, onBetDeleted }: LedgerProps) {
                   <span className="font-medium text-gray-900">@{bet.username}</span>
                   <span className="text-gray-500">→</span>
                   <span className="font-light text-gray-700">{bet.side}</span>
-                  <span className="font-semibold text-gray-900">${bet.amount}</span>
+                  <span className="font-semibold text-gray-900">${bet.amount.toFixed(2)}</span>
                   {bet.is_late && (
                     <span className="px-2 py-0.5 bg-orange-200 text-orange-800 text-xs font-light rounded">
                       Late

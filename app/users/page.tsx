@@ -76,7 +76,7 @@ export default function UsersPage() {
                     <div>
                       <div className="text-xs text-gray-500 font-light mb-1">Total Bet</div>
                       <div className="text-xl font-medium text-blue-600">
-                        ${user.total_bet}
+                        ${user.total_bet.toFixed(2)}
                       </div>
                     </div>
                     <div>
@@ -90,7 +90,7 @@ export default function UsersPage() {
                             : 'text-gray-600'
                         }`}
                       >
-                        {user.net_total > 0 ? '+' : ''}${user.net_total}
+                        {user.net_total > 0 ? '+' : ''}${user.net_total.toFixed(2)}
                       </div>
                     </div>
                     <div>

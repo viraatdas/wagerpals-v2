@@ -40,7 +40,7 @@ export default function ActivityPage() {
             <p className="text-gray-900 font-light">
               <span className="font-medium text-blue-600">@{activity.username || 'Unknown'}</span>
               {' bet '}
-              <span className="font-semibold text-orange-600">${activity.amount}</span>
+              <span className="font-semibold text-orange-600">${activity.amount?.toFixed(2)}</span>
               {' on '}
               <span className="font-medium">{activity.side}</span>
               {' in '}

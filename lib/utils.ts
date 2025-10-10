@@ -103,7 +103,8 @@ export function formatTimestamp(timestamp: number): string {
 }
 
 export function formatAmount(amount: number): string {
-  return amount >= 0 ? `+${amount}` : `${amount}`;
+  const formatted = amount.toFixed(2);
+  return amount >= 0 ? `+${formatted}` : formatted;
 }
 
 // Username utilities

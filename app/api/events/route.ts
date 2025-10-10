@@ -27,6 +27,11 @@ export async function GET(request: NextRequest) {
       sideStats[bet.side].count++;
       sideStats[bet.side].total += bet.amount;
     });
+    
+    // Round totals to 2 decimal places
+    Object.keys(sideStats).forEach(side => {
+      sideStats[side].total = Math.round(sideStats[side].total * 100) / 100;
+    });
 
     // Count unique participants
     const uniqueParticipants = new Set(bets.map(b => b.user_id)).size;
@@ -53,6 +58,11 @@ export async function GET(request: NextRequest) {
       bets.forEach(bet => {
         sideStats[bet.side].count++;
         sideStats[bet.side].total += bet.amount;
+      });
+      
+      // Round totals to 2 decimal places
+      Object.keys(sideStats).forEach(side => {
+        sideStats[side].total = Math.round(sideStats[side].total * 100) / 100;
       });
 
       // Count unique participants

@@ -57,7 +57,7 @@ export default function EventCard({ event }: EventCardProps) {
               >
                 <div className="text-sm font-light text-gray-700">{side}</div>
                 <div className="text-xs text-gray-500 mt-1 font-light">
-                  {stats.count} {stats.count === 1 ? 'bet' : 'bets'} · ${stats.total}
+                  {stats.count} {stats.count === 1 ? 'bet' : 'bets'} · ${stats.total.toFixed(2)}
                 </div>
               </div>
             );

@@ -18,7 +18,7 @@ export default function BetForm({ sides, eventId, userId, username, onBetPlaced 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || parseInt(amount) <= 0) return;
+    if (!amount || parseFloat(amount) <= 0) return;
 
     setLoading(true);
 
@@ -31,7 +31,7 @@ export default function BetForm({ sides, eventId, userId, username, onBetPlaced 
           user_id: userId,
           username,
           side: selectedSide,
-          amount: parseInt(amount),
+          amount: Math.round(parseFloat(amount) * 100) / 100,
           note: note.trim() || undefined,
         }),
       });
@@ -84,9 +84,10 @@ export default function BetForm({ sides, eventId, userId, username, onBetPlaced 
             id="amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            min="1"
+            min="0.01"
+            step="0.01"
             className="w-full px-3 py-2 font-light border-b-2 border-gray-300 focus:border-orange-500 outline-none transition-colors bg-transparent"
-            placeholder="10"
+            placeholder="10.00"
             required
           />
         </div>
@@ -107,7 +108,7 @@ export default function BetForm({ sides, eventId, userId, username, onBetPlaced 
 
         <button
           type="submit"
-          disabled={loading || !amount || parseInt(amount) <= 0}
+          disabled={loading || !amount || parseFloat(amount) <= 0}
           className="w-full bg-orange-600 text-white py-3 rounded-xl font-light hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all hover:shadow-lg"
         >
           {loading ? 'Placing...' : 'Place Bet'}
