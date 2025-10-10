@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
+  const groupId = searchParams.get('groupId');
 
   if (id) {
     const event = await db.events.get(id);
@@ -45,7 +46,14 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const events = await db.events.getAll();
+  // Get events for specific group or all groups
+  let events = await db.events.getAll();
+  
+  // Filter by group if groupId is provided
+  if (groupId) {
+    events = events.filter(e => e.group_id === groupId);
+  }
+
   const eventsWithStats = await Promise.all(
     events.map(async event => {
       const bets = await db.bets.getByEvent(event.id);
@@ -82,10 +90,23 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { title, description, side_a, side_b, end_time, creator_user_id, creator_username } = body;
+  const { title, description, side_a, side_b, end_time, group_id, creator_user_id, creator_username } = body;
 
-  if (!title || !side_a || !side_b || !end_time) {
+  if (!title || !side_a || !side_b || !end_time || !group_id) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  }
+
+  // Verify group exists and user is a member
+  const group = await db.groups.get(group_id);
+  if (!group) {
+    return NextResponse.json({ error: 'Group not found' }, { status: 404 });
+  }
+
+  if (creator_user_id) {
+    const isMember = await db.groupMembers.isMember(group_id, creator_user_id);
+    if (!isMember) {
+      return NextResponse.json({ error: 'You must be a member of this group to create events' }, { status: 403 });
+    }
   }
 
   const timestamp = Date.now();
@@ -97,6 +118,7 @@ export async function POST(request: NextRequest) {
     side_a: side_a.trim(),
     side_b: side_b.trim(),
     end_time: parseInt(end_time),
+    group_id,
     status: 'active',
   };
 

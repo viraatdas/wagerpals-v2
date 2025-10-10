@@ -5,10 +5,11 @@ import { useParams } from 'next/navigation';
 import Countdown from '@/components/Countdown';
 import BetForm from '@/components/BetForm';
 import Ledger from '@/components/Ledger';
+import CommentForm from '@/components/CommentForm';
 import ResolutionBanner from '@/components/ResolutionBanner';
 import UsernameModal from '@/components/UsernameModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import { EventWithStats, NetResult } from '@/lib/types';
+import { EventWithStats, NetResult, Comment } from '@/lib/types';
 import { calculateNetResults } from '@/lib/utils';
 import { getCookie, setCookie } from '@/lib/cookies';
 
@@ -24,6 +25,7 @@ type ConfirmationModalConfig = {
 export default function EventPage() {
   const params = useParams();
   const [event, setEvent] = useState<EventWithStats | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState('');
   const [username, setUsername] = useState('');
@@ -84,11 +86,15 @@ export default function EventPage() {
     }
     
     try {
-      const response = await fetch(`/api/events?id=${params.id}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch event: ${response.status}`);
+      const [eventResponse, commentsResponse] = await Promise.all([
+        fetch(`/api/events?id=${params.id}`),
+        fetch(`/api/comments?eventId=${params.id}`)
+      ]);
+      
+      if (!eventResponse.ok) {
+        throw new Error(`Failed to fetch event: ${eventResponse.status}`);
       }
-      const data = await response.json();
+      const data = await eventResponse.json();
       
       if (data.error) {
         console.error('Event not found:', data.error);
@@ -97,6 +103,11 @@ export default function EventPage() {
       }
       
       setEvent(data);
+
+      if (commentsResponse.ok) {
+        const commentsData = await commentsResponse.json();
+        setComments(Array.isArray(commentsData) ? commentsData : []);
+      }
 
       if (data.status === 'resolved' && data.resolution) {
         const results = calculateNetResults(data.bets, data.resolution.winning_side);
@@ -344,10 +355,27 @@ export default function EventPage() {
           </div>
         )}
 
+        {userId && username && (
+          <div className="mb-6">
+            <h3 className="text-lg font-light text-gray-900 mb-3">Add a Comment</h3>
+            <CommentForm
+              eventId={event.id}
+              userId={userId}
+              username={username}
+              onCommentPosted={fetchEvent}
+            />
+          </div>
+        )}
+
         <div>
           <h2 className="text-2xl font-light text-gray-900 mb-4 border-b-2 border-orange-600 pb-2 inline-block">Ledger</h2>
           <div className="mt-6">
-            <Ledger bets={event.bets} onBetDeleted={fetchEvent} />
+            <Ledger 
+              bets={event.bets} 
+              comments={comments}
+              onBetDeleted={fetchEvent}
+              onCommentDeleted={fetchEvent}
+            />
           </div>
         </div>
       </div>

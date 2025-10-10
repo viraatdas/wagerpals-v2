@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import UsernameModal from '@/components/UsernameModal';
 import { getCookie, setCookie } from '@/lib/cookies';
 
-export default function CreateEvent() {
+function CreateEventForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [title, setTitle] = useState('');
   const [sides, setSides] = useState(['Yes', 'No']);
   const [endDate, setEndDate] = useState('');
@@ -15,6 +16,8 @@ export default function CreateEvent() {
   const [userId, setUserId] = useState('');
   const [username, setUsername] = useState('');
   const [showUsernameModal, setShowUsernameModal] = useState(false);
+  const [groups, setGroups] = useState<any[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState('');
 
   useEffect(() => {
     const storedUserId = getCookie('userId');
@@ -25,8 +28,15 @@ export default function CreateEvent() {
     } else {
       setUserId(storedUserId);
       setUsername(storedUsername);
+      fetchGroups(storedUserId);
     }
-  }, []);
+
+    // Get groupId from URL if present
+    const groupIdFromUrl = searchParams.get('groupId');
+    if (groupIdFromUrl) {
+      setSelectedGroupId(groupIdFromUrl);
+    }
+  }, [searchParams]);
 
   const handleUsernameSubmit = async (newUsername: string) => {
     const response = await fetch('/api/users', {
@@ -46,9 +56,22 @@ export default function CreateEvent() {
     setUserId(data.id);
     setUsername(data.username);
     setShowUsernameModal(false);
+    fetchGroups(data.id);
     
     // Notify Header component to update
     window.dispatchEvent(new Event('userLoggedIn'));
+  };
+
+  const fetchGroups = async (uid: string) => {
+    try {
+      const response = await fetch(`/api/groups?userId=${uid}`);
+      if (!response.ok) throw new Error('Failed to fetch groups');
+      const data = await response.json();
+      setGroups(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to fetch groups:', error);
+      setGroups([]);
+    }
   };
 
   const handleSideChange = (index: number, value: string) => {
@@ -71,7 +94,8 @@ export default function CreateEvent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || sides.some((s) => !s.trim()) || !endDate || !endTime || !userId) {
+    if (!title || sides.some((s) => !s.trim()) || !endDate || !endTime || !userId || !selectedGroupId) {
+      alert('Please fill in all fields and select a group');
       return;
     }
 
@@ -85,12 +109,12 @@ export default function CreateEvent() {
         side_a: sides[0].trim(),
         side_b: sides[1].trim(),
         end_time: endDateTime,
+        group_id: selectedGroupId,
         creator_user_id: userId,
         creator_username: username,
       };
 
       console.log('[Create Page] Creating event with data:', eventData);
-      console.log('[Create Page] Username:', username, 'UserId:', userId);
 
       const response = await fetch('/api/events', {
         method: 'POST',
@@ -101,7 +125,7 @@ export default function CreateEvent() {
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Failed to create event:', errorData);
-        alert('Failed to create event. Please try again.');
+        alert(errorData.error || 'Failed to create event. Please try again.');
         return;
       }
 
@@ -115,6 +139,7 @@ export default function CreateEvent() {
       }
     } catch (error) {
       console.error('Failed to create event:', error);
+      alert('Failed to create event');
     } finally {
       setLoading(false);
     }
@@ -140,6 +165,26 @@ export default function CreateEvent() {
 
       <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
         <div className="space-y-8">
+          <div>
+            <label htmlFor="group" className="block text-sm font-light text-gray-700 mb-3 border-b border-gray-200 pb-1">
+              Select Group
+            </label>
+            <select
+              id="group"
+              value={selectedGroupId}
+              onChange={(e) => setSelectedGroupId(e.target.value)}
+              className="w-full px-4 py-3 text-lg font-light border-b-2 border-gray-300 focus:border-orange-500 outline-none transition-colors bg-white"
+              required
+            >
+              <option value="">Choose a group...</option>
+              {groups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name} ({group.id})
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label htmlFor="title" className="block text-sm font-light text-gray-700 mb-3 border-b border-gray-200 pb-1">
               Event Title
@@ -237,6 +282,18 @@ export default function CreateEvent() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function CreateEvent() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <p className="text-center text-gray-600 font-light">Loading...</p>
+      </div>
+    }>
+      <CreateEventForm />
+    </Suspense>
   );
 }
 

@@ -52,7 +52,17 @@ export default function Header() {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Home
+              Groups
+            </Link>
+            <Link
+              href="/all-events"
+              className={`text-xs sm:text-sm font-light transition-colors ${
+                isActive('/all-events')
+                  ? 'text-orange-600 border-b-2 border-orange-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              All Events
             </Link>
             <Link
               href="/activity"

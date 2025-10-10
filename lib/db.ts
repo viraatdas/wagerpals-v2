@@ -1,5 +1,5 @@
 import { sql } from '@vercel/postgres';
-import { User, Event, Bet, ActivityItem, PushSubscription } from './types';
+import { User, Event, Bet, ActivityItem, PushSubscription, Group, GroupMember, Comment } from './types';
 
 export const db = {
   users: {
@@ -76,6 +76,7 @@ export const db = {
         side_a: row.side_a,
         side_b: row.side_b,
         end_time: parseInt(row.end_time),
+        group_id: row.group_id,
         status: row.status,
       };
       
@@ -108,6 +109,7 @@ export const db = {
           side_a: row.side_a,
           side_b: row.side_b,
           end_time: parseInt(row.end_time),
+          group_id: row.group_id,
           status: row.status,
         };
         
@@ -124,7 +126,7 @@ export const db = {
     
     create: async (event: Event): Promise<Event> => {
       await sql`
-        INSERT INTO events (id, title, description, side_a, side_b, end_time, status)
+        INSERT INTO events (id, title, description, side_a, side_b, end_time, group_id, status)
         VALUES (
           ${event.id},
           ${event.title},
@@ -132,6 +134,7 @@ export const db = {
           ${event.side_a},
           ${event.side_b},
           ${event.end_time},
+          ${event.group_id},
           ${event.status}
         )
       `;
@@ -366,6 +369,230 @@ export const db = {
 
     delete: async (endpoint: string): Promise<void> => {
       await sql`DELETE FROM push_subscriptions WHERE endpoint = ${endpoint}`;
+    },
+  },
+
+  groups: {
+    get: async (id: string): Promise<Group | null> => {
+      const result = await sql`SELECT * FROM groups WHERE id = ${id}`;
+      if (result.rows.length === 0) return null;
+      const row = result.rows[0];
+      return {
+        id: row.id,
+        name: row.name,
+        created_by: row.created_by,
+        created_at: row.created_at,
+      };
+    },
+
+    getAll: async (): Promise<Group[]> => {
+      const result = await sql`SELECT * FROM groups ORDER BY created_at DESC`;
+      return result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        created_by: row.created_by,
+        created_at: row.created_at,
+      }));
+    },
+
+    getByUser: async (userId: string): Promise<Group[]> => {
+      const result = await sql`
+        SELECT g.* FROM groups g
+        INNER JOIN group_members gm ON g.id = gm.group_id
+        WHERE gm.user_id = ${userId} AND gm.status = 'active'
+        ORDER BY g.created_at DESC
+      `;
+      return result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        created_by: row.created_by,
+        created_at: row.created_at,
+      }));
+    },
+
+    create: async (group: Group): Promise<Group> => {
+      await sql`
+        INSERT INTO groups (id, name, created_by)
+        VALUES (${group.id}, ${group.name}, ${group.created_by})
+      `;
+      return group;
+    },
+
+    update: async (id: string, data: Partial<Group>): Promise<Group | null> => {
+      if (data.name !== undefined) {
+        await sql`UPDATE groups SET name = ${data.name} WHERE id = ${id}`;
+      }
+      return await db.groups.get(id);
+    },
+
+    delete: async (id: string): Promise<void> => {
+      await sql`DELETE FROM groups WHERE id = ${id}`;
+    },
+  },
+
+  groupMembers: {
+    get: async (groupId: string, userId: string): Promise<GroupMember | null> => {
+      const result = await sql`
+        SELECT * FROM group_members 
+        WHERE group_id = ${groupId} AND user_id = ${userId}
+      `;
+      if (result.rows.length === 0) return null;
+      const row = result.rows[0];
+      return {
+        id: row.id,
+        group_id: row.group_id,
+        user_id: row.user_id,
+        role: row.role,
+        status: row.status,
+        joined_at: row.joined_at,
+      };
+    },
+
+    getByGroup: async (groupId: string): Promise<GroupMember[]> => {
+      const result = await sql`
+        SELECT gm.*, u.username FROM group_members gm
+        INNER JOIN users u ON gm.user_id = u.id
+        WHERE gm.group_id = ${groupId}
+        ORDER BY 
+          CASE WHEN gm.role = 'admin' THEN 0 ELSE 1 END,
+          gm.joined_at ASC
+      `;
+      return result.rows.map(row => ({
+        id: row.id,
+        group_id: row.group_id,
+        user_id: row.user_id,
+        username: row.username,
+        role: row.role,
+        status: row.status,
+        joined_at: row.joined_at,
+      }));
+    },
+
+    getPendingByGroup: async (groupId: string): Promise<GroupMember[]> => {
+      const result = await sql`
+        SELECT gm.*, u.username FROM group_members gm
+        INNER JOIN users u ON gm.user_id = u.id
+        WHERE gm.group_id = ${groupId} AND gm.status = 'pending'
+        ORDER BY gm.joined_at ASC
+      `;
+      return result.rows.map(row => ({
+        id: row.id,
+        group_id: row.group_id,
+        user_id: row.user_id,
+        username: row.username,
+        role: row.role,
+        status: row.status,
+        joined_at: row.joined_at,
+      }));
+    },
+
+    create: async (member: GroupMember): Promise<GroupMember> => {
+      const result = await sql`
+        INSERT INTO group_members (group_id, user_id, role, status)
+        VALUES (${member.group_id}, ${member.user_id}, ${member.role}, ${member.status})
+        RETURNING *
+      `;
+      const row = result.rows[0];
+      return {
+        id: row.id,
+        group_id: row.group_id,
+        user_id: row.user_id,
+        role: row.role,
+        status: row.status,
+        joined_at: row.joined_at,
+      };
+    },
+
+    update: async (groupId: string, userId: string, data: Partial<GroupMember>): Promise<GroupMember | null> => {
+      if (data.role !== undefined) {
+        await sql`
+          UPDATE group_members 
+          SET role = ${data.role} 
+          WHERE group_id = ${groupId} AND user_id = ${userId}
+        `;
+      }
+      if (data.status !== undefined) {
+        await sql`
+          UPDATE group_members 
+          SET status = ${data.status} 
+          WHERE group_id = ${groupId} AND user_id = ${userId}
+        `;
+      }
+      return await db.groupMembers.get(groupId, userId);
+    },
+
+    delete: async (groupId: string, userId: string): Promise<void> => {
+      await sql`
+        DELETE FROM group_members 
+        WHERE group_id = ${groupId} AND user_id = ${userId}
+      `;
+    },
+
+    isAdmin: async (groupId: string, userId: string): Promise<boolean> => {
+      const result = await sql`
+        SELECT role FROM group_members 
+        WHERE group_id = ${groupId} AND user_id = ${userId} AND status = 'active'
+      `;
+      return result.rows.length > 0 && result.rows[0].role === 'admin';
+    },
+
+    isMember: async (groupId: string, userId: string): Promise<boolean> => {
+      const result = await sql`
+        SELECT * FROM group_members 
+        WHERE group_id = ${groupId} AND user_id = ${userId} AND status = 'active'
+      `;
+      return result.rows.length > 0;
+    },
+  },
+
+  comments: {
+    get: async (id: string): Promise<Comment | null> => {
+      const result = await sql`SELECT * FROM comments WHERE id = ${id}`;
+      if (result.rows.length === 0) return null;
+      const row = result.rows[0];
+      return {
+        id: row.id,
+        event_id: row.event_id,
+        user_id: row.user_id,
+        username: row.username,
+        content: row.content,
+        timestamp: parseInt(row.timestamp),
+      };
+    },
+
+    getByEvent: async (eventId: string): Promise<Comment[]> => {
+      const result = await sql`
+        SELECT * FROM comments 
+        WHERE event_id = ${eventId}
+        ORDER BY timestamp ASC
+      `;
+      return result.rows.map(row => ({
+        id: row.id,
+        event_id: row.event_id,
+        user_id: row.user_id,
+        username: row.username,
+        content: row.content,
+        timestamp: parseInt(row.timestamp),
+      }));
+    },
+
+    create: async (comment: Comment): Promise<Comment> => {
+      await sql`
+        INSERT INTO comments (id, event_id, user_id, username, content, timestamp)
+        VALUES (
+          ${comment.id},
+          ${comment.event_id},
+          ${comment.user_id},
+          ${comment.username},
+          ${comment.content},
+          ${comment.timestamp}
+        )
+      `;
+      return comment;
+    },
+
+    delete: async (id: string): Promise<void> => {
+      await sql`DELETE FROM comments WHERE id = ${id}`;
     },
   },
 };

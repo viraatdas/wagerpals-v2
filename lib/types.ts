@@ -14,6 +14,7 @@ export interface Event {
   side_b: string;
   end_time: number;
   status: 'active' | 'resolved';
+  group_id: string;
   resolution?: {
     winning_side: string;
     resolved_at: number;
@@ -33,7 +34,7 @@ export interface Bet {
 }
 
 export interface ActivityItem {
-  type: 'bet' | 'resolution' | 'event_created';
+  type: 'bet' | 'resolution' | 'event_created' | 'comment';
   timestamp: number;
   event_id: string;
   event_title: string;
@@ -43,6 +44,7 @@ export interface ActivityItem {
   amount?: number;
   note?: string;
   winning_side?: string;
+  content?: string;
 }
 
 export interface EventWithStats extends Event {
@@ -70,4 +72,36 @@ export interface PushSubscription {
   endpoint: string;
   p256dh: string;
   auth: string;
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  created_by: string;
+  created_at?: string;
+}
+
+export interface GroupMember {
+  id?: number;
+  group_id: string;
+  user_id: string;
+  username?: string;
+  role: 'admin' | 'member';
+  status: 'pending' | 'active';
+  joined_at?: string;
+}
+
+export interface Comment {
+  id: string;
+  event_id: string;
+  user_id: string;
+  username: string;
+  content: string;
+  timestamp: number;
+}
+
+export interface GroupWithMembers extends Group {
+  members: GroupMember[];
+  member_count: number;
+  admin_count: number;
 }
