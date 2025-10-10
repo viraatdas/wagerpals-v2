@@ -69,45 +69,100 @@ export default function InstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 max-w-sm bg-white rounded-lg shadow-lg p-4 border-2 border-orange-600 z-50">
-      <div className="flex items-start">
-        <div className="flex-shrink-0">
-          <span className="text-2xl">📱</span>
-        </div>
-        <div className="ml-3 flex-1">
-          <h3 className="text-sm font-semibold text-gray-900">
-            Install WagerPals
-          </h3>
-          {isIOS ? (
-            <div className="mt-2 text-sm text-gray-600">
-              <p className="mb-2">Install this app on your iPhone:</p>
-              <ol className="list-decimal list-inside space-y-1 text-xs">
-                <li>Tap the Share button <span className="inline-block">⎙</span></li>
-                <li>Scroll and tap "Add to Home Screen"</li>
-                <li>Tap "Add" in the top right</li>
-              </ol>
+    <div className="fixed inset-x-0 bottom-0 z-50 p-4 animate-slide-up">
+      <div className="max-w-md mx-auto bg-gradient-to-br from-white to-orange-50 rounded-2xl shadow-2xl border border-orange-200 overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-orange-600 to-orange-500 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl shadow-lg">
+                📱
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-lg">Install WagerPals</h3>
+                <p className="text-orange-100 text-xs">Access instantly from your home screen</p>
+              </div>
             </div>
-          ) : (
-            <p className="mt-1 text-sm text-gray-600">
-              Add WagerPals to your home screen for quick access and a better experience.
-            </p>
-          )}
-          <div className="mt-4 flex gap-2">
-            {!isIOS && deferredPrompt && (
-              <button
-                onClick={handleInstallClick}
-                className="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700"
-              >
-                Install
-              </button>
-            )}
             <button
               onClick={dismissPrompt}
-              className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300"
+              className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
             >
-              {isIOS ? 'Got it' : 'Maybe Later'}
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
+        </div>
+
+        {/* Content */}
+        <div className="px-6 py-5">
+          {isIOS ? (
+            <div className="space-y-4">
+              <p className="text-gray-700 font-medium">Follow these steps to install:</p>
+              
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 bg-white rounded-xl p-3 shadow-sm">
+                  <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 text-orange-600 font-bold">
+                    1
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-gray-900 font-medium text-sm">Tap the Share button</p>
+                    <p className="text-gray-500 text-xs mt-1">Look for <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-500 text-white rounded text-xs mx-1">↑</span> at the bottom of Safari</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 bg-white rounded-xl p-3 shadow-sm">
+                  <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 text-orange-600 font-bold">
+                    2
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-gray-900 font-medium text-sm">Scroll down in the menu</p>
+                    <p className="text-gray-500 text-xs mt-1">Find and tap "Add to Home Screen"</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 bg-white rounded-xl p-3 shadow-sm">
+                  <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 text-orange-600 font-bold">
+                    3
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-gray-900 font-medium text-sm">Tap "Add" to confirm</p>
+                    <p className="text-gray-500 text-xs mt-1">The app will appear on your home screen</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                <p className="text-xs text-orange-800">
+                  <span className="font-semibold">💡 Tip:</span> Once installed, you'll get push notifications for new bets!
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-gray-700">
+                Get the full experience with offline access, push notifications, and faster loading.
+              </p>
+              
+              <div className="flex gap-2">
+                <button
+                  onClick={handleInstallClick}
+                  className="flex-1 bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-orange-700 hover:to-orange-600 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  Install Now
+                </button>
+              </div>
+            </div>
+          )}
+
+          {isIOS && (
+            <button
+              onClick={dismissPrompt}
+              className="w-full mt-4 text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors"
+            >
+              Maybe Later
+            </button>
+          )}
         </div>
       </div>
     </div>
