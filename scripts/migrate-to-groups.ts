@@ -59,43 +59,38 @@ async function migrate() {
     if (columnCheck.rows.length === 0) {
       console.log('Adding group_id column to events table...');
       
-      // First, create a default group for existing events
-      console.log('Creating default group for existing events...');
-      const defaultGroupId = '000000';
+      // Check if there are any existing events
+      const existingEvents = await sql`SELECT COUNT(*) as count FROM events`;
+      const eventCount = parseInt(existingEvents.rows[0].count);
       
-      // Get first user or create a system user
-      const firstUser = await sql`SELECT id FROM users LIMIT 1`;
-      const creatorId = firstUser.rows.length > 0 ? firstUser.rows[0].id : 'system';
-      
-      // Try to create default group (will fail if it already exists, which is fine)
-      try {
-        await sql`
-          INSERT INTO groups (id, name, created_by)
-          VALUES (${defaultGroupId}, 'Default Group', ${creatorId})
-          ON CONFLICT (id) DO NOTHING
-        `;
-        console.log('Default group created');
-      } catch (error) {
-        console.log('Default group already exists or error creating it');
+      if (eventCount > 0) {
+        console.log(`⚠️  Warning: Found ${eventCount} existing events.`);
+        console.log('⚠️  These events will need to be manually assigned to groups.');
+        console.log('⚠️  Skipping migration to avoid data loss.');
+        console.log('⚠️  Please manually add group_id column and assign events to groups.');
+        process.exit(1);
       }
 
-      // Add group_id column with default value
+      // Only proceed if no existing events
+      console.log('No existing events found. Adding group_id column...');
+      
+      // Add group_id column (nullable first)
       await sql.query(`
         ALTER TABLE events
-        ADD COLUMN group_id TEXT DEFAULT '${defaultGroupId}'
+        ADD COLUMN group_id TEXT
       `);
       
-      // Make it NOT NULL after adding
-      await sql.query(`
-        ALTER TABLE events
-        ALTER COLUMN group_id SET NOT NULL
-      `);
-
       // Add foreign key constraint
       await sql.query(`
         ALTER TABLE events
         ADD CONSTRAINT events_group_id_fkey 
         FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
+      `);
+      
+      // Make it NOT NULL (safe since no events exist)
+      await sql.query(`
+        ALTER TABLE events
+        ALTER COLUMN group_id SET NOT NULL
       `);
     } else {
       console.log('group_id column already exists in events table');
