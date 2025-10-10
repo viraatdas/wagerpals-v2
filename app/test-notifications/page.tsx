@@ -191,11 +191,11 @@ export default function TestNotifications() {
               </p>
               <p>
                 Service Worker:{' '}
-                {'serviceWorker' in navigator ? '✅ Supported' : '❌ Not supported'}
+                {typeof navigator !== 'undefined' && 'serviceWorker' in navigator ? '✅ Supported' : '❌ Not supported'}
               </p>
               <p>
                 Push API:{' '}
-                {'PushManager' in window ? '✅ Supported' : '❌ Not supported'}
+                {typeof window !== 'undefined' && 'PushManager' in window ? '✅ Supported' : '❌ Not supported'}
               </p>
             </div>
           </div>
