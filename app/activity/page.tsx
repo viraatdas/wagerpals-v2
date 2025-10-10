@@ -14,13 +14,20 @@ export default function ActivityPage() {
   }, []);
 
   const fetchActivities = async () => {
+    console.log('[Activity] Starting fetch...');
     try {
       const response = await fetch('/api/activity');
+      console.log('[Activity] Response status:', response.ok, response.status);
       const data = await response.json();
+      console.log('[Activity] Data received:', data);
+      console.log('[Activity] Data length:', data?.length);
+      console.log('[Activity] Is array?', Array.isArray(data));
       setActivities(data);
+      console.log('[Activity] State set with data');
     } catch (error) {
-      console.error('Failed to fetch activities:', error);
+      console.error('[Activity] Failed to fetch activities:', error);
     } finally {
+      console.log('[Activity] Setting loading to false');
       setLoading(false);
     }
   };
@@ -95,6 +102,8 @@ export default function ActivityPage() {
       </div>
     );
   };
+
+  console.log('[Activity] Render - loading:', loading, 'activities.length:', activities.length);
 
   if (loading) {
     return (
