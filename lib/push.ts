@@ -86,7 +86,14 @@ export async function sendPushNotification(
 export async function sendPushToAllSubscribers(
   payload: PushNotificationPayload
 ): Promise<{ success: number; failed: number }> {
+  console.log('[SendToAll] Getting all subscriptions...');
   const subscriptions = await db.pushSubscriptions.getAll();
+  console.log('[SendToAll] Found', subscriptions.length, 'subscriptions');
+  
+  if (subscriptions.length === 0) {
+    console.log('[SendToAll] No subscriptions to send to');
+    return { success: 0, failed: 0 };
+  }
   
   let success = 0;
   let failed = 0;
@@ -97,15 +104,18 @@ export async function sendPushToAllSubscribers(
     )
   );
 
-  results.forEach((result) => {
+  results.forEach((result, index) => {
     if (result.status === 'fulfilled' && result.value) {
       success++;
     } else {
       failed++;
+      if (result.status === 'rejected') {
+        console.error(`[SendToAll] Subscription ${index} rejected:`, result.reason);
+      }
     }
   });
 
-  console.log(`Push notifications sent: ${success} succeeded, ${failed} failed`);
+  console.log(`[SendToAll] Push notifications sent: ${success} succeeded, ${failed} failed`);
   
   return { success, failed };
 }
