@@ -11,7 +11,8 @@
     "db:clean": "tsx scripts/clean-db.ts",
     "db:test": "tsx scripts/test-activity.ts",
     "db:add-push": "tsx scripts/add-push-subscriptions.ts",
-    "verify-pwa": "tsx scripts/verify-pwa-setup.ts"
+    "verify-pwa": "tsx scripts/verify-pwa-setup.ts",
+    "test:push": "tsx scripts/test-push-notification.ts"
   },
   "dependencies": {
     "@vercel/postgres": "^0.10.0",
