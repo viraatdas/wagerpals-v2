@@ -1,5 +1,5 @@
 import { sql } from '@vercel/postgres';
-import { User, Event, Bet, ActivityItem } from './types';
+import { User, Event, Bet, ActivityItem, PushSubscription } from './types';
 
 export const db = {
   users: {
@@ -312,6 +312,60 @@ export const db = {
           AND amount = ${amount}
           AND timestamp = ${timestamp}
       `;
+    },
+  },
+
+  pushSubscriptions: {
+    getAll: async (): Promise<PushSubscription[]> => {
+      const result = await sql`SELECT * FROM push_subscriptions`;
+      return result.rows.map(row => ({
+        id: row.id,
+        user_id: row.user_id,
+        endpoint: row.endpoint,
+        p256dh: row.p256dh,
+        auth: row.auth,
+      }));
+    },
+
+    getByUser: async (userId: string): Promise<PushSubscription[]> => {
+      const result = await sql`
+        SELECT * FROM push_subscriptions 
+        WHERE user_id = ${userId}
+      `;
+      return result.rows.map(row => ({
+        id: row.id,
+        user_id: row.user_id,
+        endpoint: row.endpoint,
+        p256dh: row.p256dh,
+        auth: row.auth,
+      }));
+    },
+
+    create: async (subscription: PushSubscription): Promise<PushSubscription> => {
+      try {
+        const result = await sql`
+          INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth)
+          VALUES (${subscription.user_id || null}, ${subscription.endpoint}, ${subscription.p256dh}, ${subscription.auth})
+          ON CONFLICT (endpoint) DO UPDATE 
+          SET user_id = ${subscription.user_id || null}, p256dh = ${subscription.p256dh}, auth = ${subscription.auth}
+          RETURNING *
+        `;
+        const row = result.rows[0];
+        return {
+          id: row.id,
+          user_id: row.user_id,
+          endpoint: row.endpoint,
+          p256dh: row.p256dh,
+          auth: row.auth,
+        };
+      } catch (error) {
+        console.error('Error creating push subscription:', error);
+        throw error;
+      }
+    },
+
+    delete: async (endpoint: string): Promise<void> => {
+      await sql`DELETE FROM push_subscriptions WHERE endpoint = ${endpoint}`;
     },
   },
 };

@@ -63,3 +63,11 @@ export interface Payment {
   to: string;
   amount: number;
 }
+
+export interface PushSubscription {
+  id?: number;
+  user_id?: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+}

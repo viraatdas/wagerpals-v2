@@ -12,6 +12,8 @@ A social ledger for bets. There are witnesses and all viewable among your friend
 - 👥 **User Profiles**: Track stats, streaks, and net totals
 - 🗑️ **Event Management**: Delete or unresolve events as needed
 - ✅ **Persistent Storage**: All data saved in Vercel Postgres database
+- 📲 **Progressive Web App**: Install on your phone and use like a native app
+- 🔔 **Push Notifications**: Get notified when new betting events are created
 
 ## Stack
 
@@ -38,7 +40,41 @@ See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for detailed instructions on settin
 2. Copy environment variables to `.env.local`
 3. Run `npm run db:init` to create tables
 
-### 3. Run Development Server
+### 3. Generate App Icons (Optional)
+
+For a production PWA, you should generate proper PNG icons. Open `public/icons/generate-icons.html` in your browser, then:
+
+1. Right-click the first canvas and save as `icon-192x192.png`
+2. Right-click the second canvas and save as `icon-512x512.png`
+3. Save both files in the `public/icons/` directory
+
+(SVG icons are included as placeholders and will work for testing)
+
+### 4. Configure Push Notifications
+
+Generate VAPID keys for web push notifications:
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+Add the keys to your `.env.local` file:
+
+```env
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=your_public_key_here
+VAPID_PRIVATE_KEY=your_private_key_here
+VAPID_SUBJECT=mailto:your-email@example.com
+```
+
+**Important:** The public key needs to be prefixed with `NEXT_PUBLIC_` so it's accessible on the client side.
+
+Then run the migration to add the push subscriptions table:
+
+```bash
+npx tsx scripts/add-push-subscriptions.ts
+```
+
+### 5. Run Development Server
 
 ```bash
 npm run dev
@@ -46,13 +82,44 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-### 4. Deploy to Vercel
+### 6. Deploy to Vercel
 
 ```bash
 npx vercel --prod --yes
 ```
 
 Environment variables are automatically synced to your Vercel deployment.
+
+**Don't forget to add your VAPID keys to Vercel's environment variables!**
+
+## Progressive Web App (PWA)
+
+WagerPals can be installed on your phone like a native app:
+
+### iOS (Safari)
+1. Open WagerPals in Safari
+2. Tap the Share button (square with arrow)
+3. Scroll down and tap "Add to Home Screen"
+4. Tap "Add" in the top right
+
+### Android (Chrome)
+1. Open WagerPals in Chrome
+2. Tap the menu (three dots)
+3. Tap "Add to Home Screen" or "Install App"
+4. Confirm the installation
+
+Once installed, the app will:
+- Open in full-screen mode (no browser UI)
+- Work offline with cached content
+- Show on your home screen like any other app
+- Send push notifications when new events are created
+
+### Push Notifications
+
+After installing the app, you'll be prompted to enable push notifications. Click "Enable" to receive notifications when:
+- New betting events are created
+
+**Note:** iOS requires iOS 16.4 or later for push notifications to work.
 
 ## How it Works
 
@@ -82,6 +149,7 @@ Tables:
 - `events` - Betting events
 - `bets` - Individual wagers
 - `activities` - Activity feed items
+- `push_subscriptions` - Web push notification subscriptions
 
 See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for schema details.
 

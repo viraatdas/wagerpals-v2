@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { generateId } from '@/lib/utils';
 import { Event } from '@/lib/types';
+import { sendPushToAllSubscribers } from '@/lib/push';
 
 export const dynamic = 'force-dynamic';
 
@@ -107,6 +108,20 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
       console.error('[Events API] Failed to add to activity feed:', error);
     }
+  }
+
+  // Send push notification to all subscribers
+  try {
+    const creatorText = creator_username ? ` by ${creator_username}` : '';
+    await sendPushToAllSubscribers({
+      title: '🎲 New Bet Created!',
+      body: `${newEvent.title}${creatorText}`,
+      url: `/events/${newEvent.id}`,
+      eventId: newEvent.id,
+      tag: `event-${newEvent.id}`,
+    });
+  } catch (error: any) {
+    console.error('[Events API] Failed to send push notifications:', error);
   }
 
   return NextResponse.json(newEvent);

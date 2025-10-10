@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import EventCard from '@/components/EventCard';
 import UsernameModal from '@/components/UsernameModal';
+import PushNotificationPrompt from '@/components/PushNotificationPrompt';
+import InstallPrompt from '@/components/InstallPrompt';
 import { EventWithStats } from '@/lib/types';
 import { getCookie, setCookie } from '@/lib/cookies';
 
@@ -104,6 +106,8 @@ export default function Home() {
   return (
     <>
       {showUsernameModal && <UsernameModal onSubmit={handleUsernameSubmit} />}
+      <PushNotificationPrompt />
+      <InstallPrompt />
       
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="mb-8">

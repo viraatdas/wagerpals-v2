@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate WagerPals Icons</title>
+</head>
+<body>
+    <h1>WagerPals Icon Generator</h1>
+    <p>Right-click the canvas and save as PNG with the appropriate filename:</p>
+    <ul>
+        <li>First canvas: Save as <strong>icon-192x192.png</strong></li>
+        <li>Second canvas: Save as <strong>icon-512x512.png</strong></li>
+    </ul>
+    
+    <h2>192x192 Icon</h2>
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    
+    <h2>512x512 Icon</h2>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+
+    <script>
+        function drawIcon(canvas) {
+            const ctx = canvas.getContext('2d');
+            const size = canvas.width;
+            
+            // Background - orange gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#ea580c');
+            gradient.addColorStop(1, '#fb923c');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Draw "W" 
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `bold ${size * 0.6}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('W', size / 2, size / 2);
+            
+            // Add small dollar sign accent
+            ctx.font = `bold ${size * 0.2}px Arial`;
+            ctx.fillStyle = '#fed7aa';
+            ctx.fillText('$', size * 0.75, size * 0.25);
+        }
+        
+        drawIcon(document.getElementById('canvas192'));
+        drawIcon(document.getElementById('canvas512'));
+    </script>
+</body>
+</html>
+
