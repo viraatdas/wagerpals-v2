@@ -70,14 +70,16 @@ export async function sendPushNotification(
     return true;
   } catch (error: any) {
     console.error(`[Push] ❌ Error for ${endpoint.substring(0, 50)}...`);
+    console.error(`[Push] Full error object:`, JSON.stringify(error, null, 2));
     console.error(`[Push] Status: ${error.statusCode}, Message: ${error.message}`);
     console.error(`[Push] Body: ${error.body}`);
+    console.error(`[Push] Stack:`, error.stack);
     
-    // If subscription is no longer valid, remove it from database
-    if (error.statusCode === 410 || error.statusCode === 404) {
-      console.log('[Push] Subscription no longer valid, removing from database');
-      await db.pushSubscriptions.delete(endpoint);
-    }
+    // TEMPORARILY DISABLED - Don't auto-delete to see what's failing
+    // if (error.statusCode === 410 || error.statusCode === 404) {
+    //   console.log('[Push] Subscription no longer valid, removing from database');
+    //   await db.pushSubscriptions.delete(endpoint);
+    // }
     
     return false;
   }
