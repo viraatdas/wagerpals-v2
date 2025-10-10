@@ -60,13 +60,20 @@ export default function UsernameModal({ onSubmit }: UsernameModalProps) {
           <div className="mb-6">
             <input
               type="text"
+              inputMode="text"
               value={username}
               onChange={handleChange}
+              onClick={(e) => e.currentTarget.focus()}
+              onTouchStart={(e) => e.currentTarget.focus()}
               className={`w-full px-4 py-3 text-lg font-light border-b-2 ${
                 error ? 'border-red-500' : 'border-gray-300 focus:border-orange-500'
               } outline-none transition-colors bg-transparent`}
               placeholder="your username"
               autoFocus
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck="false"
               required
             />
             {error && (
