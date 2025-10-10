@@ -58,15 +58,37 @@ export default function Home() {
 
   const categorizeEvents = () => {
     const now = Date.now();
-    const ongoingEvents = events
+    const allOngoingEvents = events
       .filter((e) => e.status === 'active' && e.end_time > now)
       .sort((a, b) => a.end_time - b.end_time);
+
+    // Calculate total money for each event
+    const eventsWithTotals = allOngoingEvents.map(event => {
+      const totalMoney = Object.values(event.side_stats).reduce((sum, stats) => sum + stats.total, 0);
+      return { ...event, totalMoney };
+    });
+
+    // Get top 5 trending events (most participants, then highest total money)
+    const trendingEvents = [...eventsWithTotals]
+      .sort((a, b) => {
+        if (b.total_participants !== a.total_participants) {
+          return b.total_participants - a.total_participants;
+        }
+        return b.totalMoney - a.totalMoney;
+      })
+      .slice(0, 5);
+
+    // Get trending event IDs for filtering
+    const trendingIds = new Set(trendingEvents.map(e => e.id));
+
+    // Filter out trending events from ongoing events
+    const ongoingEvents = allOngoingEvents.filter(e => !trendingIds.has(e.id));
 
     const endedEvents = events
       .filter((e) => e.status === 'resolved' || (e.status === 'active' && e.end_time <= now))
       .sort((a, b) => b.end_time - a.end_time);
 
-    return { ongoingEvents, endedEvents };
+    return { trendingEvents, ongoingEvents, endedEvents };
   };
 
   if (loading) {
@@ -77,7 +99,7 @@ export default function Home() {
     );
   }
 
-  const { ongoingEvents, endedEvents } = categorizeEvents();
+  const { trendingEvents, ongoingEvents, endedEvents } = categorizeEvents();
 
   return (
     <>
@@ -92,6 +114,19 @@ export default function Home() {
             Polymarket for friends.
           </p>
         </div>
+
+        {trendingEvents.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-2xl font-light text-gray-900 mb-4 border-b-2 border-red-500 pb-2 inline-block">
+              🔥 Trending
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+              {trendingEvents.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {ongoingEvents.length > 0 && (
           <section className="mb-12">
