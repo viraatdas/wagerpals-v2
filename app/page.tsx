@@ -68,7 +68,7 @@ export default function Home() {
       return { ...event, totalMoney };
     });
 
-    // Get top 5 trending events (most participants, then highest total money)
+    // Get top 3 trending events (most participants, then highest total money)
     const trendingEvents = [...eventsWithTotals]
       .sort((a, b) => {
         if (b.total_participants !== a.total_participants) {
@@ -76,7 +76,7 @@ export default function Home() {
         }
         return b.totalMoney - a.totalMoney;
       })
-      .slice(0, 5);
+      .slice(0, 3);
 
     // Get trending event IDs for filtering
     const trendingIds = new Set(trendingEvents.map(e => e.id));
