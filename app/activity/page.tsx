@@ -10,29 +10,14 @@ export default function ActivityPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Initial fetch
     fetchActivities();
-
-    // Auto-refresh every 3 seconds
-    const interval = setInterval(() => {
-      fetchActivities();
-    }, 3000);
-
-    return () => clearInterval(interval);
   }, []);
 
   const fetchActivities = async () => {
     try {
-      const response = await fetch('/api/activity', {
-        cache: 'no-store',
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setActivities(data);
-        }
-      }
+      const response = await fetch('/api/activity');
+      const data = await response.json();
+      setActivities(data);
     } catch (error) {
       console.error('Failed to fetch activities:', error);
     } finally {
@@ -128,7 +113,7 @@ export default function ActivityPage() {
         Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
       </h1>
       <p className="text-gray-600 font-light mb-8">
-        Recent events, bets, and resolutions • Auto-updates every 3s
+        Recent events, bets, and resolutions
       </p>
 
       {activities.length === 0 ? (
