@@ -2,21 +2,31 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useUser } from '@stackframe/stack';
+import { useRouter } from 'next/navigation';
 import { ActivityItem } from '@/lib/types';
 import { formatTimestamp } from '@/lib/utils';
 
 export default function ActivityPage() {
+  const user = useUser();
+  const router = useRouter();
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) {
+      router.push('/auth/signin');
+      return;
+    }
     fetchActivities();
-  }, []);
+  }, [user, router]);
 
   const fetchActivities = async () => {
+    if (!user) return;
+    
     console.log('[Activity] Starting fetch...');
     try {
-      const response = await fetch('/api/activity');
+      const response = await fetch(`/api/activity?userId=${user.id}`);
       console.log('[Activity] Response status:', response.ok, response.status);
       const data = await response.json();
       console.log('[Activity] Data received:', data);
@@ -45,6 +55,14 @@ export default function ActivityPage() {
               <span className="font-medium">{activity.side}</span>
               {' in '}
               <span className="text-gray-700">"{activity.event_title}"</span>
+              {activity.group_name && (
+                <>
+                  {' '}
+                  <span className="text-gray-500 text-sm">
+                    · <span className="font-medium">{activity.group_name}</span>
+                  </span>
+                </>
+              )}
             </p>
             {activity.note && (
               <p className="text-sm text-gray-600 mt-1 font-light italic">
@@ -67,6 +85,14 @@ export default function ActivityPage() {
               <span className="font-medium text-purple-600">@{activity.username || 'Unknown'}</span>
               {' created '}
               <span className="text-gray-700">"{activity.event_title}"</span>
+              {activity.group_name && (
+                <>
+                  {' '}
+                  <span className="text-gray-500 text-sm">
+                    · <span className="font-medium">{activity.group_name}</span>
+                  </span>
+                </>
+              )}
             </p>
           </div>
           <span className="text-xs text-gray-400 ml-2 whitespace-nowrap font-light">
@@ -84,6 +110,14 @@ export default function ActivityPage() {
               <span className="font-medium text-green-700">✓ Resolved:</span>
               {' '}
               <span className="text-gray-700">"{activity.event_title}"</span>
+              {activity.group_name && (
+                <>
+                  {' '}
+                  <span className="text-gray-500 text-sm">
+                    · <span className="font-medium">{activity.group_name}</span>
+                  </span>
+                </>
+              )}
             </p>
             <p className="text-sm text-gray-600 mt-1 font-light">
               Winner: <span className="font-medium text-green-600">{activity.winning_side}</span>
@@ -116,13 +150,17 @@ export default function ActivityPage() {
     );
   }
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-extralight text-gray-900 mb-2">
         Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
       </h1>
       <p className="text-gray-600 font-light mb-8">
-        Recent events, bets, and resolutions
+        Recent events, bets, and resolutions from your groups
       </p>
 
       {activities.length === 0 ? (
@@ -146,7 +184,7 @@ export default function ActivityPage() {
           ))}
           
           <div className="text-center text-xs text-gray-400 pt-4">
-            Showing {activities.length} {activities.length === 50 ? '(limit reached)' : ''} activities
+            Showing {activities.length} {activities.length === 50 ? '(limit reached)' : ''} activities from your groups
           </div>
         </div>
       )}

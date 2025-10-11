@@ -38,6 +38,8 @@ export interface ActivityItem {
   timestamp: number;
   event_id: string;
   event_title: string;
+  group_id?: string;
+  group_name?: string;
   user_id?: string;
   username?: string;
   side?: string;

@@ -288,6 +288,38 @@ export const db = {
         timestamp: parseInt(row.timestamp),
       }));
     },
+
+    getByUserGroups: async (userId: string): Promise<ActivityItem[]> => {
+      const result = await sql`
+        SELECT 
+          a.*,
+          e.group_id,
+          g.name as group_name
+        FROM activities a
+        INNER JOIN events e ON a.event_id = e.id
+        INNER JOIN groups g ON e.group_id = g.id
+        INNER JOIN group_members gm ON g.id = gm.group_id
+        WHERE gm.user_id = ${userId} 
+          AND gm.status = 'active'
+        ORDER BY a.timestamp DESC
+        LIMIT 50
+      `;
+      
+      return result.rows.map(row => ({
+        type: row.type,
+        event_id: row.event_id,
+        event_title: row.event_title,
+        group_id: row.group_id,
+        group_name: row.group_name,
+        user_id: row.user_id || undefined,
+        username: row.username,
+        side: row.side,
+        amount: row.amount ? parseFloat(row.amount) : undefined,
+        note: row.note || undefined,
+        winning_side: row.winning_side,
+        timestamp: parseInt(row.timestamp),
+      }));
+    },
     
     add: async (activity: ActivityItem): Promise<ActivityItem> => {
       await sql`
