@@ -2,7 +2,7 @@
 
 import { useStackApp, useUser } from "@stackframe/stack";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +10,10 @@ export default function SignInPage() {
   const app = useStackApp();
   const user = useUser();
   const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -20,6 +24,83 @@ export default function SignInPage() {
   const handleGoogleSignIn = async () => {
     await app.signInWithOAuth("google");
   };
+
+  const handleMagicLinkSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      setError('Please enter your email');
+      return;
+    }
+    
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      await app.sendMagicLinkEmail(email);
+      setMagicLinkSent(true);
+    } catch (err) {
+      setError('Failed to send magic link. Please try again.');
+      console.error('Magic link error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePasskeySignIn = async () => {
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      await app.signInWithPasskey();
+    } catch (err) {
+      setError('Passkey sign-in failed. Please try another method.');
+      console.error('Passkey error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (magicLinkSent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="max-w-md w-full">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-extralight text-gray-900 mb-2">
+              Welcome to <span className="font-semibold text-orange-600">WagerPals</span>
+            </h1>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+            <div className="text-center">
+              <div className="mb-4">
+                <svg className="w-16 h-16 mx-auto text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-light text-gray-900 mb-2">
+                Check your email
+              </h2>
+              <p className="text-gray-600 mb-6">
+                We sent a magic link to <span className="font-medium">{email}</span>
+              </p>
+              <p className="text-sm text-gray-500 mb-6">
+                Click the link in the email to sign in. The link will expire in 15 minutes.
+              </p>
+              <button
+                onClick={() => {
+                  setMagicLinkSent(false);
+                  setEmail('');
+                }}
+                className="text-orange-600 hover:text-orange-700 text-sm font-medium"
+              >
+                Use a different email
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -38,9 +119,62 @@ export default function SignInPage() {
             Sign In
           </h2>
 
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Magic Link / OTP Sign In */}
+          <form onSubmit={handleMagicLinkSignIn} className="mb-6">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              Email address
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+              disabled={isLoading}
+            />
+            <button
+              type="submit"
+              disabled={isLoading || !email}
+              className="w-full mt-3 px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Sending...' : 'Continue with Email'}
+            </button>
+          </form>
+
+          {/* Passkey Sign In */}
+          <button
+            onClick={handlePasskeySignIn}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-light mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+            </svg>
+            <span>Continue with Passkey</span>
+          </button>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500 font-light">or</span>
+            </div>
+          </div>
+
+          {/* Google OAuth */}
           <button
             onClick={handleGoogleSignIn}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-light"
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-light disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
