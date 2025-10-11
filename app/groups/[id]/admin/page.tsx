@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useUser } from '@stackframe/stack';
+import Toast, { ToastType } from '@/components/Toast';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,7 @@ export default function GroupAdminPage() {
   const [group, setGroup] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -60,14 +62,15 @@ export default function GroupAdminPage() {
       });
 
       if (response.ok) {
+        setToast({ message: 'Action completed successfully', type: 'success' });
         fetchGroup(user.id);
       } else {
         const data = await response.json();
-        alert(data.error || 'Failed to perform action');
+        setToast({ message: data.error || 'Failed to perform action', type: 'error' });
       }
     } catch (error) {
       console.error('Failed to perform action:', error);
-      alert('Failed to perform action');
+      setToast({ message: 'Failed to perform action', type: 'error' });
     } finally {
       setProcessing(false);
     }
@@ -94,14 +97,21 @@ export default function GroupAdminPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-6">
-        <button
-          onClick={() => router.push(`/groups/${params.id}`)}
-          className="text-orange-600 hover:text-orange-700 font-light mb-2"
-        >
-          ← Back to Group
-        </button>
+    <>
+      <Toast
+        isOpen={toast !== null}
+        onClose={() => setToast(null)}
+        message={toast?.message || ''}
+        type={toast?.type || 'info'}
+      />
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="mb-6">
+          <button
+            onClick={() => router.push(`/groups/${params.id}`)}
+            className="text-orange-600 hover:text-orange-700 font-light mb-2"
+          >
+            ← Back to Group
+          </button>
         <h1 className="text-3xl font-light text-gray-900">
           Manage {group.name}
         </h1>
@@ -206,7 +216,8 @@ export default function GroupAdminPage() {
           ))}
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 }
 

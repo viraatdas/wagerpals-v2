@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@stackframe/stack';
 import PushNotificationPrompt from '@/components/PushNotificationPrompt';
 import InstallPrompt from '@/components/InstallPrompt';
+import Toast, { ToastType } from '@/components/Toast';
 import { Group } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -20,6 +21,7 @@ export default function Home() {
   const [groupCode, setGroupCode] = useState('');
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -123,16 +125,16 @@ export default function Home() {
       const data = await response.json();
       
       if (response.ok) {
-        alert('Join request submitted! Waiting for admin approval.');
+        setToast({ message: 'Join request submitted! Waiting for admin approval.', type: 'success' });
         setShowJoinModal(false);
         setGroupCode('');
         fetchGroups(user.id);
       } else {
-        alert(data.error || 'Failed to join group');
+        setToast({ message: data.error || 'Failed to join group', type: 'error' });
       }
     } catch (error) {
       console.error('Failed to join group:', error);
-      alert('Failed to join group');
+      setToast({ message: 'Failed to join group', type: 'error' });
     } finally {
       setJoining(false);
     }
@@ -154,6 +156,12 @@ export default function Home() {
     <>
       <PushNotificationPrompt />
       <InstallPrompt />
+      <Toast
+        isOpen={toast !== null}
+        onClose={() => setToast(null)}
+        message={toast?.message || ''}
+        type={toast?.type || 'info'}
+      />
 
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

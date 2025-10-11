@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Bet, Comment } from '@/lib/types';
 import { formatTimestamp, formatAmount } from '@/lib/utils';
 import ConfirmationModal from './ConfirmationModal';
+import Toast, { ToastType } from './Toast';
 
 interface LedgerProps {
   bets: Bet[];
@@ -19,6 +20,7 @@ export default function Ledger({ bets, comments = [], onBetDeleted, onCommentDel
   const [deletingComments, setDeletingComments] = useState<Set<string>>(new Set());
   const [betToDelete, setBetToDelete] = useState<string | null>(null);
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
   
   // Combine bets and comments
   const entries: LedgerEntry[] = [
@@ -49,9 +51,10 @@ export default function Ledger({ bets, comments = [], onBetDeleted, onCommentDel
       if (onBetDeleted) {
         onBetDeleted();
       }
+      setToast({ message: 'Bet deleted successfully', type: 'success' });
     } catch (error: any) {
       console.error('Failed to delete bet:', error);
-      alert(`Failed to delete bet: ${error.message}`);
+      setToast({ message: `Failed to delete bet: ${error.message}`, type: 'error' });
     } finally {
       setDeletingBets(prev => {
         const newSet = new Set(prev);
@@ -84,9 +87,10 @@ export default function Ledger({ bets, comments = [], onBetDeleted, onCommentDel
       if (onCommentDeleted) {
         onCommentDeleted();
       }
+      setToast({ message: 'Comment deleted successfully', type: 'success' });
     } catch (error: any) {
       console.error('Failed to delete comment:', error);
-      alert(`Failed to delete comment: ${error.message}`);
+      setToast({ message: `Failed to delete comment: ${error.message}`, type: 'error' });
     } finally {
       setDeletingComments(prev => {
         const newSet = new Set(prev);
@@ -110,6 +114,12 @@ export default function Ledger({ bets, comments = [], onBetDeleted, onCommentDel
 
   return (
     <>
+      <Toast
+        isOpen={toast !== null}
+        onClose={() => setToast(null)}
+        message={toast?.message || ''}
+        type={toast?.type || 'info'}
+      />
       <ConfirmationModal
         isOpen={betToDelete !== null}
         onClose={() => setBetToDelete(null)}
