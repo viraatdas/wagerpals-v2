@@ -40,46 +40,70 @@ export async function POST(request: NextRequest) {
   }
 
   // Normalize username for storage (lowercase)
-  const normalizedUsername = normalizeUsername(username.trim());
+  let normalizedUsername = normalizeUsername(username.trim());
 
   // If ID is provided (Stack Auth), use it for upsert
   if (id) {
-    // Check if user already exists by ID
-    const existing = await db.users.get(id);
-    if (existing) {
-      // Update username if different
-      if (existing.username !== normalizedUsername) {
-        await db.users.update(id, { username: normalizedUsername } as any);
-        const updated = await db.users.get(id);
-        return NextResponse.json(updated);
-      }
-      return NextResponse.json(existing);
-    }
-
-    // Create new user with provided ID
-    const newUser: User = {
-      id,
-      username: normalizedUsername,
-      net_total: 0,
-      total_bet: 0,
-      streak: 0,
-    };
-
-    await db.users.create(newUser);
-
-    // Send push notification for new user
     try {
-      await sendPushToAllSubscribers({
-        title: '👋 New User Joined!',
-        body: `${normalizedUsername} just joined WagerPals!`,
-        url: '/users',
-        tag: `user-${newUser.id}`,
-      });
-    } catch (error: any) {
-      console.error('[Users API] Failed to send push notifications:', error);
-    }
+      // Check if user already exists by ID
+      const existing = await db.users.get(id);
+      if (existing) {
+        // Update username if different
+        if (existing.username !== normalizedUsername) {
+          // Check if new username is taken
+          const userWithUsername = await db.users.getByUsername(normalizedUsername);
+          if (userWithUsername && userWithUsername.id !== id) {
+            return NextResponse.json({ error: 'Username already taken' }, { status: 400 });
+          }
+          await db.users.update(id, { username: normalizedUsername } as any);
+          const updated = await db.users.get(id);
+          return NextResponse.json(updated);
+        }
+        return NextResponse.json(existing);
+      }
 
-    return NextResponse.json(newUser);
+      // Check if username is already taken before creating
+      const userWithUsername = await db.users.getByUsername(normalizedUsername);
+      if (userWithUsername) {
+        // Username taken, generate a unique one
+        let uniqueUsername = normalizedUsername;
+        let attempt = 1;
+        while (await db.users.getByUsername(uniqueUsername)) {
+          uniqueUsername = `${normalizedUsername}${attempt}`;
+          attempt++;
+          if (attempt > 100) break; // Safety limit
+        }
+        normalizedUsername = uniqueUsername;
+      }
+
+      // Create new user with provided ID
+      const newUser: User = {
+        id,
+        username: normalizedUsername,
+        net_total: 0,
+        total_bet: 0,
+        streak: 0,
+      };
+
+      await db.users.create(newUser);
+
+      // Send push notification for new user
+      try {
+        await sendPushToAllSubscribers({
+          title: '👋 New User Joined!',
+          body: `${normalizedUsername} just joined WagerPals!`,
+          url: '/users',
+          tag: `user-${newUser.id}`,
+        });
+      } catch (error: any) {
+        console.error('[Users API] Failed to send push notifications:', error);
+      }
+
+      return NextResponse.json(newUser);
+    } catch (error: any) {
+      console.error('[Users API] Error creating/updating user:', error);
+      return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
+    }
   }
 
   // Legacy: No ID provided, generate one (for backwards compatibility)

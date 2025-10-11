@@ -15,14 +15,49 @@ export default function JoinGroupPage() {
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [alreadyMember, setAlreadyMember] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   useEffect(() => {
     if (!user) {
+      // Store the invite code for after signin
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('pendingGroupInvite', params.id as string);
+      }
       router.push('/auth/signin');
       return;
     }
-    fetchGroup();
+    
+    // Ensure user exists in database before proceeding
+    createOrUpdateUser().then(() => {
+      fetchGroup();
+    });
   }, [params.id, user, router]);
+
+  const createOrUpdateUser = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          id: user.id,
+          username: user.displayName || user.primaryEmail || 'User',
+        }),
+      });
+      
+      // Check if this was a new user signup
+      if (response.ok) {
+        const userData = await response.json();
+        // If user was just created (has default values), show welcome message
+        if (userData.total_bet === 0 && userData.net_total === 0) {
+          setIsNewUser(true);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to create/update user:', error);
+    }
+  };
 
   const fetchGroup = async () => {
     try {
@@ -75,8 +110,13 @@ export default function JoinGroupPage() {
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        setError(data.error || 'Failed to join group');
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json();
+          setError(data.error || 'Failed to join group');
+        } else {
+          setError('Failed to join group. Please try again.');
+        }
         setJoining(false);
         return;
       }
@@ -154,6 +194,14 @@ export default function JoinGroupPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
       <div className="bg-white rounded-lg shadow-md p-8">
+        {isNewUser && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p className="text-blue-800 font-light text-center">
+              👋 Welcome to WagerPals! You've been invited to join a group.
+            </p>
+          </div>
+        )}
+        
         <div className="text-center mb-8">
           <h1 className="text-3xl font-light text-gray-900 mb-2">Join Group</h1>
           <p className="text-gray-600 font-light">You've been invited to join:</p>

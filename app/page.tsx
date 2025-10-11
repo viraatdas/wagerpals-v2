@@ -27,10 +27,24 @@ export default function Home() {
       return;
     }
     
-    // Create or update user in our database
-    createOrUpdateUser();
+    // Create or update user in our database, then check for pending invite
+    createOrUpdateUser().then(() => {
+      checkAndHandlePendingInvite();
+    });
     fetchGroups(user.id);
   }, [user, router]);
+
+  const checkAndHandlePendingInvite = async () => {
+    if (!user) return;
+    
+    // Check if there's a pending group invite
+    const pendingInvite = sessionStorage.getItem('pendingGroupInvite');
+    if (pendingInvite) {
+      sessionStorage.removeItem('pendingGroupInvite');
+      // Redirect to the join page
+      router.push(`/groups/join/${pendingInvite}`);
+    }
+  };
 
   const createOrUpdateUser = async () => {
     if (!user) return;
