@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       event_title: event.title,
       user_id,
       username,
-      note: content.trim(),
+      note: content.trim(), // Using 'note' field to store comment content
     });
   } catch (error) {
     console.error('[Comments API] Failed to add to activity feed:', error);

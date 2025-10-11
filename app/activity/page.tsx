@@ -130,6 +130,36 @@ export default function ActivityPage() {
       );
     }
     
+    if (activity.type === 'comment') {
+      return (
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <p className="text-gray-900 font-light">
+              <span className="font-medium text-indigo-600">@{activity.username || 'Unknown'}</span>
+              {' commented on '}
+              <span className="text-gray-700">"{activity.event_title}"</span>
+              {activity.group_name && (
+                <>
+                  {' '}
+                  <span className="text-gray-500 text-sm">
+                    · <span className="font-medium">{activity.group_name}</span>
+                  </span>
+                </>
+              )}
+            </p>
+            {(activity.content || activity.note) && (
+              <p className="text-sm text-gray-600 mt-1 font-light italic">
+                "{activity.content || activity.note}"
+              </p>
+            )}
+          </div>
+          <span className="text-xs text-gray-400 ml-2 whitespace-nowrap font-light">
+            {formatTimestamp(activity.timestamp)}
+          </span>
+        </div>
+      );
+    }
+    
     return (
       <div className="text-gray-500">
         Unknown activity type: {activity.type}
