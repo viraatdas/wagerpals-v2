@@ -16,6 +16,7 @@ export default function GroupPage() {
   const [events, setEvents] = useState<EventWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -51,6 +52,17 @@ export default function GroupPage() {
       setEvents([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCopyInviteLink = async () => {
+    const inviteUrl = `${window.location.origin}/groups/join/${group.id}`;
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
     }
   };
 
@@ -123,6 +135,26 @@ export default function GroupPage() {
           <p className="text-lg text-gray-600 font-light">
             Group Code: <span className="font-mono font-semibold">{group.id}</span> • {group.member_count} members
           </p>
+          <button
+            onClick={handleCopyInviteLink}
+            className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-light text-sm transition-colors"
+          >
+            {copied ? (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Link Copied!
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Share Group
+              </>
+            )}
+          </button>
         </div>
         <div className="flex gap-2">
           {isAdmin && (
