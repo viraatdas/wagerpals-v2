@@ -5,7 +5,7 @@ import { AuthUser } from '../types';
 
 const AUTH_BASE_URL = __DEV__ 
   ? 'http://localhost:3000' 
-  : 'https://your-production-url.vercel.app';
+  : 'https://wagerpals.io';
 
 const STACK_PROJECT_ID = process.env.EXPO_PUBLIC_STACK_PROJECT_ID || 'your_project_id';
 const STACK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STACK_PUBLISHABLE_KEY || 'your_key';
@@ -130,5 +130,4 @@ class AuthService {
 }
 
 export default new AuthService();
-
 

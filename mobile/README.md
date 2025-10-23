@@ -152,6 +152,12 @@ eas build:configure
 eas build --platform ios
 ```
 
+For TestFlight, ensure:
+- You have an Apple Developer account and App Store Connect app with bundle ID `com.wagerpals.app`.
+- `EXPO_PUBLIC_EAS_PROJECT_ID` is set in `mobile/.env` (used for push token in dev).
+- `extra.eas.projectId` in `app.json` is set to your real EAS project ID (optional for builds; required if you want consistency across tooling).
+- In Vercel, set `APPLE_TEAM_ID` and `IOS_BUNDLE_IDENTIFIER` env vars so `/.well-known/apple-app-site-association` serves a valid file.
+
 ### Build for Android
 
 ```bash
@@ -167,6 +173,12 @@ eas submit --platform ios
 # Google Play Store
 eas submit --platform android
 ```
+
+### TestFlight Checklist
+- App opens deep links from `https://wagerpals.io/*` and `wagerpals://*`.
+- Push notifications received on physical device after login.
+- AASA file accessible at `https://wagerpals.io/.well-known/apple-app-site-association` (no redirect, content-type application/json).
+- Backend `NEXT_PUBLIC_APP_URL` set to `https://wagerpals.io` in Vercel.
 
 ## Project Structure
 
@@ -272,5 +284,4 @@ The mobile app uses the same backend as the web app.
 ## Support
 
 For issues or questions, please open an issue on GitHub or contact the development team.
-
 

@@ -15,6 +15,7 @@ import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
 import { User } from '../types';
 import { formatCurrency } from '../utils/helpers';
+import notificationService from '../services/notifications';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
@@ -90,6 +91,30 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.menuSection}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={async () => {
+              if (!authUser?.id) return;
+              try {
+                // Ensure we have a token and it’s subscribed
+                await notificationService.init(authUser.id);
+                await apiService.sendPushToUser({
+                  userId: authUser.id,
+                  title: 'Test notification',
+                  body: 'If you see this, mobile push works!',
+                });
+                Alert.alert('Success', 'Test notification sent (device required).');
+              } catch (e) {
+                console.error('Test push failed', e);
+                Alert.alert('Error', 'Failed to send test notification.');
+              }
+            }}
+          >
+            <Ionicons name="notifications-outline" size={24} color="#333" />
+            <Text style={styles.menuText}>Send Test Notification</Text>
+            <Ionicons name="chevron-forward" size={24} color="#999" />
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => navigation.navigate('EditUsername' as never)}
@@ -183,5 +208,4 @@ const styles = StyleSheet.create({
     color: '#dc2626',
   },
 });
-
 

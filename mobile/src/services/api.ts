@@ -5,7 +5,7 @@ import { User, Group, Event, Bet, Comment, ActivityItem, GroupMember, EventWithS
 // @ts-ignore
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || (__DEV__ 
   ? 'http://localhost:3000' 
-  : 'https://your-production-url.vercel.app');
+  : 'https://wagerpals.io');
 
 class ApiService {
   public API_BASE_URL = API_BASE_URL;
@@ -183,6 +183,19 @@ class ApiService {
   }
 
   // Push notification APIs
+  async sendPushToUser(input: {
+    userId: string;
+    title?: string;
+    body?: string;
+    url?: string;
+    eventId?: string;
+    tag?: string;
+  }): Promise<{ ok: boolean } | any> {
+    return this.request('/api/push/send-to-user', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
   async subscribeToPush(subscription: {
     token: string;
     userId?: string;
@@ -202,5 +215,3 @@ class ApiService {
 }
 
 export default new ApiService();
-
-

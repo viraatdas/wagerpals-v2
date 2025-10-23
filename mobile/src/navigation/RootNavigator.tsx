@@ -52,7 +52,7 @@ export default function RootNavigator() {
   }, [user?.id]);
 
   const linking = {
-    prefixes: [prefix, 'wagerpals://', 'https://wagerpals.app', 'https://*.wagerpals.app'],
+    prefixes: [prefix, 'wagerpals://', 'https://wagerpals.io', 'https://*.wagerpals.io'],
     config: {
       screens: {
         Main: {
@@ -68,7 +68,7 @@ export default function RootNavigator() {
         GroupAdmin: 'groups/:groupId/admin',
       },
     },
-  };
+  } as any;
 
   if (isLoading) {
     return null; // Or a loading screen
@@ -126,4 +126,3 @@ export default function RootNavigator() {
     </NavigationContainer>
   );
 }
-

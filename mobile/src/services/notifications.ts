@@ -1,5 +1,6 @@
 // Push notification service using Expo Notifications
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import apiService from './api';
@@ -70,8 +71,10 @@ class NotificationService {
     }
 
     try {
-      // SDK 48+ may require explicit projectId for dev
-      const projectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID;
+      // Prefer env, then app config (works in Expo Go and dev builds)
+      const projectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID
+        || (Constants?.expoConfig as any)?.extra?.eas?.projectId
+        || (Constants as any)?.easConfig?.projectId;
       const token = projectId
         ? (await Notifications.getExpoPushTokenAsync({ projectId })).data
         : (await Notifications.getExpoPushTokenAsync()).data;

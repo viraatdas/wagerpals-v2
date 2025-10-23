@@ -17,8 +17,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.wagerpals.app",
       "associatedDomains": [
-        "applinks:wagerpals.app",
-        "applinks:*.wagerpals.app"
+        "applinks:wagerpals.io",
+        "applinks:*.wagerpals.io"
       ]
     },
     "android": {
@@ -36,12 +36,12 @@
           "data": [
             {
               "scheme": "https",
-              "host": "wagerpals.app",
+              "host": "wagerpals.io",
               "pathPrefix": "/"
             },
             {
               "scheme": "https",
-              "host": "*.wagerpals.app",
+              "host": "*.wagerpals.io",
               "pathPrefix": "/"
             }
           ],

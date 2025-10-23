@@ -321,12 +321,21 @@ export default function Home() {
                   className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer"
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-light text-gray-900">{group.name}</h3>
-                    {group.is_admin && (
-                      <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded font-light">
-                        Admin
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-light text-gray-900">{group.name}</h3>
+                      {group.is_public && (
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded font-light">
+                          🌐 Public
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {group.is_admin && (
+                        <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded font-light">
+                          Admin
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex gap-4 text-sm text-gray-600 font-light">
                     <span>Code: {group.id}</span>
