@@ -323,9 +323,13 @@ export default function Home() {
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-2">
                       <h3 className="text-xl font-light text-gray-900">{group.name}</h3>
-                      {group.is_public && (
+                      {group.is_public ? (
                         <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded font-light">
                           🌐 Public
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-light">
+                          🔒 Private
                         </span>
                       )}
                     </div>
