@@ -11,11 +11,12 @@ interface LedgerProps {
   comments?: Comment[];
   onBetDeleted?: () => void;
   onCommentDeleted?: () => void;
+  isPublic?: boolean;
 }
 
 type LedgerEntry = (Bet & { type: 'bet' }) | (Comment & { type: 'comment' });
 
-export default function Ledger({ bets, comments = [], onBetDeleted, onCommentDeleted }: LedgerProps) {
+export default function Ledger({ bets, comments = [], onBetDeleted, onCommentDeleted, isPublic = false }: LedgerProps) {
   const [deletingBets, setDeletingBets] = useState<Set<string>>(new Set());
   const [deletingComments, setDeletingComments] = useState<Set<string>>(new Set());
   const [betToDelete, setBetToDelete] = useState<string | null>(null);
@@ -103,7 +104,8 @@ export default function Ledger({ bets, comments = [], onBetDeleted, onCommentDel
   const getBetDetails = (betId: string) => {
     const bet = bets.find(b => b.id === betId);
     if (!bet) return '';
-    return `@${bet.username}'s $${bet.amount.toFixed(2)} bet on ${bet.side}`;
+    const currency = isPublic ? 'pts' : '$';
+    return `@${bet.username}'s ${currency}${bet.amount.toFixed(2)} bet on ${bet.side}`;
   };
 
   const getCommentDetails = (commentId: string) => {
@@ -162,7 +164,9 @@ export default function Ledger({ bets, comments = [], onBetDeleted, onCommentDel
                         <span className="font-medium text-gray-900">@{bet.username}</span>
                         <span className="text-gray-500">→</span>
                         <span className="font-light text-gray-700">{bet.side}</span>
-                        <span className="font-semibold text-gray-900">${bet.amount.toFixed(2)}</span>
+                        <span className="font-semibold text-gray-900">
+                          {isPublic ? `${bet.amount.toFixed(2)} pts` : `$${bet.amount.toFixed(2)}`}
+                        </span>
                         {bet.is_late && (
                           <span className="px-2 py-0.5 bg-orange-200 text-orange-800 text-xs font-light rounded">
                             Late

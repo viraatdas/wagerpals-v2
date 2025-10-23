@@ -6,9 +6,10 @@ import { calculatePayments, formatAmount } from '@/lib/utils';
 interface ResolutionBannerProps {
   event: Event;
   netResults: NetResult[];
+  isPublic?: boolean;
 }
 
-export default function ResolutionBanner({ event, netResults }: ResolutionBannerProps) {
+export default function ResolutionBanner({ event, netResults, isPublic = false }: ResolutionBannerProps) {
   if (!event.resolution) return null;
 
   const payments = calculatePayments([...netResults]);
@@ -47,7 +48,7 @@ export default function ResolutionBanner({ event, netResults }: ResolutionBanner
                       : 'text-gray-600'
                   }`}
                 >
-                  {formatAmount(result.net)}
+                  {formatAmount(result.net, isPublic)}
                 </span>
               </div>
             ))}
@@ -67,7 +68,7 @@ export default function ResolutionBanner({ event, netResults }: ResolutionBanner
                   {' → '}
                   <span className="font-medium">{payment.to}</span>
                   {': '}
-                  <span className="font-semibold">${payment.amount.toFixed(2)}</span>
+                  <span className="font-semibold">{isPublic ? `${payment.amount.toFixed(2)} pts` : `$${payment.amount.toFixed(2)}`}</span>
                 </div>
               ))}
             </div>

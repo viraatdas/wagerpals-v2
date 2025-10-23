@@ -8,9 +8,10 @@ interface BetFormProps {
   userId: string;
   username: string;
   onBetPlaced: () => void;
+  isPublic?: boolean;
 }
 
-export default function BetForm({ sides, eventId, userId, username, onBetPlaced }: BetFormProps) {
+export default function BetForm({ sides, eventId, userId, username, onBetPlaced, isPublic = false }: BetFormProps) {
   const [selectedSide, setSelectedSide] = useState(sides[0]);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
@@ -77,7 +78,7 @@ export default function BetForm({ sides, eventId, userId, username, onBetPlaced 
 
         <div>
           <label htmlFor="amount" className="block text-sm font-light text-gray-700 mb-3">
-            Amount ($)
+            Amount ({isPublic ? 'pts' : '$'})
           </label>
           <input
             type="number"

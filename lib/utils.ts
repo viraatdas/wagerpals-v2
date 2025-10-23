@@ -102,9 +102,12 @@ export function formatTimestamp(timestamp: number): string {
   return 'just now';
 }
 
-export function formatAmount(amount: number): string {
+export function formatAmount(amount: number, isPublic: boolean = false): string {
   const formatted = amount.toFixed(2);
-  return amount >= 0 ? `+${formatted}` : formatted;
+  if (isPublic) {
+    return `${formatted} pts`;
+  }
+  return amount >= 0 ? `+$${formatted}` : `-$${Math.abs(amount).toFixed(2)}`;
 }
 
 // Username utilities
