@@ -101,14 +101,19 @@ export async function sendPushToAllSubscribers(
   let failed = 0;
 
   const results = await Promise.allSettled(
-    subscriptions.map((sub) => {
-      // Check if it's an Expo token
-      if (sub.platform === 'mobile' && sub.expo_token) {
-        return sendExpoNotification(sub.expo_token, payload);
-      }
-      // Otherwise, it's a web push subscription
-      return sendPushNotification(sub.endpoint, sub.p256dh!, sub.auth!, payload);
-    })
+    subscriptions
+      .filter((sub) => {
+        // Include mobile subscriptions or web subscriptions with valid keys
+        return (sub.platform === 'mobile' && sub.expo_token) || (sub.p256dh && sub.auth);
+      })
+      .map((sub) => {
+        // Check if it's an Expo token
+        if (sub.platform === 'mobile' && sub.expo_token) {
+          return sendExpoNotification(sub.expo_token, payload);
+        }
+        // Otherwise, it's a web push subscription (we know p256dh and auth exist due to filter)
+        return sendPushNotification(sub.endpoint, sub.p256dh!, sub.auth!, payload);
+      })
   );
 
   results.forEach((result, index) => {
@@ -145,14 +150,19 @@ export async function sendPushToUser(
   let failed = 0;
 
   const results = await Promise.allSettled(
-    subscriptions.map((sub) => {
-      // Check if it's an Expo token
-      if (sub.platform === 'mobile' && sub.expo_token) {
-        return sendExpoNotification(sub.expo_token, payload);
-      }
-      // Otherwise, it's a web push subscription
-      return sendPushNotification(sub.endpoint, sub.p256dh!, sub.auth!, payload);
-    })
+    subscriptions
+      .filter((sub) => {
+        // Include mobile subscriptions or web subscriptions with valid keys
+        return (sub.platform === 'mobile' && sub.expo_token) || (sub.p256dh && sub.auth);
+      })
+      .map((sub) => {
+        // Check if it's an Expo token
+        if (sub.platform === 'mobile' && sub.expo_token) {
+          return sendExpoNotification(sub.expo_token, payload);
+        }
+        // Otherwise, it's a web push subscription (we know p256dh and auth exist due to filter)
+        return sendPushNotification(sub.endpoint, sub.p256dh!, sub.auth!, payload);
+      })
   );
 
   results.forEach((result, index) => {
