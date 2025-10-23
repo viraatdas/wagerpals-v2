@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { generateId, validateUsername, normalizeUsername } from '@/lib/utils';
+import { generateId, validateUsername, normalizeUsername, sanitizeUsername } from '@/lib/utils';
 import { User } from '@/lib/types';
 import { sendPushToAllSubscribers } from '@/lib/push';
 
@@ -51,8 +51,15 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // For auto-generated usernames (from displayName/email), sanitize to remove spaces and special chars
+  let processedUsername = username.trim();
+  if (!username_selected) {
+    processedUsername = sanitizeUsername(processedUsername);
+    console.log('[Users API] Sanitized auto-generated username:', processedUsername);
+  }
+
   // Normalize username for storage (lowercase)
-  let normalizedUsername = normalizeUsername(username.trim());
+  let normalizedUsername = normalizeUsername(processedUsername);
   console.log('[Users API] Normalized username:', normalizedUsername);
 
   // If ID is provided (Stack Auth), use it for upsert

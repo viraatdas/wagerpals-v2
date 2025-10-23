@@ -57,19 +57,13 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // Get groups for user
+  // Get groups for user (only groups they're actually a member of)
   if (userId) {
     const userGroups = await db.groups.getByUser(userId);
-    const publicGroups = await db.groups.getPublic();
-    
-    // Merge user groups with public groups (remove duplicates)
-    const allGroupIds = new Set([...userGroups.map(g => g.id)]);
-    const uniquePublicGroups = publicGroups.filter(g => !allGroupIds.has(g.id));
-    const allGroups = [...userGroups, ...uniquePublicGroups];
     
     // Get member info for each group
     const groupsWithInfo = await Promise.all(
-      allGroups.map(async (group) => {
+      userGroups.map(async (group) => {
         const members = await db.groupMembers.getByGroup(group.id);
         const activeMembers = members.filter(m => m.status === 'active');
         const userMembership = members.find(m => m.user_id === userId);

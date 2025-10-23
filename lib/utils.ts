@@ -140,7 +140,24 @@ export function validateUsername(username: string): { valid: boolean; error?: st
 }
 
 export function sanitizeUsername(username: string): string {
-  // Remove all characters except alphanumeric and underscore
-  return username.replace(/[^a-zA-Z0-9_]/g, '').trim();
+  // Remove all characters except alphanumeric and underscore, then trim
+  let sanitized = username.replace(/[^a-zA-Z0-9_]/g, '');
+  
+  // If empty after sanitization, use a default
+  if (sanitized.length === 0) {
+    sanitized = 'user';
+  }
+  
+  // Ensure it's at least 2 characters
+  if (sanitized.length < 2) {
+    sanitized = sanitized + Math.floor(Math.random() * 100);
+  }
+  
+  // Trim to max 20 characters
+  if (sanitized.length > 20) {
+    sanitized = sanitized.substring(0, 20);
+  }
+  
+  return sanitized;
 }
 

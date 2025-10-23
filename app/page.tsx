@@ -72,12 +72,15 @@ export default function Home() {
     if (!user) return;
     
     try {
+      // Generate initial username from displayName or email
+      let initialUsername = user.displayName || user.primaryEmail?.split('@')[0] || 'User';
+      
       await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           id: user.id,
-          username: user.displayName || user.primaryEmail || 'User',
+          username: initialUsername,
           // Don't set username_selected - let the user choose their username
         }),
       });
