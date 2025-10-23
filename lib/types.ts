@@ -82,6 +82,7 @@ export interface Group {
   id: string;
   name: string;
   created_by: string;
+  is_public: boolean;
   created_at?: string;
 }
 

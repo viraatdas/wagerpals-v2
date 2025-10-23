@@ -452,6 +452,7 @@ export const db = {
         id: row.id,
         name: row.name,
         created_by: row.created_by,
+        is_public: row.is_public || false,
         created_at: row.created_at,
       };
     },
@@ -462,6 +463,22 @@ export const db = {
         id: row.id,
         name: row.name,
         created_by: row.created_by,
+        is_public: row.is_public || false,
+        created_at: row.created_at,
+      }));
+    },
+
+    getPublic: async (): Promise<Group[]> => {
+      const result = await sql`
+        SELECT * FROM groups 
+        WHERE is_public = TRUE 
+        ORDER BY created_at DESC
+      `;
+      return result.rows.map(row => ({
+        id: row.id,
+        name: row.name,
+        created_by: row.created_by,
+        is_public: row.is_public || false,
         created_at: row.created_at,
       }));
     },
@@ -477,14 +494,15 @@ export const db = {
         id: row.id,
         name: row.name,
         created_by: row.created_by,
+        is_public: row.is_public || false,
         created_at: row.created_at,
       }));
     },
 
     create: async (group: Group): Promise<Group> => {
       await sql`
-        INSERT INTO groups (id, name, created_by)
-        VALUES (${group.id}, ${group.name}, ${group.created_by})
+        INSERT INTO groups (id, name, created_by, is_public)
+        VALUES (${group.id}, ${group.name}, ${group.created_by}, ${group.is_public || false})
       `;
       return group;
     },

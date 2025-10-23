@@ -13,6 +13,29 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get('userId');
   const groupId = searchParams.get('id');
+  const publicOnly = searchParams.get('public') === 'true';
+
+  // Get public groups (available to everyone)
+  if (publicOnly) {
+    const publicGroups = await db.groups.getPublic();
+    
+    // Get member info for each public group
+    const groupsWithInfo = await Promise.all(
+      publicGroups.map(async (group) => {
+        const members = await db.groupMembers.getByGroup(group.id);
+        const activeMembers = members.filter(m => m.status === 'active');
+        
+        return {
+          ...group,
+          member_count: activeMembers.length,
+          admin_count: activeMembers.filter(m => m.role === 'admin').length,
+          is_admin: false,
+        };
+      })
+    );
+
+    return NextResponse.json(groupsWithInfo);
+  }
 
   // Get specific group
   if (groupId) {
@@ -36,11 +59,17 @@ export async function GET(request: NextRequest) {
 
   // Get groups for user
   if (userId) {
-    const groups = await db.groups.getByUser(userId);
+    const userGroups = await db.groups.getByUser(userId);
+    const publicGroups = await db.groups.getPublic();
+    
+    // Merge user groups with public groups (remove duplicates)
+    const allGroupIds = new Set([...userGroups.map(g => g.id)]);
+    const uniquePublicGroups = publicGroups.filter(g => !allGroupIds.has(g.id));
+    const allGroups = [...userGroups, ...uniquePublicGroups];
     
     // Get member info for each group
     const groupsWithInfo = await Promise.all(
-      groups.map(async (group) => {
+      allGroups.map(async (group) => {
         const members = await db.groupMembers.getByGroup(group.id);
         const activeMembers = members.filter(m => m.status === 'active');
         const userMembership = members.find(m => m.user_id === userId);
@@ -51,6 +80,7 @@ export async function GET(request: NextRequest) {
           admin_count: activeMembers.filter(m => m.role === 'admin').length,
           user_role: userMembership?.role || 'member',
           is_admin: userMembership?.role === 'admin',
+          is_member: !!userMembership && userMembership.status === 'active',
         };
       })
     );
@@ -63,7 +93,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { name, created_by } = body;
+  const { name, created_by, is_public } = body;
 
   if (!name || !created_by) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -87,6 +117,7 @@ export async function POST(request: NextRequest) {
     id: groupId,
     name: name.trim(),
     created_by,
+    is_public: is_public || false,
   };
 
   await db.groups.create(newGroup);
