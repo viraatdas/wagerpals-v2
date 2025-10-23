@@ -1,0 +1,25 @@
+{
+  "cli": {
+    "version": ">= 13.4.4"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      }
+    },
+    "production": {
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
+
+

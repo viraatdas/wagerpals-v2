@@ -101,9 +101,14 @@ export async function sendPushToAllSubscribers(
   let failed = 0;
 
   const results = await Promise.allSettled(
-    subscriptions.map((sub) =>
-      sendPushNotification(sub.endpoint, sub.p256dh, sub.auth, payload)
-    )
+    subscriptions.map((sub) => {
+      // Check if it's an Expo token
+      if (sub.platform === 'mobile' && sub.expo_token) {
+        return sendExpoNotification(sub.expo_token, payload);
+      }
+      // Otherwise, it's a web push subscription
+      return sendPushNotification(sub.endpoint, sub.p256dh!, sub.auth!, payload);
+    })
   );
 
   results.forEach((result, index) => {
@@ -120,5 +125,90 @@ export async function sendPushToAllSubscribers(
   console.log(`[SendToAll] Push notifications sent: ${success} succeeded, ${failed} failed`);
   
   return { success, failed };
+}
+
+// Send push notification to a specific user
+export async function sendPushToUser(
+  userId: string,
+  payload: PushNotificationPayload
+): Promise<{ success: number; failed: number }> {
+  console.log(`[SendToUser] Sending to user: ${userId}`);
+  const subscriptions = await db.pushSubscriptions.getByUserId(userId);
+  console.log(`[SendToUser] Found ${subscriptions.length} subscriptions for user`);
+  
+  if (subscriptions.length === 0) {
+    console.log(`[SendToUser] No subscriptions for user ${userId}`);
+    return { success: 0, failed: 0 };
+  }
+  
+  let success = 0;
+  let failed = 0;
+
+  const results = await Promise.allSettled(
+    subscriptions.map((sub) => {
+      // Check if it's an Expo token
+      if (sub.platform === 'mobile' && sub.expo_token) {
+        return sendExpoNotification(sub.expo_token, payload);
+      }
+      // Otherwise, it's a web push subscription
+      return sendPushNotification(sub.endpoint, sub.p256dh!, sub.auth!, payload);
+    })
+  );
+
+  results.forEach((result, index) => {
+    if (result.status === 'fulfilled' && result.value) {
+      success++;
+    } else {
+      failed++;
+      if (result.status === 'rejected') {
+        console.error(`[SendToUser] Subscription ${index} rejected:`, result.reason);
+      }
+    }
+  });
+
+  console.log(`[SendToUser] Push notifications sent to ${userId}: ${success} succeeded, ${failed} failed`);
+  
+  return { success, failed };
+}
+
+// Send notification via Expo Push Notification service
+async function sendExpoNotification(
+  expoToken: string,
+  payload: PushNotificationPayload
+): Promise<boolean> {
+  try {
+    console.log(`[Expo] Sending to: ${expoToken}`);
+    
+    const message = {
+      to: expoToken,
+      sound: 'default',
+      title: payload.title,
+      body: payload.body,
+      data: {
+        url: payload.url,
+        eventId: payload.eventId,
+        tag: payload.tag,
+      },
+    };
+
+    const response = await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Expo push failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log(`[Expo] ✅ Success:`, data);
+    return true;
+  } catch (error: any) {
+    console.error(`[Expo] ❌ Error:`, error.message);
+    return false;
+  }
 }
 

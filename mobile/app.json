@@ -1,0 +1,74 @@
+{
+  "expo": {
+    "name": "WagerPals",
+    "slug": "wagerpals",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "wagerpals",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.wagerpals.app",
+      "associatedDomains": [
+        "applinks:wagerpals.app",
+        "applinks:*.wagerpals.app"
+      ]
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.wagerpals.app",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "wagerpals.app",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "https",
+              "host": "*.wagerpals.app",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#ea580c",
+          "sounds": []
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "your-eas-project-id"
+      }
+    }
+  }
+}

@@ -4,6 +4,7 @@
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   username TEXT UNIQUE NOT NULL,
+  username_selected BOOLEAN DEFAULT FALSE,
   net_total DECIMAL(10,2) DEFAULT 0,
   total_bet DECIMAL(10,2) DEFAULT 0,
   streak INTEGER DEFAULT 0,
@@ -85,13 +86,15 @@ CREATE TABLE IF NOT EXISTS activities (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Push Subscriptions table
+-- Push Subscriptions table (supports both web push and Expo)
 CREATE TABLE IF NOT EXISTS push_subscriptions (
   id SERIAL PRIMARY KEY,
   user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
   endpoint TEXT NOT NULL UNIQUE,
-  p256dh TEXT NOT NULL,
-  auth TEXT NOT NULL,
+  p256dh TEXT,
+  auth TEXT,
+  expo_token TEXT,
+  platform TEXT DEFAULT 'web',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

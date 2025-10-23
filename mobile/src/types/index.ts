@@ -1,9 +1,12 @@
+// TypeScript types matching the web app
+
 export interface User {
   id: string;
   username: string;
   net_total: number;
   total_bet: number;
   streak: number;
+  username_selected?: boolean;
 }
 
 export interface Event {
@@ -68,21 +71,14 @@ export interface Payment {
   amount: number;
 }
 
-export interface PushSubscription {
-  id?: number;
-  user_id?: string;
-  endpoint: string;
-  p256dh?: string;
-  auth?: string;
-  expo_token?: string;
-  platform?: 'web' | 'mobile';
-}
-
 export interface Group {
   id: string;
   name: string;
   created_by: string;
   created_at?: string;
+  is_admin?: boolean;
+  member_count?: number;
+  admin_count?: number;
 }
 
 export interface GroupMember {
@@ -109,3 +105,12 @@ export interface GroupWithMembers extends Group {
   member_count: number;
   admin_count: number;
 }
+
+export interface AuthUser {
+  id: string;
+  email?: string;
+  displayName?: string;
+  primaryEmail?: string;
+}
+
+

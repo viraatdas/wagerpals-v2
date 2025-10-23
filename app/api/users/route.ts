@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
       const newUser: User = {
         id,
         username: normalizedUsername,
+        username_selected: true,
         net_total: 0,
         total_bet: 0,
         streak: 0,

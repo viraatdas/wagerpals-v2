@@ -5,8 +5,23 @@ import { cookies } from 'next/headers';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { endpoint, keys } = body;
+    const { endpoint, keys, token, userId } = body;
 
+    // Support both web push and Expo push tokens
+    if (token) {
+      // Expo push token
+      const subscription = await db.pushSubscriptions.create({
+        user_id: userId,
+        endpoint: token,
+        expo_token: token,
+        platform: 'mobile',
+        p256dh: null,
+        auth: null,
+      });
+      return NextResponse.json({ success: true, subscription });
+    }
+
+    // Web push subscription
     if (!endpoint || !keys?.p256dh || !keys?.auth) {
       return NextResponse.json(
         { error: 'Missing required subscription data' },
@@ -16,14 +31,15 @@ export async function POST(request: NextRequest) {
 
     // Get user ID from cookie if available
     const cookieStore = await cookies();
-    const userId = cookieStore.get('userId')?.value;
+    const cookieUserId = cookieStore.get('userId')?.value;
 
     // Store subscription in database
     const subscription = await db.pushSubscriptions.create({
-      user_id: userId,
+      user_id: userId || cookieUserId,
       endpoint,
       p256dh: keys.p256dh,
       auth: keys.auth,
+      platform: 'web',
     });
 
     return NextResponse.json({ success: true, subscription });
@@ -39,16 +55,18 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
-    const { endpoint } = body;
+    const { endpoint, token } = body;
 
-    if (!endpoint) {
+    const endpointToDelete = token || endpoint;
+
+    if (!endpointToDelete) {
       return NextResponse.json(
-        { error: 'Missing endpoint' },
+        { error: 'Missing endpoint or token' },
         { status: 400 }
       );
     }
 
-    await db.pushSubscriptions.delete(endpoint);
+    await db.pushSubscriptions.delete(endpointToDelete);
 
     return NextResponse.json({ success: true });
   } catch (error) {

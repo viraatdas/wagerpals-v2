@@ -10,6 +10,7 @@ export const db = {
       return {
         id: row.id,
         username: row.username,
+        username_selected: row.username_selected || false,
         net_total: parseFloat(row.net_total),
         total_bet: parseFloat(row.total_bet || 0),
         streak: row.streak,
@@ -23,6 +24,7 @@ export const db = {
       return {
         id: row.id,
         username: row.username,
+        username_selected: row.username_selected || false,
         net_total: parseFloat(row.net_total),
         total_bet: parseFloat(row.total_bet || 0),
         streak: row.streak,
@@ -34,6 +36,7 @@ export const db = {
       return result.rows.map(row => ({
         id: row.id,
         username: row.username,
+        username_selected: row.username_selected || false,
         net_total: parseFloat(row.net_total),
         total_bet: parseFloat(row.total_bet || 0),
         streak: row.streak,
@@ -42,8 +45,8 @@ export const db = {
     
     create: async (user: User): Promise<User> => {
       await sql`
-        INSERT INTO users (id, username, net_total, total_bet, streak)
-        VALUES (${user.id}, ${user.username}, ${user.net_total}, ${user.total_bet}, ${user.streak})
+        INSERT INTO users (id, username, username_selected, net_total, total_bet, streak)
+        VALUES (${user.id}, ${user.username}, ${user.username_selected || true}, ${user.net_total}, ${user.total_bet}, ${user.streak})
       `;
       return user;
     },
@@ -362,6 +365,8 @@ export const db = {
         endpoint: row.endpoint,
         p256dh: row.p256dh,
         auth: row.auth,
+        expo_token: row.expo_token,
+        platform: row.platform,
       }));
     },
 
@@ -376,16 +381,45 @@ export const db = {
         endpoint: row.endpoint,
         p256dh: row.p256dh,
         auth: row.auth,
+        expo_token: row.expo_token,
+        platform: row.platform,
+      }));
+    },
+
+    getByUserId: async (userId: string): Promise<PushSubscription[]> => {
+      const result = await sql`
+        SELECT * FROM push_subscriptions 
+        WHERE user_id = ${userId}
+      `;
+      return result.rows.map(row => ({
+        id: row.id,
+        user_id: row.user_id,
+        endpoint: row.endpoint,
+        p256dh: row.p256dh,
+        auth: row.auth,
+        expo_token: row.expo_token,
+        platform: row.platform,
       }));
     },
 
     create: async (subscription: PushSubscription): Promise<PushSubscription> => {
       try {
         const result = await sql`
-          INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth)
-          VALUES (${subscription.user_id || null}, ${subscription.endpoint}, ${subscription.p256dh}, ${subscription.auth})
+          INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth, expo_token, platform)
+          VALUES (
+            ${subscription.user_id || null}, 
+            ${subscription.endpoint}, 
+            ${subscription.p256dh || null}, 
+            ${subscription.auth || null},
+            ${subscription.expo_token || null},
+            ${subscription.platform || 'web'}
+          )
           ON CONFLICT (endpoint) DO UPDATE 
-          SET user_id = ${subscription.user_id || null}, p256dh = ${subscription.p256dh}, auth = ${subscription.auth}
+          SET user_id = ${subscription.user_id || null}, 
+              p256dh = ${subscription.p256dh || null}, 
+              auth = ${subscription.auth || null},
+              expo_token = ${subscription.expo_token || null},
+              platform = ${subscription.platform || 'web'}
           RETURNING *
         `;
         const row = result.rows[0];
@@ -395,6 +429,8 @@ export const db = {
           endpoint: row.endpoint,
           p256dh: row.p256dh,
           auth: row.auth,
+          expo_token: row.expo_token,
+          platform: row.platform,
         };
       } catch (error) {
         console.error('Error creating push subscription:', error);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { sendPushToUser } from '@/lib/push';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +24,20 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Missing target_user_id' }, { status: 400 });
       }
       await db.groupMembers.update(group_id, target_user_id, { status: 'active' });
+      
+      // Send push notification to approved user
+      try {
+        const group = await db.groups.get(group_id);
+        await sendPushToUser(target_user_id, {
+          title: '✅ Approved!',
+          body: `You've been accepted into ${group?.name || 'the group'}`,
+          url: `/groups/${group_id}`,
+          tag: `group-approved-${group_id}`,
+        });
+      } catch (error) {
+        console.error('Failed to send approval notification:', error);
+      }
+      
       return NextResponse.json({ message: 'Member approved' });
 
     case 'decline':
@@ -37,6 +52,20 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Missing target_user_id' }, { status: 400 });
       }
       await db.groupMembers.update(group_id, target_user_id, { role: 'admin' });
+      
+      // Send push notification to promoted user
+      try {
+        const group = await db.groups.get(group_id);
+        await sendPushToUser(target_user_id, {
+          title: '🎉 Promoted to Admin!',
+          body: `You're now an admin of ${group?.name || 'the group'}`,
+          url: `/groups/${group_id}/admin`,
+          tag: `group-promoted-${group_id}`,
+        });
+      } catch (error) {
+        console.error('Failed to send promotion notification:', error);
+      }
+      
       return NextResponse.json({ message: 'Member promoted to admin' });
 
     case 'demote':

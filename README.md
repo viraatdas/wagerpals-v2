@@ -1,182 +1,319 @@
-# Wager Pals
+# WagerPals v2
 
-A social ledger for bets. There are witnesses and all viewable among your friends.
+Comprehensive guide for the full WagerPals project, including both web and mobile applications.
 
-## Features
+## Project Structure
 
-- 🎯 **Create Events**: Set up prediction events with custom sides and deadlines
-- 💰 **Place Bets**: Join events by picking a side and wagering an amount
-- 📊 **Live Ledger**: See all participants and their predictions in real-time
-- 🏆 **Event Resolution**: Resolve events and see net results & payment breakdowns
-- 📱 **Activity Feed**: Follow all bets and resolutions across the platform (auto-refreshes)
-- 👥 **User Profiles**: Track stats, streaks, and net totals
-- 🗑️ **Event Management**: Delete or unresolve events as needed
-- ✅ **Persistent Storage**: All data saved in Vercel Postgres database
-- 📲 **Progressive Web App**: Install on your phone and use like a native app
-- 🔔 **Push Notifications**: Get notified when new betting events are created
+```
+wagerpals-v2/
+├── app/              # Next.js web application
+├── components/       # Shared web components
+├── lib/             # Shared backend logic, database, and types
+├── mobile/          # React Native mobile app (NEW!)
+├── public/          # Static assets for web
+└── scripts/         # Database scripts and utilities
+```
 
-## Stack
+## Quick Start
 
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Database**: Vercel Postgres (persistent storage)
-- **Deployment**: Vercel
-
-## Getting Started
-
-### 1. Install Dependencies
+### Web Application
 
 ```bash
+# Install dependencies
 npm install
-```
 
-### 2. Set Up Database
+# Set up environment variables
+cp .env.local.example .env.local
+# Edit .env.local with your values
 
-See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for detailed instructions on setting up Vercel Postgres.
+# Initialize database
+npm run db:init
 
-**Quick summary:**
-1. Create a Postgres database in your Vercel project dashboard
-2. Copy environment variables to `.env.local`
-3. Run `npm run db:init` to create tables
-
-### 3. Generate App Icons (Optional)
-
-For a production PWA, you should generate proper PNG icons. Open `public/icons/generate-icons.html` in your browser, then:
-
-1. Right-click the first canvas and save as `icon-192x192.png`
-2. Right-click the second canvas and save as `icon-512x512.png`
-3. Save both files in the `public/icons/` directory
-
-(SVG icons are included as placeholders and will work for testing)
-
-### 4. Configure Push Notifications
-
-Generate VAPID keys for web push notifications:
-
-```bash
-npx web-push generate-vapid-keys
-```
-
-Add the keys to your `.env.local` file:
-
-```env
-NEXT_PUBLIC_VAPID_PUBLIC_KEY=your_public_key_here
-VAPID_PRIVATE_KEY=your_private_key_here
-VAPID_SUBJECT=mailto:your-email@example.com
-```
-
-**Important:** The public key needs to be prefixed with `NEXT_PUBLIC_` so it's accessible on the client side.
-
-Then run the migration to add the push subscriptions table:
-
-```bash
-npx tsx scripts/add-push-subscriptions.ts
-```
-
-### 5. Run Development Server
-
-```bash
+# Start development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser.
+Visit http://localhost:3000
 
-### 6. Deploy to Vercel
+### Mobile Application
 
 ```bash
-npx vercel --prod --yes
+# Navigate to mobile directory
+cd mobile
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your values
+
+# Run the migration for mobile support
+cd ..
+npm run db:migrate-mobile
+
+# Start Expo
+cd mobile
+npm start
 ```
 
-Environment variables are automatically synced to your Vercel deployment.
+## Migration Guide (Existing Users)
 
-**Don't forget to add your VAPID keys to Vercel's environment variables!**
+If you already have the web app running, follow these steps to add mobile support:
 
-## Progressive Web App (PWA)
+### 1. Update Database Schema
 
-WagerPals can be installed on your phone like a native app:
+```bash
+npm run db:migrate-mobile
+```
 
-### iOS (Safari)
-1. Open WagerPals in Safari
-2. Tap the Share button (square with arrow)
-3. Scroll down and tap "Add to Home Screen"
-4. Tap "Add" in the top right
+This adds:
+- `username_selected` column to `users` table
+- Mobile push notification support to `push_subscriptions` table
 
-### Android (Chrome)
-1. Open WagerPals in Chrome
-2. Tap the menu (three dots)
-3. Tap "Add to Home Screen" or "Install App"
-4. Confirm the installation
+### 2. Deploy Backend Changes
 
-Once installed, the app will:
-- Open in full-screen mode (no browser UI)
-- Work offline with cached content
-- Show on your home screen like any other app
-- Send push notifications when new events are created
+The backend API changes are backward-compatible and will work for both web and mobile:
+
+- Updated `/api/push/subscribe` to accept Expo push tokens
+- Updated `/api/groups/members` to send push notifications for approvals/promotions
+- Updated `lib/push.ts` to support both web push and Expo push
+
+Simply deploy your Next.js app as usual:
+
+```bash
+npm run build
+# Deploy to Vercel or your hosting provider
+```
+
+### 3. Configure Mobile Deep Linking
+
+Update `mobile/app.json` with your production domain:
+
+```json
+{
+  "expo": {
+    "scheme": "wagerpals",
+    "ios": {
+      "bundleIdentifier": "com.yourcompany.wagerpals",
+      "associatedDomains": [
+        "applinks:your-domain.com"
+      ]
+    },
+    "android": {
+      "package": "com.yourcompany.wagerpals",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "https",
+              "host": "your-domain.com"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+### 4. Build and Deploy Mobile App
+
+See `mobile/README.md` for detailed instructions on:
+- Building with EAS
+- Submitting to App Store and Google Play
+- Testing push notifications
+- Configuring deep links
+
+## Features
+
+### Web App
+- ✅ PWA with offline support
+- ✅ Web push notifications
+- ✅ Responsive design
+- ✅ Group management
+- ✅ Event creation and resolution
+- ✅ Real-time activity feed
+
+### Mobile App (NEW!)
+- ✅ Native iOS and Android apps
+- ✅ Expo push notifications
+- ✅ Deep linking for group invites
+- ✅ Username selection flow
+- ✅ Pending approval indication
+- ✅ Profile and stats
+- ✅ All core web features
+
+## Database Schema
+
+See `lib/schema.sql` for the complete schema.
+
+Key tables:
+- `users` - User accounts and stats
+- `groups` - Betting groups
+- `group_members` - Group membership and roles
+- `events` - Betting events
+- `bets` - Individual bets
+- `comments` - Event comments
+- `activities` - Activity feed
+- `push_subscriptions` - Push notification tokens (web & mobile)
+
+## API Routes
+
+All API routes are in `app/api/`:
+
+### Users
+- `GET /api/users?id=X` - Get user by ID
+- `GET /api/users?username=X` - Get user by username
+- `POST /api/users` - Create/update user
+
+### Groups
+- `GET /api/groups?userId=X` - Get user's groups
+- `POST /api/groups` - Create group
+- `POST /api/groups/join` - Join group
+- `POST /api/groups/members` - Manage members
+
+### Events
+- `GET /api/events?groupId=X` - Get events
+- `GET /api/events?id=X` - Get event details
+- `POST /api/events` - Create event
+- `POST /api/events/resolve` - Resolve event
+- `POST /api/events/delete` - Delete event
+
+### Bets & Comments
+- `POST /api/bets` - Place bet
+- `GET /api/comments?eventId=X` - Get comments
+- `POST /api/comments` - Add comment
 
 ### Push Notifications
+- `POST /api/push/subscribe` - Register for push (web or mobile)
+- `DELETE /api/push/subscribe` - Unsubscribe
 
-After installing the app, you'll be prompted to enable push notifications. Click "Enable" to receive notifications when:
-- New betting events are created
+## Environment Variables
 
-**Note:** iOS requires iOS 16.4 or later for push notifications to work.
+### Backend (.env.local)
+```env
+# Database
+POSTGRES_URL=...
+POSTGRES_PRISMA_URL=...
+# ... other Postgres vars
 
-## How it Works
+# Stack Auth
+NEXT_PUBLIC_STACK_PROJECT_ID=...
+NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY=...
+STACK_SECRET_SERVER_KEY=...
 
-### Authentication
-Simple username-based auth! Just enter a username when you first visit. It's stored in cookies and created in the database.
+# App URL
+NEXT_PUBLIC_APP_URL=https://your-domain.com
 
-### Event Lifecycle
-1. Create an event with a title, two sides, and end time
-2. Share with friends
-3. Anyone can place bets until the deadline
-4. Late bets are marked and don't count in resolution
-5. Anyone can resolve at any time
-6. See net results and payment suggestions
-7. Events can be unresolved if needed
-
-### Betting Logic
-- Winners split the total pot proportionally to their bets
-- Net results show who gained/lost and by how much
-- User balances and streaks update automatically on resolution
-
-## Database
-
-✅ **All data now persists!** Your events, bets, and user profiles are stored in Vercel Postgres and survive deployments.
-
-Tables:
-- `users` - User profiles with stats
-- `events` - Betting events
-- `bets` - Individual wagers
-- `activities` - Activity feed items
-- `push_subscriptions` - Web push notification subscriptions
-
-See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for schema details.
-
-## Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run db:init` - Initialize database schema
-- `npm start` - Start production server
-
-## Architecture
-
+# Web Push (for web app)
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+VAPID_SUBJECT=mailto:your-email@example.com
 ```
-/app              # Next.js pages and API routes
-  /api            # API endpoints
-  /[page]         # Page components
-/components       # Reusable React components
-/lib              # Utilities and database layer
-  db.ts           # Database interface with Vercel Postgres
-  types.ts        # TypeScript types
-  utils.ts        # Helper functions
-  schema.sql      # Database schema
-/scripts          # Utility scripts
-  init-db.ts      # Database initialization
+
+### Mobile (mobile/.env)
+```env
+# API URL
+EXPO_PUBLIC_API_URL=https://your-domain.com
+
+# Stack Auth (same as web)
+EXPO_PUBLIC_STACK_PROJECT_ID=...
+EXPO_PUBLIC_STACK_PUBLISHABLE_KEY=...
 ```
+
+## Deployment
+
+### Web App
+Deploy to Vercel (recommended):
+```bash
+vercel --prod
+```
+
+Or any Next.js-compatible hosting.
+
+### Mobile App
+Build and submit with EAS:
+```bash
+cd mobile
+eas build --platform all
+eas submit --platform all
+```
+
+## Development Workflow
+
+1. **Backend/API Changes**: Make changes in `app/api/` or `lib/`
+2. **Web Changes**: Edit `app/`, `components/`, or styles
+3. **Mobile Changes**: Edit `mobile/src/`
+4. **Database Changes**: Update `lib/schema.sql` and create migration script
+5. **Testing**: Test on both web and mobile before deploying
+
+## Push Notifications
+
+The system supports two types of push notifications:
+
+### Web Push (PWA)
+- Uses Web Push API with VAPID keys
+- Requires service worker
+- Works on Chrome, Firefox, Edge, Safari
+
+### Expo Push (Mobile)
+- Uses Expo's push notification service
+- Works on iOS and Android
+- No configuration needed for development
+
+### Backend Implementation
+The backend automatically detects the platform and sends the appropriate notification type:
+
+```typescript
+// Web push subscription
+{ endpoint: "...", keys: { p256dh: "...", auth: "..." } }
+
+// Expo push subscription
+{ token: "ExponentPushToken[...]", userId: "..." }
+```
+
+Both are stored in the `push_subscriptions` table with a `platform` field.
+
+## Troubleshooting
+
+### Database Issues
+```bash
+# Reset database (CAUTION: Deletes all data)
+npm run db:clean
+npm run db:init
+
+# Or just add new tables/columns
+npm run db:migrate-mobile
+```
+
+### Push Notification Issues
+- Check backend logs for detailed error messages
+- Verify VAPID keys are set (web)
+- Ensure Expo push token is valid (mobile)
+- Test with `/api/push/test` endpoint
+
+### Mobile Build Issues
+- Clear Expo cache: `expo start -c`
+- Reinstall dependencies: `cd mobile && rm -rf node_modules && npm install`
+- Check EAS build logs for errors
+
+## Next Steps
+
+- [ ] Implement remaining mobile screens (GroupDetail, EventDetail)
+- [ ] Add group admin interface on mobile
+- [ ] Implement Hard Mode (real money wagering)
+- [ ] Add in-app messaging
+- [ ] Implement social features (friend system)
+- [ ] Add achievement system
+- [ ] Implement analytics
+- [ ] Add error tracking (Sentry)
 
 ## License
 
-MIT
-# wagerpals-v2
+Private - All Rights Reserved
+
+## Support
+
+For questions or issues, contact the development team.
