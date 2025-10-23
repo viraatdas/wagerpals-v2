@@ -7,6 +7,10 @@ import apiService from './api';
 // Configure how notifications are handled when app is in foreground
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
+    // iOS specific fields (SDK 54+)
+    shouldShowBanner: true,
+    shouldShowList: true,
+    // Cross-platform
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
@@ -17,34 +21,46 @@ class NotificationService {
   private expoPushToken: string | null = null;
   private notificationListener: any = null;
   private responseListener: any = null;
+  private initialized = false;
 
   async init(userId?: string) {
-    // Request permissions
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+    // Only do permissions + listeners once
+    if (!this.initialized) {
+      // Request permissions
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
 
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+
+      if (finalStatus !== 'granted') {
+        console.log('Failed to get push token for push notification!');
+        return null;
+      }
+
+      // Get the token
+      const token = await this.getExpoPushToken();
+
+      // Set up listeners
+      this.setupListeners();
+
+      this.initialized = true;
+
+      // Subscribe if we have a user
+      if (token && userId) {
+        await this.subscribeToPush(token, userId);
+      }
+
+      return token;
     }
 
-    if (finalStatus !== 'granted') {
-      console.log('Failed to get push token for push notification!');
-      return null;
+    // Already initialized: ensure subscription if we have token + user
+    if (this.expoPushToken && userId) {
+      await this.subscribeToPush(this.expoPushToken, userId);
     }
-
-    // Get the token
-    const token = await this.getExpoPushToken();
-    
-    if (token && userId) {
-      // Subscribe to backend
-      await this.subscribeToPush(token, userId);
-    }
-
-    // Set up listeners
-    this.setupListeners();
-
-    return token;
+    return this.expoPushToken;
   }
 
   async getExpoPushToken(): Promise<string | null> {
@@ -54,7 +70,11 @@ class NotificationService {
     }
 
     try {
-      const token = (await Notifications.getExpoPushTokenAsync()).data;
+      // SDK 48+ may require explicit projectId for dev
+      const projectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID;
+      const token = projectId
+        ? (await Notifications.getExpoPushTokenAsync({ projectId })).data
+        : (await Notifications.getExpoPushTokenAsync()).data;
       this.expoPushToken = token;
       console.log('Expo Push Token:', token);
       return token;
@@ -108,12 +128,13 @@ class NotificationService {
   }
 
   cleanup() {
-    if (this.notificationListener) {
-      Notifications.removeNotificationSubscription(this.notificationListener);
+    if (this.notificationListener?.remove) {
+      this.notificationListener.remove();
     }
-    if (this.responseListener) {
-      Notifications.removeNotificationSubscription(this.responseListener);
+    if (this.responseListener?.remove) {
+      this.responseListener.remove();
     }
+    this.initialized = false;
   }
 
   // Send a local notification (for testing)
@@ -130,5 +151,3 @@ class NotificationService {
 }
 
 export default new NotificationService();
-
-

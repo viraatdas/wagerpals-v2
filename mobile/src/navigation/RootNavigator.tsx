@@ -19,6 +19,7 @@ import GroupAdminScreen from '../screens/GroupAdminScreen';
 import JoinGroupScreen from '../screens/JoinGroupScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import EditUsernameScreen from '../screens/EditUsernameScreen';
+import notificationService from '../services/notifications';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -41,6 +42,14 @@ export default function RootNavigator() {
 
     return unsubscribe;
   }, []);
+
+  // Subscribe to push notifications when a user is available
+  useEffect(() => {
+    if (user?.id) {
+      // Ensure notifications are initialized and token is subscribed for this user
+      notificationService.init(user.id);
+    }
+  }, [user?.id]);
 
   const linking = {
     prefixes: [prefix, 'wagerpals://', 'https://wagerpals.app', 'https://*.wagerpals.app'],
@@ -117,5 +126,4 @@ export default function RootNavigator() {
     </NavigationContainer>
   );
 }
-
 

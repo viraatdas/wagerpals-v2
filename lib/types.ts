@@ -1,6 +1,7 @@
 export interface User {
   id: string;
   username: string;
+  username_selected?: boolean;
   net_total: number;
   total_bet: number;
   streak: number;
