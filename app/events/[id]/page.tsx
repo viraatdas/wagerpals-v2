@@ -33,6 +33,7 @@ export default function EventPage() {
   const [resolving, setResolving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [netResults, setNetResults] = useState<NetResult[]>([]);
+  const [isPublic, setIsPublic] = useState(false);
   const [confirmationModal, setConfirmationModal] = useState<ConfirmationModalConfig>({
     isOpen: false,
     title: '',
@@ -74,6 +75,19 @@ export default function EventPage() {
       }
       
       setEvent(data);
+
+      // Fetch group info to check if it's public
+      if (data.group_id) {
+        try {
+          const groupResponse = await fetch(`/api/groups?id=${data.group_id}`);
+          if (groupResponse.ok) {
+            const groupData = await groupResponse.json();
+            setIsPublic(groupData.is_public || false);
+          }
+        } catch (error) {
+          console.error('Failed to fetch group info:', error);
+        }
+      }
 
       if (commentsResponse.ok) {
         const commentsData = await commentsResponse.json();
@@ -268,7 +282,7 @@ export default function EventPage() {
 
         {event.status === 'resolved' && netResults.length > 0 && (
           <>
-            <ResolutionBanner event={event} netResults={netResults} />
+            <ResolutionBanner event={event} netResults={netResults} isPublic={isPublic} />
             <div className="mb-6">
               <button
                 onClick={handleUnresolve}
@@ -327,6 +341,7 @@ export default function EventPage() {
               userId={user.id}
               username={username}
               onBetPlaced={fetchEvent}
+              isPublic={isPublic}
             />
           </div>
         )}
@@ -351,6 +366,7 @@ export default function EventPage() {
               comments={comments}
               onBetDeleted={fetchEvent}
               onCommentDeleted={fetchEvent}
+              isPublic={isPublic}
             />
           </div>
         </div>

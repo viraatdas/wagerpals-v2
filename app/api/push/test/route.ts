@@ -23,6 +23,17 @@ export async function POST() {
     for (const sub of subscriptions) {
       console.log('[Test] Attempting to send to:', sub.endpoint.substring(0, 50));
       
+      // Skip mobile subscriptions (they don't have p256dh/auth)
+      if (!sub.p256dh || !sub.auth) {
+        console.log('[Test] Skipping mobile subscription');
+        results.push({
+          endpoint: sub.endpoint.substring(0, 50) + '...',
+          success: false,
+          error: 'Mobile subscription (Expo token) - use mobile notification API',
+        });
+        continue;
+      }
+
       const success = await sendPushNotification(
         sub.endpoint,
         sub.p256dh,
