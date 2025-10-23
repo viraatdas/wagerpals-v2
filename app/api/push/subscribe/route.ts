@@ -15,8 +15,8 @@ export async function POST(request: NextRequest) {
         endpoint: token,
         expo_token: token,
         platform: 'mobile',
-        p256dh: null,
-        auth: null,
+        p256dh: undefined,
+        auth: undefined,
       });
       return NextResponse.json({ success: true, subscription });
     }
