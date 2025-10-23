@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@stackframe/stack';
 import PushNotificationPrompt from '@/components/PushNotificationPrompt';
 import InstallPrompt from '@/components/InstallPrompt';
+import UsernameModal from '@/components/UsernameModal';
 import Toast, { ToastType } from '@/components/Toast';
 import { Group } from '@/lib/types';
 
@@ -17,6 +18,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [groupCode, setGroupCode] = useState('');
   const [creating, setCreating] = useState(false);
@@ -29,12 +31,30 @@ export default function Home() {
       return;
     }
     
-    // Create or update user in our database, then check for pending invite
-    createOrUpdateUser().then(() => {
+    // Create or update user in our database, then check username and pending invite
+    createOrUpdateUser().then(async () => {
+      await checkUsernameSelected();
       checkAndHandlePendingInvite();
     });
     fetchGroups(user.id);
   }, [user, router]);
+
+  const checkUsernameSelected = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch(`/api/users?id=${user.id}`);
+      if (response.ok) {
+        const userData = await response.json();
+        // Show username modal if user hasn't selected a username yet
+        if (!userData.username_selected) {
+          setShowUsernameModal(true);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check username status:', error);
+    }
+  };
 
   const checkAndHandlePendingInvite = async () => {
     if (!user) return;
@@ -58,10 +78,37 @@ export default function Home() {
         body: JSON.stringify({ 
           id: user.id,
           username: user.displayName || user.primaryEmail || 'User',
+          // Don't set username_selected - let the user choose their username
         }),
       });
     } catch (error) {
       console.error('Failed to create/update user:', error);
+    }
+  };
+
+  const handleUsernameSubmit = async (username: string) => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          id: user.id,
+          username: username,
+          username_selected: true,
+        }),
+      });
+
+      if (response.ok) {
+        setShowUsernameModal(false);
+        setToast({ message: 'Username set successfully!', type: 'success' });
+      } else {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to set username');
+      }
+    } catch (error: any) {
+      throw error; // Let UsernameModal handle the error display
     }
   };
 
@@ -154,6 +201,7 @@ export default function Home() {
 
   return (
     <>
+      {showUsernameModal && <UsernameModal onSubmit={handleUsernameSubmit} />}
       <PushNotificationPrompt />
       <InstallPrompt />
       <Toast

@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { username, id } = body;
+  const { username, id, username_selected } = body;
 
   if (!username || username.trim().length === 0) {
     return NextResponse.json({ error: 'Username is required' }, { status: 400 });
@@ -55,7 +55,16 @@ export async function POST(request: NextRequest) {
           if (userWithUsername && userWithUsername.id !== id) {
             return NextResponse.json({ error: 'Username already taken' }, { status: 400 });
           }
-          await db.users.update(id, { username: normalizedUsername } as any);
+          await db.users.update(id, { 
+            username: normalizedUsername,
+            username_selected: username_selected !== undefined ? username_selected : existing.username_selected
+          } as any);
+          const updated = await db.users.get(id);
+          return NextResponse.json(updated);
+        }
+        // If username is same but username_selected is being updated
+        if (username_selected !== undefined && existing.username_selected !== username_selected) {
+          await db.users.update(id, { username_selected } as any);
           const updated = await db.users.get(id);
           return NextResponse.json(updated);
         }
@@ -80,7 +89,7 @@ export async function POST(request: NextRequest) {
       const newUser: User = {
         id,
         username: normalizedUsername,
-        username_selected: true,
+        username_selected: username_selected !== undefined ? username_selected : false,
         net_total: 0,
         total_bet: 0,
         streak: 0,
@@ -88,16 +97,18 @@ export async function POST(request: NextRequest) {
 
       await db.users.create(newUser);
 
-      // Send push notification for new user
-      try {
-        await sendPushToAllSubscribers({
-          title: '👋 New User Joined!',
-          body: `${normalizedUsername} just joined WagerPals!`,
-          url: '/users',
-          tag: `user-${newUser.id}`,
-        });
-      } catch (error: any) {
-        console.error('[Users API] Failed to send push notifications:', error);
+      // Send push notification for new user only if username was selected
+      if (username_selected) {
+        try {
+          await sendPushToAllSubscribers({
+            title: '👋 New User Joined!',
+            body: `${normalizedUsername} just joined WagerPals!`,
+            url: '/users',
+            tag: `user-${newUser.id}`,
+          });
+        } catch (error: any) {
+          console.error('[Users API] Failed to send push notifications:', error);
+        }
       }
 
       return NextResponse.json(newUser);

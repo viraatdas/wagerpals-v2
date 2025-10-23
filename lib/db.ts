@@ -64,6 +64,9 @@ export const db = {
       if (data.streak !== undefined) {
         await sql`UPDATE users SET streak = ${data.streak} WHERE id = ${id}`;
       }
+      if (data.username_selected !== undefined) {
+        await sql`UPDATE users SET username_selected = ${data.username_selected} WHERE id = ${id}`;
+      }
       
       return await db.users.get(id);
     },

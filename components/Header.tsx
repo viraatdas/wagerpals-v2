@@ -68,6 +68,16 @@ export default function Header() {
               Users
             </Link>
             <Link
+              href="/profile"
+              className={`text-xs sm:text-sm font-light transition-colors ${
+                isActive('/profile')
+                  ? 'text-orange-600 border-b-2 border-orange-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Profile
+            </Link>
+            <Link
               href="/create"
               className="px-2 py-1.5 sm:px-4 sm:py-2 bg-orange-600 text-white text-xs sm:text-sm font-light rounded-lg hover:bg-orange-700 transition-colors"
             >
