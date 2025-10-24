@@ -178,3 +178,4 @@ These are normal and don't affect functionality:
 
 The minor warnings you see are expected and don't prevent the app from working. The app will function fully on Android devices and emulators.
 
+

@@ -109,3 +109,4 @@ npm start
 # Cleanup on exit
 trap "kill $BACKEND_PID 2>/dev/null" EXIT
 
+

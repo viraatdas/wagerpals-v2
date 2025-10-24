@@ -285,3 +285,4 @@ The mobile app uses the same backend as the web app.
 
 For issues or questions, please open an issue on GitHub or contact the development team.
 
+

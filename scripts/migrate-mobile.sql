@@ -21,3 +21,4 @@ UPDATE push_subscriptions SET platform = 'web' WHERE platform IS NULL;
 COMMIT;
 
 
+
