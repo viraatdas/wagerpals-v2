@@ -125,20 +125,20 @@ export default function ProfilePage() {
         </p>
 
         {/* Username Card */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 mb-6">
           <h2 className="text-xl font-light text-gray-900 mb-4">Username</h2>
           
           {!editing ? (
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-medium text-gray-900 mb-1">@{userData.username}</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-xl sm:text-2xl font-medium text-gray-900 mb-1 break-words">@{userData.username}</p>
                 <p className="text-sm text-gray-500 font-light">
                   This is how you appear on the ledger and throughout the app
                 </p>
               </div>
               <button
                 onClick={() => setEditing(true)}
-                className="px-4 py-2 bg-orange-600 text-white rounded-lg font-light hover:bg-orange-700 transition-colors"
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg font-light hover:bg-orange-700 transition-colors whitespace-nowrap self-start sm:self-auto"
               >
                 Change Username
               </button>
@@ -150,7 +150,7 @@ export default function ProfilePage() {
                   type="text"
                   value={newUsername}
                   onChange={handleUsernameChange}
-                  className={`w-full px-4 py-3 text-lg font-light border-b-2 ${
+                  className={`w-full px-4 py-3 text-base sm:text-lg font-light border-b-2 ${
                     error ? 'border-red-500' : 'border-gray-300 focus:border-orange-500'
                   } outline-none transition-colors bg-transparent`}
                   placeholder="new username"
@@ -162,7 +162,7 @@ export default function ProfilePage() {
                   required
                 />
                 {error && (
-                  <p className="text-red-500 text-sm mt-2 font-light">{error}</p>
+                  <p className="text-red-500 text-sm mt-2 font-light break-words">{error}</p>
                 )}
                 <p className="text-xs text-gray-400 mt-2 font-light">
                   Letters, numbers, and underscores only
@@ -193,19 +193,19 @@ export default function ProfilePage() {
         </div>
 
         {/* Stats Card */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6">
           <h2 className="text-xl font-light text-gray-900 mb-4">Your Stats</h2>
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-3 gap-3 sm:gap-6">
             <div>
-              <div className="text-sm text-gray-500 font-light mb-1">Total Bet</div>
-              <div className="text-2xl font-medium text-blue-600">
+              <div className="text-xs sm:text-sm text-gray-500 font-light mb-1">Total Bet</div>
+              <div className="text-lg sm:text-2xl font-medium text-blue-600 break-words">
                 ${userData.total_bet?.toFixed(2) || '0.00'}
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-500 font-light mb-1">Net Total</div>
+              <div className="text-xs sm:text-sm text-gray-500 font-light mb-1">Net Total</div>
               <div
-                className={`text-2xl font-medium ${
+                className={`text-lg sm:text-2xl font-medium break-words ${
                   userData.net_total > 0
                     ? 'text-green-600'
                     : userData.net_total < 0
@@ -217,8 +217,8 @@ export default function ProfilePage() {
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-500 font-light mb-1">Win Streak</div>
-              <div className="text-2xl font-light text-gray-900">
+              <div className="text-xs sm:text-sm text-gray-500 font-light mb-1">Win Streak</div>
+              <div className="text-lg sm:text-2xl font-light text-gray-900">
                 🔥 {userData.streak || 0}
               </div>
             </div>
@@ -226,16 +226,16 @@ export default function ProfilePage() {
         </div>
 
         {/* Account Info */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6 mt-6">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 mt-6">
           <h2 className="text-xl font-light text-gray-900 mb-4">Account Info</h2>
           <div className="space-y-3">
             <div>
               <div className="text-sm text-gray-500 font-light">Email</div>
-              <div className="text-gray-900">{user.primaryEmail}</div>
+              <div className="text-gray-900 break-words">{user.primaryEmail}</div>
             </div>
             <div>
               <div className="text-sm text-gray-500 font-light">User ID</div>
-              <div className="text-gray-900 text-sm font-mono">{user.id}</div>
+              <div className="text-gray-900 text-xs sm:text-sm font-mono break-all">{user.id}</div>
             </div>
           </div>
         </div>

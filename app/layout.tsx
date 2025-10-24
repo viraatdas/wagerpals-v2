@@ -12,7 +12,6 @@ export const metadata: Metadata = {
   description: "A public, lightweight place where friends create events and share a ledger of bets",
   manifest: "/manifest.json",
   themeColor: "#ea580c",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -27,12 +26,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
+      </head>
       <body className={inter.className}>
         <ClientProviders>
           <ServiceWorkerRegistration />
-          <main className="min-h-screen bg-gray-50">
-            {children}
-          </main>
+          <div className="min-h-screen bg-gray-50 flex flex-col">
+            <Header />
+            <main className="flex-1">
+              {children}
+            </main>
+          </div>
         </ClientProviders>
       </body>
     </html>

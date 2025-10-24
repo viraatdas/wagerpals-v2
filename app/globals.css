@@ -7,6 +7,20 @@
   --foreground: #171717;
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+html {
+  /* Prevent text size adjust on orientation change */
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Enable smooth scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
@@ -15,6 +29,35 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent pull-to-refresh on mobile */
+  overscroll-behavior-y: contain;
+  /* Support for iPhone X+ notch */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Better touch target sizes for mobile */
+button, a, input, select, textarea {
+  touch-action: manipulation;
+}
+
+/* Ensure sufficient touch targets on mobile */
+@media (max-width: 768px) {
+  button:not(.no-min-size), 
+  a:not(.no-min-size) {
+    min-height: 44px;
+  }
+}
+
+/* Fix iOS input zoom issue */
+input, select, textarea {
+  font-size: 16px;
+}
+
+@media (min-width: 768px) {
+  input, select, textarea {
+    font-size: 14px;
+  }
 }
 
 @keyframes fadeIn {

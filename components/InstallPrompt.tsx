@@ -17,24 +17,34 @@ export default function InstallPrompt() {
     const ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
     setIsIOS(ios);
 
-    // Check if user has dismissed the prompt
-    const dismissed = localStorage.getItem('installPromptDismissed');
+    // Check if user has dismissed the prompt (with time-based expiry)
+    const dismissedData = localStorage.getItem('installPromptDismissed');
+    const dismissedTime = dismissedData ? parseInt(dismissedData) : 0;
+    const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
     
-    if (!isInStandaloneMode && !dismissed) {
+    // Show again after 7 days, or if never dismissed
+    const shouldShow = !isInStandaloneMode && (!dismissedData || daysSinceDismissed > 7);
+    
+    if (shouldShow) {
       // For Android/Chrome - listen for beforeinstallprompt event
       const handleBeforeInstallPrompt = (e: Event) => {
         e.preventDefault();
         setDeferredPrompt(e);
-        setShowPrompt(true);
+        // Only show once per session for Chrome
+        if (!sessionStorage.getItem('installPromptShownThisSession')) {
+          setShowPrompt(true);
+          sessionStorage.setItem('installPromptShownThisSession', 'true');
+        }
       };
 
       window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-      // For iOS - show instructions after a delay
-      if (ios && !isInStandaloneMode) {
+      // For iOS - show instructions after a delay, only once per session
+      if (ios && !isInStandaloneMode && !sessionStorage.getItem('installPromptShownThisSession')) {
         setTimeout(() => {
           setShowPrompt(true);
-        }, 3000);
+          sessionStorage.setItem('installPromptShownThisSession', 'true');
+        }, 5000); // Increased to 5 seconds to be less annoying
       }
 
       return () => {
@@ -61,7 +71,9 @@ export default function InstallPrompt() {
 
   const dismissPrompt = () => {
     setShowPrompt(false);
-    localStorage.setItem('installPromptDismissed', 'true');
+    // Store timestamp instead of just 'true' so we can show again after some time
+    localStorage.setItem('installPromptDismissed', Date.now().toString());
+    sessionStorage.setItem('installPromptShownThisSession', 'true');
   };
 
   if (!showPrompt || isStandalone) {

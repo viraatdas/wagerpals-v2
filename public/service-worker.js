@@ -1,18 +1,17 @@
-const CACHE_NAME = 'wagerpals-v1';
-const urlsToCache = [
-  '/',
+const CACHE_NAME = 'wagerpals-v2';
+const STATIC_CACHE = [
   '/manifest.json',
   '/icons/icon-192x192.svg',
   '/icons/icon-512x512.svg'
 ];
 
-// Install event - cache resources
+// Install event - cache only static resources (not pages)
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+        return cache.addAll(STATIC_CACHE);
       })
       .catch((error) => {
         console.log('Cache install error:', error);
@@ -38,16 +37,46 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - Network first for pages, cache first for static assets
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  
+  // Skip caching for API routes and auth routes
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  
+  // Cache-first for static assets (icons, manifest)
+  if (STATIC_CACHE.some(path => url.pathname === path)) {
+    event.respondWith(
+      caches.match(event.request)
+        .then((response) => {
+          return response || fetch(event.request);
+        })
+    );
+    return;
+  }
+  
+  // Network-first for everything else (pages, dynamic content)
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then((response) => {
-        // Cache hit - return response
-        if (response) {
-          return response;
+        // Clone the response before caching
+        const responseToCache = response.clone();
+        
+        // Only cache successful responses
+        if (response.status === 200) {
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
         }
-        return fetch(event.request);
+        
+        return response;
+      })
+      .catch(() => {
+        // Fallback to cache if network fails
+        return caches.match(event.request);
       })
   );
 });
