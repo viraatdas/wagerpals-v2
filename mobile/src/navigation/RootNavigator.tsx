@@ -30,14 +30,10 @@ export default function RootNavigator() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize auth service
-    authService.init().then(() => {
-      setIsLoading(false);
-    });
-
     // Listen for auth state changes
     const unsubscribe = authService.onAuthStateChanged((newUser) => {
       setUser(newUser);
+      setIsLoading(false);
     });
 
     return unsubscribe;

@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { LogBox } from 'react-native';
 import RootNavigator from './src/navigation/RootNavigator';
 import notificationService from './src/services/notifications';
+import authService from './src/services/auth';
 
 // Ignore certain warnings
 LogBox.ignoreLogs([
@@ -11,8 +12,17 @@ LogBox.ignoreLogs([
 
 export default function App() {
   useEffect(() => {
-    // Initialize notification service
-    notificationService.init();
+    // Initialize services
+    const initializeApp = async () => {
+      try {
+        await authService.init();
+        await notificationService.init();
+      } catch (error) {
+        console.error('Failed to initialize app:', error);
+      }
+    };
+
+    initializeApp();
 
     return () => {
       notificationService.cleanup();

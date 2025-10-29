@@ -10,21 +10,17 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
-  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as WebBrowser from 'expo-web-browser';
 import authService from '../services/auth';
-
-// Get Stack Auth configuration from environment
-const STACK_PROJECT_ID = process.env.EXPO_PUBLIC_STACK_PROJECT_ID || 'your_project_id';
-const APP_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
 export default function AuthScreen() {
   const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState<'email' | 'code'>('email');
 
-  const handleEmailContinue = async () => {
+  const handleSendCode = async () => {
     if (!email || !email.includes('@')) {
       Alert.alert('Error', 'Please enter a valid email address');
       return;
@@ -32,32 +28,32 @@ export default function AuthScreen() {
 
     setIsLoading(true);
     try {
-      // Open Stack Auth email sign-in in web browser
-      const authUrl = `${APP_URL}/auth/signin?email=${encodeURIComponent(email)}`;
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, `${APP_URL}/`);
-      
-      if (result.type === 'success') {
-        // User completed auth in browser, refresh app
-        Alert.alert('Success', 'Please check your email to complete sign in');
-      }
+      await authService.sendMagicLink(email);
+      setStep('code');
+      Alert.alert(
+        'Check your email', 
+        'We sent you a verification code. Enter it below to sign in.',
+        [{ text: 'OK' }]
+      );
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Sign in failed');
+      Alert.alert('Error', error.message || 'Failed to send code');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handlePasskey = async () => {
+  const handleVerifyCode = async () => {
+    if (!code || code.length < 6) {
+      Alert.alert('Error', 'Please enter the verification code');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const authUrl = `${APP_URL}/auth/signin?passkey=true`;
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, `${APP_URL}/`);
-      
-      if (result.type === 'success') {
-        Alert.alert('Success', 'Signed in successfully');
-      }
+      await authService.signInWithCode(email, code);
+      // Auth state change will trigger navigation via RootNavigator
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Passkey sign in failed');
+      Alert.alert('Error', error.message || 'Invalid code. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -66,17 +62,18 @@ export default function AuthScreen() {
   const handleGoogleAuth = async () => {
     setIsLoading(true);
     try {
-      const authUrl = `${APP_URL}/auth/signin?provider=google`;
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, `${APP_URL}/`);
-      
-      if (result.type === 'success') {
-        Alert.alert('Success', 'Signed in successfully');
-      }
+      await authService.signInWithGoogle();
+      // Auth state change will trigger navigation via RootNavigator
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Google sign in failed');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleBackToEmail = () => {
+    setStep('email');
+    setCode('');
   };
 
   return (
@@ -95,61 +92,101 @@ export default function AuthScreen() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Sign In</Text>
+          <Text style={styles.cardTitle}>
+            {step === 'email' ? 'Sign In' : 'Enter Code'}
+          </Text>
 
-          <View style={styles.form}>
-            <Text style={styles.label}>Email address</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="you@example.com"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              autoComplete="email"
-              editable={!isLoading}
-            />
+          {step === 'email' ? (
+            <View style={styles.form}>
+              <Text style={styles.label}>Email address</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="you@example.com"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoComplete="email"
+                editable={!isLoading}
+              />
 
-            <TouchableOpacity
-              style={[styles.button, styles.emailButton]}
-              onPress={handleEmailContinue}
-              disabled={isLoading || !email}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Continue with Email</Text>
-              )}
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.emailButton]}
+                onPress={handleSendCode}
+                disabled={isLoading || !email}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Continue with Email</Text>
+                )}
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.button, styles.passkeyButton]}
-              onPress={handlePasskey}
-              disabled={isLoading}
-            >
-              <Text style={styles.passkeyIcon}>🔑</Text>
-              <Text style={styles.passkeyButtonText}>Continue with Passkey</Text>
-            </TouchableOpacity>
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>or</Text>
+                <View style={styles.dividerLine} />
+              </View>
 
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or</Text>
-              <View style={styles.dividerLine} />
+              <TouchableOpacity
+                style={[styles.button, styles.googleButton]}
+                onPress={handleGoogleAuth}
+                disabled={isLoading}
+              >
+                <Text style={styles.googleIcon}>G</Text>
+                <Text style={styles.googleButtonText}>Continue with Google</Text>
+              </TouchableOpacity>
+
+              <Text style={styles.termsText}>
+                By signing in, you agree to our Terms of Service and Privacy Policy
+              </Text>
             </View>
+          ) : (
+            <View style={styles.form}>
+              <Text style={styles.label}>Verification code</Text>
+              <Text style={styles.helperText}>
+                Enter the 6-digit code we sent to {email}
+              </Text>
+              <TextInput
+                style={[styles.input, styles.codeInput]}
+                placeholder="000000"
+                value={code}
+                onChangeText={setCode}
+                keyboardType="number-pad"
+                maxLength={6}
+                editable={!isLoading}
+                autoFocus
+              />
 
-            <TouchableOpacity
-              style={[styles.button, styles.googleButton]}
-              onPress={handleGoogleAuth}
-              disabled={isLoading}
-            >
-              <Text style={styles.googleIcon}>G</Text>
-              <Text style={styles.googleButtonText}>Continue with Google</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.emailButton]}
+                onPress={handleVerifyCode}
+                disabled={isLoading || code.length < 6}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Verify Code</Text>
+                )}
+              </TouchableOpacity>
 
-            <Text style={styles.termsText}>
-              By signing in, you agree to our Terms of Service and Privacy Policy
-            </Text>
-          </View>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={handleBackToEmail}
+                disabled={isLoading}
+              >
+                <Text style={styles.backButtonText}>Use a different email</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={handleSendCode}
+                disabled={isLoading}
+              >
+                <Text style={styles.backButtonText}>Resend code</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -218,6 +255,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontWeight: '400',
   },
+  helperText: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 12,
+    lineHeight: 18,
+  },
   input: {
     height: 48,
     borderWidth: 1,
@@ -227,6 +270,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 16,
     backgroundColor: '#fff',
+  },
+  codeInput: {
+    textAlign: 'center',
+    fontSize: 24,
+    letterSpacing: 8,
+    fontWeight: '600',
   },
   button: {
     height: 48,
@@ -241,20 +290,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '400',
-  },
-  passkeyButton: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  passkeyIcon: {
-    fontSize: 20,
-    marginRight: 8,
-  },
-  passkeyButtonText: {
-    color: '#333',
     fontSize: 16,
     fontWeight: '400',
   },
@@ -295,6 +330,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 16,
     lineHeight: 16,
+  },
+  backButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  backButtonText: {
+    color: '#ea580c',
+    fontSize: 14,
+    fontWeight: '400',
   },
 });
 

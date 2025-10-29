@@ -1,5 +1,6 @@
 // API service layer for backend communication
 import { User, Group, Event, Bet, Comment, ActivityItem, GroupMember, EventWithStats } from '../types';
+import authService from './auth';
 
 // Use the backend API URL - can be configured via environment
 // @ts-ignore
@@ -9,17 +10,22 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || (__DEV__
 
 class ApiService {
   public API_BASE_URL = API_BASE_URL;
+  
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     
+    // Get access token for authenticated requests
+    const token = await authService.getAccessToken();
+    
     try {
       const response = await fetch(url, {
         ...options,
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           ...options.headers,
         },
       });

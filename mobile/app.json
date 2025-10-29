@@ -19,7 +19,10 @@
       "associatedDomains": [
         "applinks:wagerpals.io",
         "applinks:*.wagerpals.io"
-      ]
+      ],
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -66,12 +69,13 @@
       ]
     ],
     "extra": {
-      "eas": {
-        "projectId": "your-eas-project-id"
-      },
       "apiUrl": "${EXPO_PUBLIC_API_URL}",
       "stackProjectId": "${EXPO_PUBLIC_STACK_PROJECT_ID}",
-      "stackPublishableKey": "${EXPO_PUBLIC_STACK_PUBLISHABLE_KEY}"
-    }
+      "stackPublishableKey": "${EXPO_PUBLIC_STACK_PUBLISHABLE_KEY}",
+      "eas": {
+        "projectId": "47185f9b-45ff-48f6-9be3-032316a24ff5"
+      }
+    },
+    "owner": "viraatdas"
   }
 }

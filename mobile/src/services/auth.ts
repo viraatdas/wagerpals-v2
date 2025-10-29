@@ -1,42 +1,127 @@
 // Authentication service using Stack Auth API
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { AuthUser } from '../types';
 
 const AUTH_BASE_URL = __DEV__ 
   ? 'http://localhost:3000' 
   : 'https://wagerpals.io';
 
-const STACK_PROJECT_ID = process.env.EXPO_PUBLIC_STACK_PROJECT_ID || 'your_project_id';
-const STACK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STACK_PUBLISHABLE_KEY || 'your_key';
+const STACK_PROJECT_ID = process.env.EXPO_PUBLIC_STACK_PROJECT_ID || '';
+const STACK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STACK_PUBLISHABLE_KEY || '';
 
 WebBrowser.maybeCompleteAuthSession();
 
 class AuthService {
   private currentUser: AuthUser | null = null;
   private listeners: ((user: AuthUser | null) => void)[] = [];
+  private authSession: any = null;
 
   async init() {
     // Try to restore session from secure storage
     try {
       const storedUser = await SecureStore.getItemAsync('user');
-      if (storedUser) {
+      const storedToken = await SecureStore.getItemAsync('accessToken');
+      
+      if (storedUser && storedToken) {
         this.currentUser = JSON.parse(storedUser);
-        this.notifyListeners();
+        // Verify token is still valid
+        const isValid = await this.verifyToken(storedToken);
+        if (isValid) {
+          this.notifyListeners();
+        } else {
+          // Token expired, clear storage
+          await this.clearStorage();
+        }
       }
     } catch (error) {
       console.error('Failed to restore session:', error);
     }
   }
 
-  async signInWithGoogle() {
+  private async verifyToken(token: string): Promise<boolean> {
     try {
-      // For Expo, use custom scheme for OAuth callback
-      const redirectUrl = __DEV__ 
-        ? 'exp://localhost:19000/--/oauth/callback'
-        : 'wagerpals://oauth/callback';
+      const response = await fetch(`${AUTH_BASE_URL}/api/users?id=me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async sendMagicLink(email: string): Promise<void> {
+    try {
+      // Use Stack Auth API to send magic link
+      const response = await fetch('https://api.stack-auth.com/api/v1/auth/otp/send-sign-in-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-stack-project-id': STACK_PROJECT_ID,
+          'x-stack-publishable-client-key': STACK_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({
+          email,
+          callback_url: `${AUTH_BASE_URL}/auth/signin`,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to send magic link');
+      }
+    } catch (error) {
+      console.error('Magic link error:', error);
+      throw error;
+    }
+  }
+
+  async signInWithCode(email: string, code: string): Promise<AuthUser> {
+    try {
+      // Verify the code with Stack Auth
+      const response = await fetch('https://api.stack-auth.com/api/v1/auth/otp/sign-in', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-stack-project-id': STACK_PROJECT_ID,
+          'x-stack-publishable-client-key': STACK_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({
+          email,
+          code,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Invalid code');
+      }
+
+      const data = await response.json();
       
-      const authUrl = `https://api.stack-auth.com/api/v1/auth/oauth/authorize?client_id=${STACK_PROJECT_ID}&redirect_uri=${encodeURIComponent(redirectUrl)}&response_type=code&provider=google`;
+      // Store the access token
+      await SecureStore.setItemAsync('accessToken', data.access_token);
+      
+      // Get user info
+      const user = await this.getUserInfo(data.access_token);
+      await this.setUser(user);
+      
+      return user;
+    } catch (error) {
+      console.error('Sign in with code error:', error);
+      throw error;
+    }
+  }
+
+  async signInWithGoogle(): Promise<AuthUser> {
+    try {
+      // Use native OAuth flow with WebBrowser
+      const redirectUrl = Linking.createURL('/');
+      
+      const authUrl = `https://api.stack-auth.com/api/v1/auth/oauth/authorize?client_id=${STACK_PROJECT_ID}&redirect_uri=${encodeURIComponent(redirectUrl)}&response_type=code&provider=google&x-stack-publishable-client-key=${STACK_PUBLISHABLE_KEY}`;
       
       const result = await WebBrowser.openAuthSessionAsync(
         authUrl,
@@ -49,52 +134,69 @@ class AuthService {
         const code = url.searchParams.get('code');
         
         if (code) {
-          // Exchange code for user session via your backend
-          const response = await fetch(`${AUTH_BASE_URL}/api/auth/mobile-callback`, {
+          // Exchange code for tokens
+          const tokenResponse = await fetch('https://api.stack-auth.com/api/v1/auth/oauth/token', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code, redirect_uri: redirectUrl }),
+            headers: {
+              'Content-Type': 'application/json',
+              'x-stack-project-id': STACK_PROJECT_ID,
+              'x-stack-publishable-client-key': STACK_PUBLISHABLE_KEY,
+            },
+            body: JSON.stringify({
+              grant_type: 'authorization_code',
+              code,
+              redirect_uri: redirectUrl,
+            }),
           });
 
-          if (response.ok) {
-            const user = await response.json();
-            await this.setUser(user);
-            return user;
+          if (!tokenResponse.ok) {
+            throw new Error('Failed to exchange code for token');
           }
+
+          const tokens = await tokenResponse.json();
+          await SecureStore.setItemAsync('accessToken', tokens.access_token);
+          
+          // Get user info
+          const user = await this.getUserInfo(tokens.access_token);
+          await this.setUser(user);
+          
+          return user;
         }
       }
       
-      throw new Error('Authentication failed');
+      throw new Error('Authentication cancelled or failed');
     } catch (error) {
-      console.error('Sign in error:', error);
+      console.error('Google sign in error:', error);
       throw error;
     }
   }
 
-  async signInWithEmail(email: string, password: string) {
-    try {
-      const response = await fetch(`${AUTH_BASE_URL}/api/auth/signin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+  private async getUserInfo(accessToken: string): Promise<AuthUser> {
+    const response = await fetch('https://api.stack-auth.com/api/v1/users/me', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'x-stack-project-id': STACK_PROJECT_ID,
+        'x-stack-publishable-client-key': STACK_PUBLISHABLE_KEY,
+      },
+    });
 
-      if (response.ok) {
-        const user = await response.json();
-        await this.setUser(user);
-        return user;
-      }
-
-      throw new Error('Invalid credentials');
-    } catch (error) {
-      console.error('Sign in error:', error);
-      throw error;
+    if (!response.ok) {
+      throw new Error('Failed to get user info');
     }
+
+    const data = await response.json();
+    
+    return {
+      id: data.id,
+      email: data.primary_email,
+      displayName: data.display_name || data.primary_email?.split('@')[0] || 'User',
+      primaryEmail: data.primary_email,
+    };
   }
 
   async signOut() {
     try {
-      await SecureStore.deleteItemAsync('user');
+      await this.clearStorage();
       this.currentUser = null;
       this.notifyListeners();
     } catch (error) {
@@ -103,8 +205,21 @@ class AuthService {
     }
   }
 
+  private async clearStorage() {
+    await SecureStore.deleteItemAsync('user');
+    await SecureStore.deleteItemAsync('accessToken');
+  }
+
   getCurrentUser(): AuthUser | null {
     return this.currentUser;
+  }
+
+  async getAccessToken(): Promise<string | null> {
+    try {
+      return await SecureStore.getItemAsync('accessToken');
+    } catch {
+      return null;
+    }
   }
 
   onAuthStateChanged(callback: (user: AuthUser | null) => void) {

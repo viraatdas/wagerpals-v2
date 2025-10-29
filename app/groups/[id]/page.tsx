@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export default function GroupPage() {
   const params = useParams();
   const router = useRouter();
-  const user = useUser();
+  const user = useUser({ or: null });
   const [group, setGroup] = useState<any>(null);
   const [events, setEvents] = useState<EventWithStats[]>([]);
   const [loading, setLoading] = useState(true);

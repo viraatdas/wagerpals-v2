@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@stackframe/stack';
 import PushNotificationPrompt from '@/components/PushNotificationPrompt';
-import InstallPrompt from '@/components/InstallPrompt';
 import UsernameModal from '@/components/UsernameModal';
 import Toast, { ToastType } from '@/components/Toast';
 import { Group } from '@/lib/types';
@@ -13,7 +12,7 @@ export const dynamic = 'force-dynamic';
 
 export default function Home() {
   const router = useRouter();
-  const user = useUser();
+  const user = useUser({ or: null });
   const [groups, setGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -206,7 +205,6 @@ export default function Home() {
     <>
       {showUsernameModal && <UsernameModal onSubmit={handleUsernameSubmit} />}
       <PushNotificationPrompt />
-      <InstallPrompt />
       <Toast
         isOpen={toast !== null}
         onClose={() => setToast(null)}

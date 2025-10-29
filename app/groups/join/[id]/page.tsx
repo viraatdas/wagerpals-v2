@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 export default function JoinGroupPage() {
   const params = useParams();
   const router = useRouter();
-  const user = useUser();
+  const user = useUser({ or: null });
   const [group, setGroup] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);

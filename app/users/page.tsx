@@ -19,7 +19,7 @@ interface GroupMember {
 }
 
 export default function UsersPage() {
-  const user = useUser();
+  const user = useUser({ or: null });
   const router = useRouter();
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');

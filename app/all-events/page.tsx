@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export default function AllEventsPage() {
   const router = useRouter();
-  const user = useUser();
+  const user = useUser({ or: null });
   const [groupedEvents, setGroupedEvents] = useState<{ group: any; events: EventWithStats[] }[]>([]);
   const [loading, setLoading] = useState(true);
 

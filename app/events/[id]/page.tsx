@@ -26,7 +26,7 @@ type ConfirmationModalConfig = {
 export default function EventPage() {
   const params = useParams();
   const router = useRouter();
-  const user = useUser();
+  const user = useUser({ or: null });
   const [event, setEvent] = useState<EventWithStats | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
