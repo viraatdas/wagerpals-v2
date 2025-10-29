@@ -17,6 +17,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.wagerpals.app",
       "associatedDomains": [
+        "applinks:wagerpals-v2-q0eep0858-viraatdas-projects.vercel.app",
         "applinks:wagerpals.io",
         "applinks:*.wagerpals.io"
       ],

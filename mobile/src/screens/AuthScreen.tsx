@@ -122,20 +122,15 @@ export default function AuthScreen() {
                 )}
               </TouchableOpacity>
 
-              <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>or</Text>
-                <View style={styles.dividerLine} />
+              {/* Note: Google OAuth temporarily disabled for mobile */}
+              {/* Stack Auth requires HTTPS redirect URIs, which don't work with custom app schemes */}
+              {/* Use the web app for Google sign-in, or use Magic Link on mobile */}
+              
+              <View style={styles.infoBox}>
+                <Text style={styles.infoText}>
+                  💡 Tip: Use the web app for Google sign-in, or continue with email above
+                </Text>
               </View>
-
-              <TouchableOpacity
-                style={[styles.button, styles.googleButton]}
-                onPress={handleGoogleAuth}
-                disabled={isLoading}
-              >
-                <Text style={styles.googleIcon}>G</Text>
-                <Text style={styles.googleButtonText}>Continue with Google</Text>
-              </TouchableOpacity>
 
               <Text style={styles.termsText}>
                 By signing in, you agree to our Terms of Service and Privacy Policy
@@ -330,6 +325,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 16,
     lineHeight: 16,
+  },
+  infoBox: {
+    backgroundColor: '#fef3c7',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  infoText: {
+    fontSize: 13,
+    color: '#92400e',
+    textAlign: 'center',
+    lineHeight: 18,
   },
   backButton: {
     paddingVertical: 12,

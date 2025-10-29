@@ -118,8 +118,9 @@ class AuthService {
 
   async signInWithGoogle(): Promise<AuthUser> {
     try {
-      // Use native OAuth flow with WebBrowser
-      const redirectUrl = Linking.createURL('/');
+      // Use Universal Links for OAuth (required by Stack Auth)
+      // After OAuth, Stack Auth redirects to the web app, which deep links back to mobile
+      const redirectUrl = `${AUTH_BASE_URL}/handler/sign-in`;
       
       const authUrl = `https://api.stack-auth.com/api/v1/auth/oauth/authorize?client_id=${STACK_PROJECT_ID}&redirect_uri=${encodeURIComponent(redirectUrl)}&response_type=code&provider=google&x-stack-publishable-client-key=${STACK_PUBLISHABLE_KEY}`;
       
