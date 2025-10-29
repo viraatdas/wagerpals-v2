@@ -8,7 +8,7 @@ import Toast, { ToastType } from '@/components/Toast';
 function CreateEventForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const user = useUser({ or: null });
+  const user = useUser({ or: "return-null" });
   const [title, setTitle] = useState('');
   const [sides, setSides] = useState(['Yes', 'No']);
   const [endDate, setEndDate] = useState('');

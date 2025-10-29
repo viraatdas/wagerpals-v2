@@ -7,7 +7,7 @@ import Toast, { ToastType } from '@/components/Toast';
 import { validateUsername } from '@/lib/utils';
 
 export default function ProfilePage() {
-  const user = useUser({ or: null });
+  const user = useUser({ or: "return-null" });
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<any>(null);

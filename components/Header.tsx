@@ -7,7 +7,7 @@ import { useUser } from '@stackframe/stack';
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const user = useUser({ or: null });
+  const user = useUser({ or: "return-null" });
 
   const handleLogout = async () => {
     await user?.signOut();

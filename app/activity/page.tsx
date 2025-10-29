@@ -8,7 +8,7 @@ import { ActivityItem } from '@/lib/types';
 import { formatTimestamp } from '@/lib/utils';
 
 export default function ActivityPage() {
-  const user = useUser({ or: null });
+  const user = useUser({ or: "return-null" });
   const router = useRouter();
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);

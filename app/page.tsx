@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 
 export default function Home() {
   const router = useRouter();
-  const user = useUser({ or: null });
+  const user = useUser({ or: "return-null" });
   const [groups, setGroups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);

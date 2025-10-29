@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export default function SignInPage() {
   const app = useStackApp();
-  const user = useUser({ or: null });
+  const user = useUser({ or: "return-null" });
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
