@@ -118,19 +118,20 @@ class AuthService {
 
   async signInWithGoogle(): Promise<AuthUser> {
     try {
-      // Use Universal Links for OAuth (required by Stack Auth)
-      // After OAuth, Stack Auth redirects to the web app, which deep links back to mobile
-      const redirectUrl = `${AUTH_BASE_URL}/handler/sign-in`;
+      // Use web-based OAuth bridge
+      // Stack Auth redirects to our web handler, which then redirects to the mobile app
+      const redirectUrl = `${AUTH_BASE_URL}/auth/mobile-callback`;
       
       const authUrl = `https://api.stack-auth.com/api/v1/auth/oauth/authorize?client_id=${STACK_PROJECT_ID}&redirect_uri=${encodeURIComponent(redirectUrl)}&response_type=code&provider=google&x-stack-publishable-client-key=${STACK_PUBLISHABLE_KEY}`;
       
+      // Open OAuth in browser and wait for deep link back
       const result = await WebBrowser.openAuthSessionAsync(
         authUrl,
-        redirectUrl
+        'wagerpals://oauth-callback'
       );
 
       if (result.type === 'success' && result.url) {
-        // Extract auth code from callback URL
+        // Extract auth code from deep link callback
         const url = new URL(result.url);
         const code = url.searchParams.get('code');
         
@@ -151,6 +152,8 @@ class AuthService {
           });
 
           if (!tokenResponse.ok) {
+            const errorData = await tokenResponse.json();
+            console.error('Token exchange error:', errorData);
             throw new Error('Failed to exchange code for token');
           }
 
