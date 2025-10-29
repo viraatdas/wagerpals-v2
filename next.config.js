@@ -4,6 +4,10 @@ const nextConfig = {
   // Optimize for mobile devices
   poweredByHeader: false,
   compress: true,
+  // Skip static generation errors during build for dynamic pages
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
+  },
   
   webpack: (config, { isServer }) => {
     // Don't attempt to bundle the service worker on the server
