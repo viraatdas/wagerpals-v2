@@ -27,7 +27,7 @@
         "buildConfiguration": "Release"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://wagerpals-v2-q0eep0858-viraatdas-projects.vercel.app",
+        "EXPO_PUBLIC_API_URL": "https://wagerpals-v2-jo28qwx37-viraatdas-projects.vercel.app",
         "EXPO_PUBLIC_STACK_PROJECT_ID": "91e099a5-27d5-4e0a-bc90-d053ec53b2f4",
         "EXPO_PUBLIC_STACK_PUBLISHABLE_KEY": "pck_qsx35t4ehqatg46ey3fd1g22pyt28t4zgyspgcf02ds38"
       }
