@@ -15,17 +15,13 @@ export default function ServiceWorkerRegistration() {
         .then((registration) => {
           console.log('Service Worker registered:', registration);
           
-          // Update service worker if there's a new version
+          // Silently update service worker when new version is available
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'activated') {
                   console.log('New service worker activated');
-                  // Optionally reload the page to use the new service worker
-                  if (confirm('New version available! Reload to update?')) {
-                    window.location.reload();
-                  }
                 }
               });
             }

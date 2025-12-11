@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import MobileAppBanner from "@/components/MobileAppBanner";
 import { ClientProviders } from "@/components/ClientProviders";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -33,6 +34,7 @@ export default function RootLayout({
         <ClientProviders>
           <ServiceWorkerRegistration />
           <div className="min-h-screen bg-gray-50 flex flex-col">
+            <MobileAppBanner />
             <Header />
             <main className="flex-1">
               {children}
