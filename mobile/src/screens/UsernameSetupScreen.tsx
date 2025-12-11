@@ -1,5 +1,5 @@
-// Username setup screen (shown after first login)
-import React, { useState, useEffect } from 'react';
+// Username setup screen - Modern iOS design
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,41 +9,23 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
+  StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
 import { validateUsername } from '../utils/helpers';
 
-export default function UsernameSetupScreen() {
-  const navigation = useNavigation();
+interface UsernameSetupScreenProps {
+  onUsernameSet?: () => void;
+}
+
+export default function UsernameSetupScreen({ onUsernameSet }: UsernameSetupScreenProps) {
   const { user } = useAuth();
   const [username, setUsername] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    checkUsernameStatus();
-  }, [user]);
-
-  const checkUsernameStatus = async () => {
-    if (!user) return;
-
-    try {
-      const userData = await apiService.getUser(user.id);
-      if (userData && userData.username_selected) {
-        // Username already set, go to main app
-        navigation.replace('Main' as never);
-      }
-    } catch (error) {
-      console.log('User not found, needs to set username');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSubmit = async () => {
     const validation = validateUsername(username);
@@ -59,7 +41,10 @@ export default function UsernameSetupScreen() {
 
     try {
       await apiService.createOrUpdateUser(user.id, username);
-      navigation.replace('Main' as never);
+      // Notify parent that username is set
+      if (onUsernameSet) {
+        onUsernameSet();
+      }
     } catch (error: any) {
       setError(error.message || 'Failed to set username');
     } finally {
@@ -67,57 +52,85 @@ export default function UsernameSetupScreen() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ea580c" />
-      </View>
-    );
-  }
+  const isValid = username.length >= 3;
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.content}
+        style={styles.keyboardView}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Choose Your Username</Text>
-          <Text style={styles.subtitle}>
-            This is how other players will see you
-          </Text>
-        </View>
+        <View style={styles.content}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="person-add" size={36} color="#ea580c" />
+            </View>
+            <Text style={styles.title}>Create Your Profile</Text>
+            <Text style={styles.subtitle}>
+              Choose a username that others will see when you place bets
+            </Text>
+          </View>
 
-        <View style={styles.form}>
-          <TextInput
-            style={[styles.input, error ? styles.inputError : null]}
-            placeholder="Username"
-            value={username}
-            onChangeText={(text) => {
-              setUsername(text);
-              setError('');
-            }}
-            autoCapitalize="none"
-            autoFocus
-          />
+          {/* Form */}
+          <View style={styles.card}>
+            <Text style={styles.label}>Username</Text>
+            <View style={[styles.inputContainer, error && styles.inputContainerError]}>
+              <Text style={styles.atSymbol}>@</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="your_username"
+                placeholderTextColor="#9ca3af"
+                value={username}
+                onChangeText={(text) => {
+                  setUsername(text.toLowerCase().replace(/[^a-z0-9_-]/g, ''));
+                  setError('');
+                }}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoFocus
+                maxLength={20}
+              />
+              {isValid && (
+                <View style={styles.checkIcon}>
+                  <Ionicons name="checkmark-circle" size={22} color="#10b981" />
+                </View>
+              )}
+            </View>
 
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-          <Text style={styles.hint}>
-            3-20 characters • Letters, numbers, dashes, and underscores only
-          </Text>
-
-          <TouchableOpacity
-            style={[styles.button, isSaving && styles.buttonDisabled]}
-            onPress={handleSubmit}
-            disabled={isSaving || !username}
-          >
-            {isSaving ? (
-              <ActivityIndicator color="#fff" />
+            {error ? (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={16} color="#dc2626" />
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
             ) : (
-              <Text style={styles.buttonText}>Continue</Text>
+              <Text style={styles.hint}>
+                3-20 characters • Letters, numbers, dashes, underscores
+              </Text>
             )}
-          </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, (!isValid || isSaving) && styles.buttonDisabled]}
+              onPress={handleSubmit}
+              disabled={isSaving || !isValid}
+              activeOpacity={0.8}
+            >
+              {isSaving ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <Text style={styles.buttonText}>Continue</Text>
+                  <Ionicons name="arrow-forward" size={18} color="#fff" />
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Footer */}
+          <Text style={styles.footerText}>
+            You can change your username later in settings
+          </Text>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -127,76 +140,137 @@ export default function UsernameSetupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f8fafc',
   },
-  loadingContainer: {
+  keyboardView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
   },
   content: {
     flex: 1,
-    padding: 24,
+    paddingHorizontal: 24,
     justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 32,
+  },
+  iconContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    backgroundColor: '#fff5f3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    shadowColor: '#ea580c',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
   },
   title: {
-    fontSize: 32,
-    fontWeight: '300',
+    fontSize: 28,
+    fontWeight: '600',
+    color: '#1f2937',
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
-    fontWeight: '300',
+    fontSize: 15,
+    color: '#6b7280',
     textAlign: 'center',
+    lineHeight: 22,
+    paddingHorizontal: 16,
   },
-  form: {
-    width: '100%',
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
+    elevation: 4,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 10,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 56,
+    backgroundColor: '#f9fafb',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  inputContainerError: {
+    borderColor: '#fca5a5',
+    backgroundColor: '#fef2f2',
+  },
+  atSymbol: {
+    fontSize: 18,
+    color: '#9ca3af',
+    marginRight: 4,
+    fontWeight: '500',
   },
   input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    marginBottom: 8,
+    flex: 1,
     fontSize: 18,
+    color: '#1f2937',
+    fontWeight: '500',
   },
-  inputError: {
-    borderColor: '#dc2626',
+  checkIcon: {
+    marginLeft: 8,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 20,
   },
   errorText: {
     color: '#dc2626',
-    fontSize: 14,
-    marginBottom: 8,
+    fontSize: 13,
+    fontWeight: '500',
   },
   hint: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 13,
+    color: '#9ca3af',
     marginBottom: 24,
   },
   button: {
-    height: 50,
-    borderRadius: 8,
+    height: 56,
+    borderRadius: 14,
     backgroundColor: '#ea580c',
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 8,
+    shadowColor: '#ea580c',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   buttonDisabled: {
-    opacity: 0.5,
+    backgroundColor: '#fed7aa',
+    shadowOpacity: 0.1,
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  footerText: {
+    fontSize: 13,
+    color: '#9ca3af',
+    textAlign: 'center',
+    marginTop: 24,
   },
 });
-
-
-

@@ -1,5 +1,6 @@
-// Bottom tab navigator for main app screens
+// Bottom tab navigator with modern iOS styling
 import React from 'react';
+import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -25,31 +26,56 @@ export default function MainTabNavigator() {
             iconName = focused ? 'compass' : 'compass-outline';
           }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
+          return <Ionicons name={iconName} size={24} color={color} />;
         },
-        tabBarActiveTintColor: '#ea580c', // Orange-600
-        tabBarInactiveTintColor: 'gray',
-        headerShown: true,
+        tabBarActiveTintColor: '#ea580c',
+        tabBarInactiveTintColor: '#9ca3af',
+        tabBarShowLabel: true,
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '500',
+          marginTop: -2,
+        },
+        tabBarStyle: {
+          position: 'absolute',
+          backgroundColor: Platform.OS === 'ios' ? 'rgba(255, 255, 255, 0.92)' : '#fff',
+          borderTopWidth: 0,
+          elevation: 0,
+          height: Platform.OS === 'ios' ? 88 : 64,
+          paddingTop: 8,
+          paddingBottom: Platform.OS === 'ios' ? 28 : 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.06,
+          shadowRadius: 16,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 4,
+        },
+        headerShown: false,
       })}
     >
       <Tab.Screen 
         name="Home" 
         component={HomeScreen}
-        options={{ title: 'WagerPals' }}
+        options={{ 
+          title: 'Groups',
+        }}
       />
       <Tab.Screen 
         name="Activity" 
         component={ActivityScreen}
-        options={{ title: 'Activity' }}
+        options={{ 
+          title: 'Activity',
+        }}
       />
       <Tab.Screen 
         name="Explore" 
         component={ExploreScreen}
-        options={{ title: 'Explore' }}
+        options={{ 
+          title: 'Explore',
+        }}
       />
     </Tab.Navigator>
   );
 }
-
-
-

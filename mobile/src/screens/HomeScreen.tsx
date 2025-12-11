@@ -1,5 +1,5 @@
-// Home screen - Shows user's groups
-import React, { useState, useEffect, useCallback } from 'react';
+// Home screen - Shows user's groups with modern iOS design
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  StatusBar,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -16,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
 import { Group } from '../types';
+import TextInputModal from '../components/TextInputModal';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -51,60 +54,57 @@ export default function HomeScreen() {
     loadGroups();
   };
 
-  const handleCreateGroup = () => {
-    Alert.prompt(
-      'Create Group',
-      'Enter a name for your group',
-      async (groupName) => {
-        if (!groupName || !user) return;
-
-        try {
-          const newGroup = await apiService.createGroup(groupName, user.id);
-          navigation.navigate('GroupDetail' as never, { groupId: newGroup.id } as never);
-        } catch (error: any) {
-          Alert.alert('Error', error.message || 'Failed to create group');
-        }
-      },
-      'plain-text'
-    );
+  const handleCreateGroup = async (groupName: string) => {
+    if (!user) return;
+    
+    setShowCreateModal(false);
+    try {
+      const newGroup = await apiService.createGroup(groupName, user.id);
+      navigation.navigate('GroupDetail' as never, { groupId: newGroup.id } as never);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to create group');
+    }
   };
 
-  const handleJoinGroup = () => {
-    Alert.prompt(
-      'Join Group',
-      'Enter the 6-digit group code',
-      async (groupCode) => {
-        if (!groupCode || !user) return;
-
-        try {
-          await apiService.joinGroup(groupCode, user.id);
-          Alert.alert('Success', 'Join request submitted! Waiting for admin approval.');
-          loadGroups();
-        } catch (error: any) {
-          Alert.alert('Error', error.message || 'Failed to join group');
-        }
-      },
-      'plain-text'
-    );
+  const handleJoinGroup = async (groupCode: string) => {
+    if (!user) return;
+    
+    setShowJoinModal(false);
+    try {
+      await apiService.joinGroup(groupCode.toUpperCase(), user.id);
+      Alert.alert('Success', 'Join request submitted! Waiting for admin approval.');
+      loadGroups();
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to join group');
+    }
   };
 
   const renderGroupItem = ({ item }: { item: Group }) => (
     <TouchableOpacity
       style={styles.groupCard}
       onPress={() => navigation.navigate('GroupDetail' as never, { groupId: item.id } as never)}
+      activeOpacity={0.7}
     >
-      <View style={styles.groupHeader}>
-        <Text style={styles.groupName}>{item.name}</Text>
-        {item.is_admin && (
-          <View style={styles.adminBadge}>
-            <Text style={styles.adminBadgeText}>Admin</Text>
+      <View style={styles.groupCardInner}>
+        <View style={styles.groupIconContainer}>
+          <Ionicons name="people" size={24} color="#ea580c" />
+        </View>
+        <View style={styles.groupInfo}>
+          <View style={styles.groupHeader}>
+            <Text style={styles.groupName} numberOfLines={1}>{item.name}</Text>
+            {item.is_admin && (
+              <View style={styles.adminBadge}>
+                <Text style={styles.adminBadgeText}>Admin</Text>
+              </View>
+            )}
           </View>
-        )}
-      </View>
-      <View style={styles.groupInfo}>
-        <Text style={styles.groupInfoText}>Code: {item.id}</Text>
-        <Text style={styles.groupInfoText}>•</Text>
-        <Text style={styles.groupInfoText}>{item.member_count} members</Text>
+          <View style={styles.groupMeta}>
+            <Text style={styles.groupCode}>{item.id}</Text>
+            <Text style={styles.groupDot}>•</Text>
+            <Text style={styles.memberCount}>{item.member_count} members</Text>
+          </View>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color="#d1d5db" />
       </View>
     </TouchableOpacity>
   );
@@ -113,63 +113,115 @@ export default function HomeScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#ea580c" />
+        <Text style={styles.loadingText}>Loading groups...</Text>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.welcomeText}>Welcome to</Text>
-            <Text style={styles.titleText}>
-              <Text style={styles.titleNormal}>Wager</Text>
-              <Text style={styles.titleBold}>Pals</Text>
-            </Text>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <StatusBar barStyle="dark-content" />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.welcomeText}>Welcome back</Text>
+          <Text style={styles.titleText}>
+            <Text style={styles.titleNormal}>Wager</Text>
+            <Text style={styles.titleBold}>Pals</Text>
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Profile' as never)}
+          style={styles.profileButton}
+          activeOpacity={0.7}
+        >
+          <View style={styles.profileAvatar}>
+            <Ionicons name="person" size={20} color="#ea580c" />
           </View>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Profile' as never)}
-            style={styles.profileButton}
-          >
-            <Ionicons name="person-circle-outline" size={32} color="#ea580c" />
-          </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
+      </View>
 
-        <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleCreateGroup}>
-            <Text style={styles.actionIcon}>+</Text>
-            <Text style={styles.actionText}>Create Group</Text>
-          </TouchableOpacity>
+      {/* Action Cards */}
+      <View style={styles.actionCards}>
+        <TouchableOpacity 
+          style={styles.actionCard} 
+          onPress={() => setShowCreateModal(true)}
+          activeOpacity={0.8}
+        >
+          <View style={styles.actionIconContainer}>
+            <Ionicons name="add" size={28} color="#fff" />
+          </View>
+          <Text style={styles.actionTitle}>Create Group</Text>
+          <Text style={styles.actionSubtitle}>Start a new betting group</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton} onPress={handleJoinGroup}>
-            <Text style={styles.actionIcon}>🔗</Text>
-            <Text style={styles.actionText}>Join Group</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity 
+          style={[styles.actionCard, styles.actionCardAlt]} 
+          onPress={() => setShowJoinModal(true)}
+          activeOpacity={0.8}
+        >
+          <View style={[styles.actionIconContainer, styles.actionIconAlt]}>
+            <Ionicons name="enter-outline" size={24} color="#ea580c" />
+          </View>
+          <Text style={[styles.actionTitle, styles.actionTitleAlt]}>Join Group</Text>
+          <Text style={[styles.actionSubtitle, styles.actionSubtitleAlt]}>Enter a group code</Text>
+        </TouchableOpacity>
+      </View>
 
+      {/* Groups List */}
+      <View style={styles.groupsSection}>
+        <Text style={styles.sectionTitle}>Your Groups</Text>
+        
         {groups.length > 0 ? (
-          <View style={styles.groupsSection}>
-            <Text style={styles.sectionTitle}>Your Groups</Text>
-            <FlatList
-              data={groups}
-              renderItem={renderGroupItem}
-              keyExtractor={(item) => item.id}
-              contentContainerStyle={styles.groupsList}
-              refreshControl={
-                <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
-              }
-            />
-          </View>
+          <FlatList
+            data={groups}
+            renderItem={renderGroupItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.groupsList}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl 
+                refreshing={isRefreshing} 
+                onRefresh={handleRefresh}
+                tintColor="#ea580c"
+              />
+            }
+          />
         ) : (
           <View style={styles.emptyState}>
+            <View style={styles.emptyIconContainer}>
+              <Ionicons name="people-outline" size={48} color="#d1d5db" />
+            </View>
             <Text style={styles.emptyStateText}>No groups yet</Text>
             <Text style={styles.emptyStateSubtext}>
-              Create a group or join one with a code
+              Create a group or join one with a code to get started
             </Text>
           </View>
         )}
       </View>
+
+      {/* Modals */}
+      <TextInputModal
+        visible={showCreateModal}
+        title="Create Group"
+        message="Enter a name for your new betting group"
+        placeholder="Group name"
+        onSubmit={handleCreateGroup}
+        onCancel={() => setShowCreateModal(false)}
+        submitText="Create"
+      />
+
+      <TextInputModal
+        visible={showJoinModal}
+        title="Join Group"
+        message="Enter the 6-character group code"
+        placeholder="ABC123"
+        maxLength={6}
+        onSubmit={handleJoinGroup}
+        onCancel={() => setShowJoinModal(false)}
+        submitText="Join"
+      />
     </SafeAreaView>
   );
 }
@@ -177,133 +229,212 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f8fafc',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#f8fafc',
   },
-  content: {
-    flex: 1,
-    padding: 16,
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#6b7280',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 20,
   },
   welcomeText: {
-    fontSize: 16,
-    color: '#666',
-    fontWeight: '300',
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '400',
+    marginBottom: 2,
   },
   titleText: {
-    fontSize: 32,
+    fontSize: 28,
   },
   titleNormal: {
     fontWeight: '300',
+    color: '#1f2937',
   },
   titleBold: {
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#ea580c',
   },
   profileButton: {
     padding: 4,
   },
-  actionButtons: {
+  profileAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#fed7aa',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionCards: {
     flexDirection: 'row',
+    paddingHorizontal: 20,
     gap: 12,
     marginBottom: 24,
   },
-  actionButton: {
+  actionCard: {
     flex: 1,
-    borderWidth: 2,
-    borderColor: '#ddd',
-    borderStyle: 'dashed',
+    backgroundColor: '#ea580c',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#ea580c',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  actionCardAlt: {
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+  },
+  actionIconContainer: {
+    width: 44,
+    height: 44,
     borderRadius: 12,
-    padding: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 12,
   },
-  actionIcon: {
-    fontSize: 32,
-    marginBottom: 8,
+  actionIconAlt: {
+    backgroundColor: '#fff5f3',
   },
-  actionText: {
+  actionTitle: {
     fontSize: 16,
-    fontWeight: '300',
-    color: '#333',
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  actionSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  actionTitleAlt: {
+    color: '#1f2937',
+  },
+  actionSubtitleAlt: {
+    color: '#6b7280',
   },
   groupsSection: {
     flex: 1,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '300',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f2937',
     marginBottom: 16,
-    paddingBottom: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: '#ea580c',
   },
   groupsList: {
-    paddingBottom: 16,
+    paddingBottom: 20,
   },
   groupCard: {
     backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  groupCardInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+  groupIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#fff5f3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  groupInfo: {
+    flex: 1,
   },
   groupHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   groupName: {
-    fontSize: 18,
-    fontWeight: '300',
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
+    flex: 1,
   },
   adminBadge: {
-    backgroundColor: '#fed7aa',
+    backgroundColor: '#fef3c7',
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginLeft: 8,
   },
   adminBadgeText: {
-    fontSize: 12,
-    color: '#9a3412',
-    fontWeight: '300',
+    fontSize: 11,
+    color: '#92400e',
+    fontWeight: '600',
   },
-  groupInfo: {
+  groupMeta: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
   },
-  groupInfoText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '300',
+  groupCode: {
+    fontSize: 13,
+    color: '#9ca3af',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
+  groupDot: {
+    fontSize: 13,
+    color: '#d1d5db',
+    marginHorizontal: 6,
+  },
+  memberCount: {
+    fontSize: 13,
+    color: '#9ca3af',
   },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingBottom: 60,
+  },
+  emptyIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#f3f4f6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   emptyStateText: {
-    fontSize: 20,
-    color: '#666',
-    fontWeight: '300',
+    fontSize: 18,
+    color: '#374151',
+    fontWeight: '500',
     marginBottom: 8,
   },
   emptyStateSubtext: {
-    fontSize: 16,
-    color: '#999',
-    fontWeight: '300',
+    fontSize: 14,
+    color: '#9ca3af',
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 40,
   },
 });
-
-
-

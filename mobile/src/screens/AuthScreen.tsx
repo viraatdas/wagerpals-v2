@@ -1,4 +1,4 @@
-// Authentication screen - using Stack Auth
+// Authentication screen - Modern iOS design
 import React, { useState } from 'react';
 import {
   View,
@@ -10,9 +10,14 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  StatusBar,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import authService from '../services/auth';
+
+const { width } = Dimensions.get('window');
 
 export default function AuthScreen() {
   const [email, setEmail] = useState('');
@@ -22,7 +27,7 @@ export default function AuthScreen() {
 
   const handleSendCode = async () => {
     if (!email || !email.includes('@')) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      Alert.alert('Invalid Email', 'Please enter a valid email address');
       return;
     }
 
@@ -31,8 +36,8 @@ export default function AuthScreen() {
       await authService.sendMagicLink(email);
       setStep('code');
       Alert.alert(
-        'Check your email', 
-        'We sent you a verification code. Enter it below to sign in.',
+        'Check Your Email',
+        'We sent you a 6-digit verification code. Enter it below to sign in.',
         [{ text: 'OK' }]
       );
     } catch (error: any) {
@@ -44,7 +49,7 @@ export default function AuthScreen() {
 
   const handleVerifyCode = async () => {
     if (!code || code.length < 6) {
-      Alert.alert('Error', 'Please enter the verification code');
+      Alert.alert('Invalid Code', 'Please enter the 6-digit verification code');
       return;
     }
 
@@ -78,117 +83,149 @@ export default function AuthScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.content}
+        style={styles.keyboardView}
       >
-        <View style={styles.header}>
-          <Text style={styles.welcomeText}>Welcome to</Text>
-          <Text style={styles.title}>
-            <Text style={styles.titleWager}>Wager</Text>
-            <Text style={styles.titlePals}>Pals</Text>
-          </Text>
-          <Text style={styles.subtitle}>Polymarket for friends</Text>
-        </View>
+        <View style={styles.content}>
+          {/* Logo & Header */}
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <Ionicons name="trophy" size={40} color="#ea580c" />
+            </View>
+            <Text style={styles.title}>
+              <Text style={styles.titleWager}>Wager</Text>
+              <Text style={styles.titlePals}>Pals</Text>
+            </Text>
+            <Text style={styles.subtitle}>Polymarket for friends</Text>
+          </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            {step === 'email' ? 'Sign In' : 'Enter Code'}
-          </Text>
+          {/* Auth Card */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
+              {step === 'email' ? 'Welcome' : 'Verify Email'}
+            </Text>
+            <Text style={styles.cardSubtitle}>
+              {step === 'email' 
+                ? 'Sign in to start betting with friends'
+                : `Enter the code sent to ${email}`
+              }
+            </Text>
 
-          {step === 'email' ? (
-            <View style={styles.form}>
-              <Text style={styles.label}>Email address</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="you@example.com"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                autoComplete="email"
-                editable={!isLoading}
-              />
+            {step === 'email' ? (
+              <View style={styles.form}>
+                <View style={styles.inputContainer}>
+                  <Ionicons name="mail-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your email"
+                    placeholderTextColor="#9ca3af"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    autoComplete="email"
+                    editable={!isLoading}
+                  />
+                </View>
 
-              <TouchableOpacity
-                style={[styles.button, styles.emailButton]}
-                onPress={handleSendCode}
-                disabled={isLoading || !email}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Continue with Email</Text>
-                )}
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.primaryButton, (!email || isLoading) && styles.buttonDisabled]}
+                  onPress={handleSendCode}
+                  disabled={isLoading || !email}
+                  activeOpacity={0.8}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <>
+                      <Text style={styles.primaryButtonText}>Continue with Email</Text>
+                      <Ionicons name="arrow-forward" size={18} color="#fff" />
+                    </>
+                  )}
+                </TouchableOpacity>
 
-              {/* Divider */}
-              <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>or</Text>
-                <View style={styles.dividerLine} />
+                <View style={styles.divider}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerText}>or</Text>
+                  <View style={styles.dividerLine} />
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.button, styles.googleButton]}
+                  onPress={handleGoogleAuth}
+                  disabled={isLoading}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.googleIconContainer}>
+                    <Text style={styles.googleIcon}>G</Text>
+                  </View>
+                  <Text style={styles.googleButtonText}>Continue with Google</Text>
+                </TouchableOpacity>
               </View>
+            ) : (
+              <View style={styles.form}>
+                <View style={styles.codeContainer}>
+                  <TextInput
+                    style={styles.codeInput}
+                    placeholder="000000"
+                    placeholderTextColor="#d1d5db"
+                    value={code}
+                    onChangeText={setCode}
+                    keyboardType="number-pad"
+                    maxLength={6}
+                    editable={!isLoading}
+                    autoFocus
+                  />
+                </View>
 
-              {/* Google OAuth */}
-              <TouchableOpacity
-                style={[styles.button, styles.googleButton]}
-                onPress={handleGoogleAuth}
-                disabled={isLoading}
-              >
-                <Text style={styles.googleIcon}>G</Text>
-                <Text style={styles.googleButtonText}>Continue with Google</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.primaryButton, (code.length < 6 || isLoading) && styles.buttonDisabled]}
+                  onPress={handleVerifyCode}
+                  disabled={isLoading || code.length < 6}
+                  activeOpacity={0.8}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <>
+                      <Text style={styles.primaryButtonText}>Verify & Sign In</Text>
+                      <Ionicons name="checkmark" size={18} color="#fff" />
+                    </>
+                  )}
+                </TouchableOpacity>
 
-              <Text style={styles.termsText}>
-                By signing in, you agree to our Terms of Service and Privacy Policy
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.form}>
-              <Text style={styles.label}>Verification code</Text>
-              <Text style={styles.helperText}>
-                Enter the 6-digit code we sent to {email}
-              </Text>
-              <TextInput
-                style={[styles.input, styles.codeInput]}
-                placeholder="000000"
-                value={code}
-                onChangeText={setCode}
-                keyboardType="number-pad"
-                maxLength={6}
-                editable={!isLoading}
-                autoFocus
-              />
+                <View style={styles.codeActions}>
+                  <TouchableOpacity
+                    style={styles.linkButton}
+                    onPress={handleBackToEmail}
+                    disabled={isLoading}
+                  >
+                    <Ionicons name="arrow-back" size={16} color="#ea580c" />
+                    <Text style={styles.linkButtonText}>Use different email</Text>
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.button, styles.emailButton]}
-                onPress={handleVerifyCode}
-                disabled={isLoading || code.length < 6}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Verify Code</Text>
-                )}
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.linkButton}
+                    onPress={handleSendCode}
+                    disabled={isLoading}
+                  >
+                    <Ionicons name="refresh" size={16} color="#ea580c" />
+                    <Text style={styles.linkButtonText}>Resend code</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
 
-              <TouchableOpacity
-                style={styles.backButton}
-                onPress={handleBackToEmail}
-                disabled={isLoading}
-              >
-                <Text style={styles.backButtonText}>Use a different email</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.backButton}
-                onPress={handleSendCode}
-                disabled={isLoading}
-              >
-                <Text style={styles.backButtonText}>Resend code</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          {/* Terms */}
+          <Text style={styles.termsText}>
+            By signing in, you agree to our{' '}
+            <Text style={styles.termsLink}>Terms of Service</Text>
+            {' '}and{' '}
+            <Text style={styles.termsLink}>Privacy Policy</Text>
+          </Text>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -198,107 +235,141 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f8fafc',
+  },
+  keyboardView: {
+    flex: 1,
   },
   content: {
     flex: 1,
-    padding: 24,
+    paddingHorizontal: 24,
     justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
     marginBottom: 32,
   },
-  welcomeText: {
-    fontSize: 16,
-    color: '#666',
-    fontWeight: '300',
-    marginBottom: 4,
+  logoContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    backgroundColor: '#fff5f3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#ea580c',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
   },
   title: {
-    fontSize: 42,
+    fontSize: 36,
     marginBottom: 8,
   },
   titleWager: {
     fontWeight: '300',
-    color: '#333',
+    color: '#1f2937',
   },
   titlePals: {
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#ea580c',
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
-    fontWeight: '300',
+    color: '#6b7280',
+    fontWeight: '400',
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 24,
+    borderRadius: 24,
+    padding: 28,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
+    elevation: 4,
   },
   cardTitle: {
     fontSize: 24,
-    fontWeight: '400',
-    marginBottom: 24,
+    fontWeight: '600',
+    color: '#1f2937',
     textAlign: 'center',
+    marginBottom: 8,
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 28,
+    lineHeight: 20,
   },
   form: {
     width: '100%',
   },
-  label: {
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 8,
-    fontWeight: '400',
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 56,
+    backgroundColor: '#f9fafb',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    marginBottom: 16,
+    paddingHorizontal: 16,
   },
-  helperText: {
-    fontSize: 13,
-    color: '#666',
-    marginBottom: 12,
-    lineHeight: 18,
+  inputIcon: {
+    marginRight: 12,
   },
   input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    flex: 1,
     fontSize: 16,
-    backgroundColor: '#fff',
+    color: '#1f2937',
+  },
+  codeContainer: {
+    marginBottom: 20,
   },
   codeInput: {
-    textAlign: 'center',
-    fontSize: 24,
-    letterSpacing: 8,
+    height: 64,
+    backgroundColor: '#f9fafb',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    fontSize: 32,
     fontWeight: '600',
+    color: '#1f2937',
+    textAlign: 'center',
+    letterSpacing: 12,
   },
   button: {
-    height: 48,
-    borderRadius: 8,
+    height: 56,
+    borderRadius: 14,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    gap: 8,
   },
-  emailButton: {
-    backgroundColor: '#fdb4a0',
+  primaryButton: {
+    backgroundColor: '#ea580c',
+    shadowColor: '#ea580c',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  buttonText: {
+  buttonDisabled: {
+    backgroundColor: '#fed7aa',
+    shadowOpacity: 0.1,
+  },
+  primaryButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '400',
+    fontWeight: '600',
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: 24,
   },
   dividerLine: {
     flex: 1,
@@ -309,39 +380,55 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     color: '#9ca3af',
     fontSize: 14,
+    fontWeight: '500',
   },
   googleButton: {
     backgroundColor: '#fff',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#e5e7eb',
   },
+  googleIconContainer: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   googleIcon: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginRight: 8,
+    fontSize: 18,
+    fontWeight: '700',
     color: '#ea4335',
   },
   googleButtonText: {
-    color: '#333',
+    color: '#374151',
     fontSize: 16,
-    fontWeight: '400',
+    fontWeight: '500',
+  },
+  codeActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  linkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+  },
+  linkButtonText: {
+    color: '#ea580c',
+    fontSize: 14,
+    fontWeight: '500',
   },
   termsText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#9ca3af',
     textAlign: 'center',
-    marginTop: 16,
-    lineHeight: 16,
+    marginTop: 24,
+    lineHeight: 18,
+    paddingHorizontal: 20,
   },
-  backButton: {
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  backButtonText: {
+  termsLink: {
     color: '#ea580c',
-    fontSize: 14,
-    fontWeight: '400',
+    fontWeight: '500',
   },
 });
-
-
