@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#ea580c"
     },
     "ios": {
       "supportsTablet": true,
@@ -67,12 +67,18 @@
           "color": "#ea580c",
           "sounds": []
         }
+      ],
+      [
+        "react-native-auth0",
+        {
+          "domain": "dev-ti4x5dupc1lejewk.us.auth0.com"
+        }
       ]
     ],
     "extra": {
       "apiUrl": "${EXPO_PUBLIC_API_URL}",
-      "stackProjectId": "${EXPO_PUBLIC_STACK_PROJECT_ID}",
-      "stackPublishableKey": "${EXPO_PUBLIC_STACK_PUBLISHABLE_KEY}",
+      "auth0Domain": "${EXPO_PUBLIC_AUTH0_DOMAIN}",
+      "auth0ClientId": "${EXPO_PUBLIC_AUTH0_CLIENT_ID}",
       "eas": {
         "projectId": "47185f9b-45ff-48f6-9be3-032316a24ff5"
       }

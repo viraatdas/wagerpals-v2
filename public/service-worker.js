@@ -41,9 +41,13 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   
+  // Skip external requests (don't intercept cross-origin requests)
+  if (!url.origin.includes('wagerpals.io')) {
+    return;
+  }
+  
   // Skip caching for API routes and auth routes
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
-    event.respondWith(fetch(event.request));
     return;
   }
   

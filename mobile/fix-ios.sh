@@ -37,3 +37,5 @@ echo "  - Your computer's firewall allows connections"
 echo "  - You're on the same WiFi network"
 
 
+
+

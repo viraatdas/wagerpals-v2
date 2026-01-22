@@ -1,25 +1,34 @@
 'use client';
 
 import { useStackApp, useUser } from "@stackframe/stack";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
 
 export const dynamic = 'force-dynamic';
 
-export default function SignInPage() {
+function SignInContent() {
   const app = useStackApp();
   const user = useUser({ or: "return-null" });
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [error, setError] = useState('');
+  
+  // Check for mobile callback parameter
+  const mobileCallback = searchParams.get('mobile_callback');
 
   useEffect(() => {
     if (user) {
-      router.push('/');
+      // If there's a mobile callback, redirect to the mobile session endpoint
+      if (mobileCallback) {
+        router.push(`/api/auth/mobile-session?callback=${mobileCallback}`);
+      } else {
+        router.push('/');
+      }
     }
-  }, [user, router]);
+  }, [user, router, mobileCallback]);
 
   const handleGoogleSignIn = async () => {
     await app.signInWithOAuth("google");
@@ -206,3 +215,14 @@ export default function SignInPage() {
   );
 }
 
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
+  );
+}
