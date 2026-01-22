@@ -1,5 +1,10 @@
 # WagerPals v2
 
+[![Uptime Status](https://img.shields.io/badge/status-live-brightgreen)](https://stats.uptimerobot.com/DLPMolyHJj)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fwww.wagerpals.io)](https://www.wagerpals.io)
+
+**[📊 View Status Page](https://stats.uptimerobot.com/DLPMolyHJj)** | **[🌐 Visit WagerPals](https://www.wagerpals.io)**
+
 Comprehensive guide for the full WagerPals project, including both web and mobile applications.
 
 ## Project Structure
