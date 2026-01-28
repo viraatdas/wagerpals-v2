@@ -21,6 +21,7 @@ import GroupAdminScreen from '../screens/GroupAdminScreen';
 import JoinGroupScreen from '../screens/JoinGroupScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import EditUsernameScreen from '../screens/EditUsernameScreen';
+import CreateEventFromInviteScreen from '../screens/CreateEventFromInviteScreen';
 import notificationService from '../services/notifications';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -92,6 +93,14 @@ export default function RootNavigator() {
         EventDetail: 'events/:eventId',
         JoinGroup: 'groups/join/:groupId',
         GroupAdmin: 'groups/:groupId/admin',
+        CreateEventFromInvite: {
+          path: 'invite',
+          parse: {
+            title: (title: string) => decodeURIComponent(title),
+            sideA: (sideA: string) => decodeURIComponent(sideA),
+            sideB: (sideB: string) => decodeURIComponent(sideB),
+          },
+        },
       },
     },
   } as any;
@@ -183,12 +192,22 @@ export default function RootNavigator() {
                 headerBackTitle: 'Back',
               }}
             />
-            <Stack.Screen 
-              name="EditUsername" 
+            <Stack.Screen
+              name="EditUsername"
               component={EditUsernameScreen}
-              options={{ 
-                headerShown: true, 
-                title: 'Edit Username', 
+              options={{
+                headerShown: true,
+                title: 'Edit Username',
+                presentation: 'modal',
+                headerTintColor: '#ea580c',
+              }}
+            />
+            <Stack.Screen
+              name="CreateEventFromInvite"
+              component={CreateEventFromInviteScreen}
+              options={{
+                headerShown: true,
+                title: 'Wager Invite',
                 presentation: 'modal',
                 headerTintColor: '#ea580c',
               }}

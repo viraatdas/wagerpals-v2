@@ -67,12 +67,6 @@
           "color": "#ea580c",
           "sounds": []
         }
-      ],
-      [
-        "react-native-auth0",
-        {
-          "domain": "dev-ti4x5dupc1lejewk.us.auth0.com"
-        }
       ]
     ],
     "extra": {
