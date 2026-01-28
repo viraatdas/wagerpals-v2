@@ -143,18 +143,55 @@ const withIMessageXcodeProject = (config) => {
       });
     }
 
-    // 4. Add source files to the extension's Sources build phase
-    for (const file of SWIFT_FILES) {
-      xcodeProject.addSourceFile(
-        `${EXTENSION_NAME}/${file}`,
-        { target: target.uuid },
-        groupUuid
-      );
+    // 4. Add source files to the extension's Sources build phase only
+    // Find the sources build phase for the extension target
+    const nativeTargets = xcodeProject.pbxNativeTargetSection();
+    let sourcesBuildPhaseId = null;
+    for (const key in nativeTargets) {
+      const nt = nativeTargets[key];
+      if (nt && nt.name === EXTENSION_NAME && nt.buildPhases) {
+        for (const phase of nt.buildPhases) {
+          if (phase.comment && phase.comment.includes("Sources")) {
+            sourcesBuildPhaseId = phase.value;
+            break;
+          }
+        }
+      }
+    }
+
+    if (sourcesBuildPhaseId) {
+      const sourcesPhase = xcodeProject.hash.project.objects["PBXSourcesBuildPhase"][sourcesBuildPhaseId];
+      const fileRefSection = xcodeProject.hash.project.objects["PBXFileReference"];
+      const buildFileSection = xcodeProject.hash.project.objects["PBXBuildFile"];
+
+      for (const file of SWIFT_FILES) {
+        const fileRefUuid = xcodeProject.generateUuid();
+        const buildFileUuid = xcodeProject.generateUuid();
+
+        fileRefSection[fileRefUuid] = {
+          isa: "PBXFileReference",
+          lastKnownFileType: "sourcecode.swift",
+          path: file,
+          sourceTree: '"<group>"',
+        };
+        fileRefSection[`${fileRefUuid}_comment`] = file;
+
+        buildFileSection[buildFileUuid] = {
+          isa: "PBXBuildFile",
+          fileRef: fileRefUuid,
+          fileRef_comment: file,
+        };
+        buildFileSection[`${buildFileUuid}_comment`] = `${file} in Sources`;
+
+        if (sourcesPhase) {
+          sourcesPhase.files = sourcesPhase.files || [];
+          sourcesPhase.files.push({ value: buildFileUuid, comment: `${file} in Sources` });
+        }
+      }
     }
 
     // 5. Add Assets.xcassets to the extension's Resources build phase
     // Find the resources build phase for the extension target
-    const nativeTargets = xcodeProject.pbxNativeTargetSection();
     let resourcesBuildPhaseId = null;
     for (const key in nativeTargets) {
       const nt = nativeTargets[key];
@@ -263,43 +300,25 @@ const withIMessageXcodeProject = (config) => {
       }
     }
 
-    // 9. Add target dependency and embed extension
+    // 9. Add target dependency
     xcodeProject.addTargetDependency(appTarget.firstTarget.uuid, [target.uuid]);
 
-    // Embed the extension manually to avoid orphan file references
-    const embedPhaseUuid = xcodeProject.generateUuid();
-    const embedBuildFileUuid = xcodeProject.generateUuid();
-
-    // Create a build file referencing the product
-    const buildFileSection = xcodeProject.hash.project.objects["PBXBuildFile"];
-    buildFileSection[embedBuildFileUuid] = {
-      isa: "PBXBuildFile",
-      fileRef: productFileRef,
-      fileRef_comment: `${EXTENSION_NAME}.appex`,
-      settings: { ATTRIBUTES: ["RemoveHeadersOnCopy"] },
-    };
-    buildFileSection[`${embedBuildFileUuid}_comment`] = `${EXTENSION_NAME}.appex in Embed Foundation Extensions`;
-
-    // Create the copy files build phase
-    const copyFilesSection = xcodeProject.hash.project.objects["PBXCopyFilesBuildPhase"] || {};
-    xcodeProject.hash.project.objects["PBXCopyFilesBuildPhase"] = copyFilesSection;
-    copyFilesSection[embedPhaseUuid] = {
-      isa: "PBXCopyFilesBuildPhase",
-      buildActionMask: 2147483647,
-      dstPath: '""',
-      dstSubfolderSpec: 13,
-      files: [{ value: embedBuildFileUuid, comment: `${EXTENSION_NAME}.appex in Embed Foundation Extensions` }],
-      name: '"Embed Foundation Extensions"',
-      runOnlyForDeploymentPostprocessing: 0,
-    };
-    copyFilesSection[`${embedPhaseUuid}_comment`] = "Embed Foundation Extensions";
-
-    // Add this phase to the main app target
+    // Note: addTarget with "app_extension" type already creates a "Copy Files" embed phase
+    // on the main app target, so we just need to fix its dstSubfolderSpec to 13 (PlugIns)
     const appNativeTargets = xcodeProject.pbxNativeTargetSection();
     for (const key in appNativeTargets) {
       const nt = appNativeTargets[key];
       if (nt && nt.name === appTarget.firstTarget.name && nt.buildPhases) {
-        nt.buildPhases.push({ value: embedPhaseUuid, comment: "Embed Foundation Extensions" });
+        for (const phase of nt.buildPhases) {
+          if (phase.comment && phase.comment.includes("Copy Files")) {
+            const copyPhase = xcodeProject.hash.project.objects["PBXCopyFilesBuildPhase"][phase.value];
+            if (copyPhase) {
+              copyPhase.dstSubfolderSpec = 13;
+              copyPhase.name = '"Embed Foundation Extensions"';
+            }
+            break;
+          }
+        }
         break;
       }
     }
