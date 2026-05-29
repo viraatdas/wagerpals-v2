@@ -46,71 +46,64 @@ export default function Explore() {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <p className="text-center text-gray-600">Loading...</p>
+      <div className="max-w-6xl mx-auto px-4 py-8 mobile-page">
+        <div className="h-9 w-56 skeleton rounded-xl mb-6" />
+        <div className="flex flex-wrap gap-2 mb-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-10 w-28 skeleton rounded-xl" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-48 skeleton rounded-3xl" />
+          ))}
+        </div>
       </div>
     );
   }
 
   const filteredEvents = getFilteredEvents();
 
-  return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Explore Events</h1>
+  const filters: { key: typeof filter; label: string }[] = [
+    { key: 'all', label: 'All' },
+    { key: 'ending-soon', label: 'Ending Soon' },
+    { key: 'most-joined', label: 'Most Joined' },
+    { key: 'new', label: 'New' },
+  ];
 
-      <div className="flex gap-2 mb-6 flex-wrap">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            filter === 'all'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-          }`}
-        >
-          All
-        </button>
-        <button
-          onClick={() => setFilter('ending-soon')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            filter === 'ending-soon'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-          }`}
-        >
-          Ending Soon
-        </button>
-        <button
-          onClick={() => setFilter('most-joined')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            filter === 'most-joined'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-          }`}
-        >
-          Most Joined
-        </button>
-        <button
-          onClick={() => setFilter('new')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            filter === 'new'
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-          }`}
-        >
-          New
-        </button>
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-8 mobile-page animate-rise">
+      <h1 className="font-display text-2xl sm:text-3xl font-semibold text-foreground mb-6">
+        Explore <span className="text-gradient">Events</span>
+      </h1>
+
+      <div className="grid grid-cols-2 gap-2 mb-6 sm:flex sm:flex-wrap">
+        {filters.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setFilter(key)}
+            className={`px-4 py-2 rounded-xl font-medium transition ${
+              filter === key
+                ? 'btn-primary'
+                : 'btn-glass'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {filteredEvents.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger">
           {filteredEvents.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}
         </div>
       ) : (
-        <p className="text-center text-gray-600 py-12">No active events found</p>
+        <div className="glass-subtle rounded-3xl p-12 text-center">
+          <p className="text-muted">No active events found</p>
+        </div>
       )}
     </div>
   );
 }
-

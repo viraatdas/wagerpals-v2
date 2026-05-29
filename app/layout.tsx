@@ -1,23 +1,36 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import MobileAppBanner from "@/components/MobileAppBanner";
 import { ClientProviders } from "@/components/ClientProviders";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-display",
+});
 
 export const metadata: Metadata = {
   title: "WagerPals - Polymarket for friends",
   description: "A public, lightweight place where friends create events and share a ledger of bets",
   manifest: "/manifest.json",
-  themeColor: "#ea580c",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "WagerPals",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover",
+  themeColor: "#07070f",
 };
 
 export default function RootLayout({
@@ -26,14 +39,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
-      </head>
-      <body className={inter.className}>
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} dark`}>
+      <body className="font-sans antialiased text-foreground">
+        {/* Aurora glow backdrop */}
+        <div className="aurora" aria-hidden="true" />
         <ClientProviders>
           <ServiceWorkerRegistration />
-          <div className="min-h-screen bg-gray-50 flex flex-col">
+          <div className="min-h-screen flex flex-col">
             <MobileAppBanner />
             <Header />
             <main className="flex-1">
@@ -45,4 +57,3 @@ export default function RootLayout({
     </html>
   );
 }
-

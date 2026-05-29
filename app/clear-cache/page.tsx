@@ -18,7 +18,6 @@ export default function ClearCachePage() {
           const registrations = await navigator.serviceWorker.getRegistrations();
           for (const registration of registrations) {
             await registration.unregister();
-            console.log('Service worker unregistered:', registration);
           }
         }
 
@@ -28,7 +27,6 @@ export default function ClearCachePage() {
           await Promise.all(
             cacheNames.map((cacheName) => caches.delete(cacheName))
           );
-          console.log('Caches cleared:', cacheNames);
         }
 
         // Clear local storage
@@ -53,16 +51,16 @@ export default function ClearCachePage() {
   }, [router]);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-16">
-      <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-        <h1 className="text-3xl font-light text-gray-900 mb-4">
+    <div className="max-w-2xl mx-auto px-4 py-16 animate-rise">
+      <div className="glass-strong rounded-3xl p-8 text-center">
+        <h1 className="font-display text-3xl font-semibold text-foreground mb-4">
           Cache Management
         </h1>
-        <p className="text-xl text-gray-700 mb-8">{status}</p>
-        
-        <div className="text-sm text-gray-600 space-y-2">
-          <p>This page will:</p>
-          <ul className="list-disc list-inside">
+        <p className="text-xl text-muted mb-8">{status}</p>
+
+        <div className="text-sm text-muted-2 space-y-2 glass-subtle rounded-2xl p-5 text-left">
+          <p className="text-muted">This page will:</p>
+          <ul className="list-disc list-inside space-y-1">
             <li>Unregister service workers</li>
             <li>Clear browser caches</li>
             <li>Clear local storage</li>

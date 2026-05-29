@@ -3,6 +3,8 @@ import { db } from '@/lib/db';
 import { generateId } from '@/lib/utils';
 import { Event } from '@/lib/types';
 import { sendPushToAllSubscribers } from '@/lib/push';
+import { requireAuth, verifyUserMatch } from '@/lib/auth';
+import { getGroupResolver } from '@/lib/group-resolver';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +19,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    const bets = await db.bets.getByEvent(id);
+    const [bets, group] = await Promise.all([
+      db.bets.getByEvent(id),
+      db.groups.get(event.group_id),
+    ]);
     const sideStats: Record<string, { count: number; total: number }> = {
       [event.side_a]: { count: 0, total: 0 },
       [event.side_b]: { count: 0, total: 0 },
@@ -36,9 +41,12 @@ export async function GET(request: NextRequest) {
 
     // Count unique participants
     const uniqueParticipants = new Set(bets.map(b => b.user_id)).size;
+    const resolver = group && !group.is_public ? await getGroupResolver(group.id) : null;
 
     return NextResponse.json({
       ...event,
+      is_public: group?.is_public || false,
+      resolver,
       bets,
       side_stats: sideStats,
       total_bets: bets.length,
@@ -46,54 +54,29 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // Get events for specific group or all groups
-  let events = await db.events.getAll();
-  
-  // Filter by group if groupId is provided
-  if (groupId) {
-    events = events.filter(e => e.group_id === groupId);
-  }
-
-  const eventsWithStats = await Promise.all(
-    events.map(async event => {
-      const bets = await db.bets.getByEvent(event.id);
-      const sideStats: Record<string, { count: number; total: number }> = {
-        [event.side_a]: { count: 0, total: 0 },
-        [event.side_b]: { count: 0, total: 0 },
-      };
-
-      // Include all bets (including late bets) in side stats
-      bets.forEach(bet => {
-        sideStats[bet.side].count++;
-        sideStats[bet.side].total += bet.amount;
-      });
-      
-      // Round totals to 2 decimal places
-      Object.keys(sideStats).forEach(side => {
-        sideStats[side].total = Math.round(sideStats[side].total * 100) / 100;
-      });
-
-      // Count unique participants
-      const uniqueParticipants = new Set(bets.map(b => b.user_id)).size;
-
-      return {
-        ...event,
-        side_stats: sideStats,
-        total_bets: bets.length,
-        total_participants: uniqueParticipants,
-      };
-    })
-  );
-
-  return NextResponse.json(eventsWithStats);
+  // Optimized: single query with JOINs instead of N+1
+  const eventsWithStats = await db.events.getAllWithStats(groupId || undefined);
+  return NextResponse.json(eventsWithStats, {
+    headers: {
+      'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=30',
+    },
+  });
 }
 
 export async function POST(request: NextRequest) {
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) return authResult;
+
   const body = await request.json();
   const { title, description, side_a, side_b, end_time, group_id, creator_user_id, creator_username } = body;
 
   if (!title || !side_a || !side_b || !end_time || !group_id) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  }
+
+  if (creator_user_id) {
+    const mismatch = verifyUserMatch(authResult.userId, creator_user_id);
+    if (mismatch) return mismatch;
   }
 
   // Verify group exists and user is a member

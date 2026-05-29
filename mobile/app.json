@@ -67,17 +67,16 @@
           "color": "#ea580c",
           "sounds": []
         }
-      ],
-      "./plugins/imessage-extension/withIMessageExtension"
+      ]
     ],
     "extra": {
       "apiUrl": "${EXPO_PUBLIC_API_URL}",
       "auth0Domain": "${EXPO_PUBLIC_AUTH0_DOMAIN}",
       "auth0ClientId": "${EXPO_PUBLIC_AUTH0_CLIENT_ID}",
       "eas": {
-        "projectId": "47185f9b-45ff-48f6-9be3-032316a24ff5"
+        "projectId": "749a2dc6-bdc5-44e4-907b-3c77e36bb760"
       }
     },
-    "owner": "viraatdas"
+    "owner": "birud"
   }
 }

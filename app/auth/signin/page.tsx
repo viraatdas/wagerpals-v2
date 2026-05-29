@@ -71,28 +71,28 @@ function SignInContent() {
 
   if (magicLinkSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full">
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md w-full animate-rise">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-extralight text-gray-900 mb-2">
-              Welcome to <span className="font-semibold text-orange-600">WagerPals</span>
+            <h1 className="font-display text-4xl font-semibold text-foreground mb-2">
+              Welcome to <span className="text-gradient">WagerPals</span>
             </h1>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+          <div className="glass-strong rounded-3xl p-8">
             <div className="text-center">
               <div className="mb-4">
-                <svg className="w-16 h-16 mx-auto text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-16 h-16 mx-auto text-brand-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-light text-gray-900 mb-2">
+              <h2 className="font-display text-2xl font-semibold text-foreground mb-2">
                 Check your email
               </h2>
-              <p className="text-gray-600 mb-6">
-                We sent a magic link to <span className="font-medium">{email}</span>
+              <p className="text-muted mb-6">
+                We sent a magic link to <span className="font-medium text-foreground">{email}</span>
               </p>
-              <p className="text-sm text-gray-500 mb-6">
+              <p className="text-sm text-muted-2 mb-6">
                 Click the link in the email to sign in. The link will expire in 15 minutes.
               </p>
               <button
@@ -100,7 +100,7 @@ function SignInContent() {
                   setMagicLinkSent(false);
                   setEmail('');
                 }}
-                className="text-orange-600 hover:text-orange-700 text-sm font-medium"
+                className="text-brand-2 hover:text-brand-1 text-sm font-medium transition-colors"
               >
                 Use a different email
               </button>
@@ -112,31 +112,31 @@ function SignInContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="max-w-md w-full">
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="max-w-md w-full animate-rise">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-extralight text-gray-900 mb-2">
-            Welcome to <span className="font-semibold text-orange-600">WagerPals</span>
+          <h1 className="font-display text-4xl font-semibold text-foreground mb-2">
+            Welcome to <span className="text-gradient">WagerPals</span>
           </h1>
-          <p className="text-lg text-gray-600 font-light">
+          <p className="text-lg text-muted">
             Polymarket for friends
           </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
-          <h2 className="text-2xl font-light text-gray-900 mb-6 text-center">
+        <div className="glass-strong rounded-3xl p-8">
+          <h2 className="font-display text-2xl font-semibold text-foreground mb-6 text-center">
             Sign In
           </h2>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="mb-4 p-3 bg-neon-rose/10 border border-neon-rose/30 rounded-xl text-neon-rose text-sm">
               {error}
             </div>
           )}
 
           {/* Magic Link / OTP Sign In */}
           <form onSubmit={handleMagicLinkSignIn} className="mb-6">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-muted mb-2">
               Email address
             </label>
             <input
@@ -145,13 +145,13 @@ function SignInContent() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+              className="w-full bg-white/5 border border-white/10 text-foreground placeholder:text-muted-2 rounded-xl px-3 py-3 focus:outline-none focus:border-brand-2/50 focus:ring-2 focus:ring-brand-2/20 transition"
               disabled={isLoading}
             />
             <button
               type="submit"
               disabled={isLoading || !email}
-              className="w-full mt-3 px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full mt-3 px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Sending...' : 'Continue with Email'}
             </button>
@@ -161,7 +161,7 @@ function SignInContent() {
           <button
             onClick={handlePasskeySignIn}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-light mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-glass w-full flex items-center justify-center gap-3 px-6 py-3 mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
@@ -172,10 +172,10 @@ function SignInContent() {
           {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+              <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500 font-light">or</span>
+              <span className="px-2 bg-background text-muted-2">or</span>
             </div>
           </div>
 
@@ -183,7 +183,7 @@ function SignInContent() {
           <button
             onClick={handleGoogleSignIn}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-light disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-glass w-full flex items-center justify-center gap-3 px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -206,7 +206,7 @@ function SignInContent() {
             <span>Continue with Google</span>
           </button>
 
-          <p className="text-sm text-gray-500 text-center mt-6 font-light">
+          <p className="text-sm text-muted-2 text-center mt-6">
             By signing in, you agree to our Terms of Service and Privacy Policy
           </p>
         </div>
@@ -218,8 +218,8 @@ function SignInContent() {
 export default function SignInPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-600">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-muted">Loading...</div>
       </div>
     }>
       <SignInContent />

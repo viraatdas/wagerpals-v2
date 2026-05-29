@@ -2,9 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   WagerPals — "Midnight Glass" design system
+   Dark, glassy, neon. Soft aurora glow + premium micro-motion.
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Base canvas */
+  --bg: #07070f;
+  --bg-2: #0b0b18;
+  --surface: 255 255 255; /* rgb channels for glass, used via rgb(var(--surface) / a) */
+  --foreground: #f4f5fb;
+  --muted: #9a9eb8;
+  --muted-2: #6f7390;
+
+  /* Brand "ember" gradient (orange → pink → violet) — heritage callback, gone neon */
+  --brand-1: #ff7a3d;
+  --brand-2: #ff3d81;
+  --brand-3: #a855f7;
+
+  /* Neon accents */
+  --neon-violet: #8b7bff;
+  --neon-cyan: #38e1ff;
+  --neon-mint: #3ee6b0; /* yes / win */
+  --neon-rose: #ff5d7e; /* no / loss */
+  --neon-amber: #ffc23d;
+
+  --border: 255 255 255;
+
+  color-scheme: dark;
 }
 
 * {
@@ -13,80 +39,345 @@
 }
 
 html {
-  /* Prevent text size adjust on orientation change */
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  /* Enable smooth scrolling on iOS */
   -webkit-overflow-scrolling: touch;
+  scroll-padding-top: 76px;
+  background: var(--bg);
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  background: var(--bg);
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Roboto', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Prevent pull-to-refresh on mobile */
   overscroll-behavior-y: contain;
-  /* Support for iPhone X+ notch */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
+  min-height: 100vh;
 }
 
-/* Better touch target sizes for mobile */
+main {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mobile-bottom-nav {
+  padding-bottom: max(env(safe-area-inset-bottom), 8px);
+}
+
 button, a, input, select, textarea {
   touch-action: manipulation;
 }
 
-/* Ensure sufficient touch targets on mobile */
 @media (max-width: 768px) {
-  button:not(.no-min-size), 
+  button:not(.no-min-size),
   a:not(.no-min-size) {
     min-height: 44px;
   }
+  main {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+  .mobile-page {
+    padding-top: 1rem;
+    padding-bottom: 1.5rem;
+  }
+  .mobile-stack {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
-/* Fix iOS input zoom issue */
 input, select, textarea {
   font-size: 16px;
 }
-
 @media (min-width: 768px) {
   input, select, textarea {
     font-size: 14px;
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
+/* ---------- Aurora backdrop ---------- */
+/* Drop <div class="aurora"> ... </div> as a fixed layer behind content (in layout). */
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 50% -10%, rgba(168, 85, 247, 0.18), transparent 70%),
+    var(--bg);
+}
+.aurora::before,
+.aurora::after {
+  content: '';
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  will-change: transform;
+}
+.aurora::before {
+  top: -20vmax;
+  left: -10vmax;
+  background: radial-gradient(circle at center, rgba(255, 61, 129, 0.35), transparent 60%);
+  animation: drift1 22s ease-in-out infinite alternate;
+}
+.aurora::after {
+  bottom: -25vmax;
+  right: -10vmax;
+  background: radial-gradient(circle at center, rgba(56, 225, 255, 0.28), transparent 60%);
+  animation: drift2 26s ease-in-out infinite alternate;
+}
+
+@keyframes drift1 {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(12vmax, 8vmax, 0) scale(1.15); }
+}
+@keyframes drift2 {
+  from { transform: translate3d(0, 0, 0) scale(1.05); }
+  to   { transform: translate3d(-14vmax, -6vmax, 0) scale(1); }
+}
+
+/* ============================================================
+   Component utility classes — the shared vocabulary
+   ============================================================ */
+@layer components {
+  /* Frosted glass surface */
+  .glass {
+    background: rgb(var(--surface) / 0.05);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid rgb(var(--border) / 0.09);
+    box-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.6),
+      inset 0 1px 0 0 rgb(var(--border) / 0.08);
   }
-  to {
-    opacity: 1;
-    transform: scale(1);
+  .glass-strong {
+    background: rgb(var(--surface) / 0.08);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgb(var(--border) / 0.12);
+    box-shadow: 0 24px 64px -16px rgba(0, 0, 0, 0.75),
+      inset 0 1px 0 0 rgb(var(--border) / 0.1);
+  }
+  .glass-subtle {
+    background: rgb(var(--surface) / 0.03);
+    border: 1px solid rgb(var(--border) / 0.06);
+  }
+
+  /* Interactive lift on hover for glass cards */
+  .glass-hover {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .glass-hover:hover {
+    transform: translateY(-3px);
+    border-color: rgb(var(--border) / 0.16);
+    box-shadow: 0 20px 48px -16px rgba(0, 0, 0, 0.7),
+      0 0 0 1px rgb(var(--border) / 0.04),
+      0 0 40px -12px rgba(168, 85, 247, 0.35);
+  }
+
+  /* Brand gradient text */
+  .text-gradient {
+    background: linear-gradient(110deg, var(--brand-1), var(--brand-2) 45%, var(--brand-3));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-gradient-cool {
+    background: linear-gradient(110deg, var(--neon-cyan), var(--neon-violet));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Primary CTA — ember gradient with glow */
+  .btn-primary {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #fff;
+    border-radius: 9999px;
+    padding: 0.625rem 1.25rem;
+    background: linear-gradient(110deg, var(--brand-1), var(--brand-2) 55%, var(--brand-3));
+    box-shadow: 0 8px 24px -8px rgba(255, 61, 129, 0.6),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, filter 0.2s ease;
+  }
+  .btn-primary:hover {
+    box-shadow: 0 12px 32px -8px rgba(255, 61, 129, 0.75),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+    filter: brightness(1.06);
+  }
+  .btn-primary:active { transform: scale(0.96); }
+
+  /* Glass secondary button */
+  .btn-glass {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: var(--foreground);
+    border-radius: 9999px;
+    padding: 0.625rem 1.25rem;
+    background: rgb(var(--surface) / 0.06);
+    border: 1px solid rgb(var(--border) / 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, border-color 0.2s ease;
+  }
+  .btn-glass:hover {
+    background: rgb(var(--surface) / 0.1);
+    border-color: rgb(var(--border) / 0.18);
+  }
+  .btn-glass:active { transform: scale(0.96); }
+
+  /* Pills / chips */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    padding: 0.25rem 0.6rem;
+    border-radius: 9999px;
+    background: rgb(var(--surface) / 0.06);
+    border: 1px solid rgb(var(--border) / 0.1);
+    color: var(--muted);
+  }
+  .chip-live {
+    color: var(--neon-mint);
+    background: rgba(62, 230, 176, 0.1);
+    border-color: rgba(62, 230, 176, 0.25);
+  }
+  .chip-yes {
+    color: var(--neon-mint);
+    background: rgba(62, 230, 176, 0.1);
+    border-color: rgba(62, 230, 176, 0.25);
+  }
+  .chip-no {
+    color: var(--neon-rose);
+    background: rgba(255, 93, 126, 0.1);
+    border-color: rgba(255, 93, 126, 0.25);
+  }
+
+  /* Live status dot with pulse */
+  .live-dot {
+    position: relative;
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 9999px;
+    background: var(--neon-mint);
+    box-shadow: 0 0 8px var(--neon-mint);
+  }
+  .live-dot::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 9999px;
+    border: 1px solid var(--neon-mint);
+    animation: ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
   }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.2s ease-out;
+/* ============================================================
+   Keyframes & motion utilities
+   ============================================================ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
 }
+.animate-fade-in { animation: fadeIn 0.25s ease-out both; }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-rise { animation: riseIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes ping {
+  75%, 100% { transform: scale(2.4); opacity: 0; }
 }
 
-.animate-slide-up {
-  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.0); }
+  50% { box-shadow: 0 0 28px -4px rgba(168, 85, 247, 0.55); }
+}
+.animate-pulse-glow { animation: pulseGlow 2.4s ease-in-out infinite; }
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgb(var(--surface) / 0.05);
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(var(--surface) / 0.08), transparent);
+  animation: shimmer 1.4s infinite;
 }
 
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 6s ease infinite;
+}
+
+/* Staggered entrance — add .stagger to a parent, children rise in sequence */
+.stagger > * { animation: riseIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.stagger > *:nth-child(1) { animation-delay: 0.04s; }
+.stagger > *:nth-child(2) { animation-delay: 0.08s; }
+.stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger > *:nth-child(4) { animation-delay: 0.16s; }
+.stagger > *:nth-child(5) { animation-delay: 0.20s; }
+.stagger > *:nth-child(6) { animation-delay: 0.24s; }
+.stagger > *:nth-child(7) { animation-delay: 0.28s; }
+.stagger > *:nth-child(8) { animation-delay: 0.32s; }
+.stagger > *:nth-child(n+9) { animation-delay: 0.36s; }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--surface) / 0.1);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--surface) / 0.18); background-clip: content-box; }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .aurora::before, .aurora::after { animation: none; }
+}

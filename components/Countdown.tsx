@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 
 interface CountdownProps {
   endTime: number;
 }
 
-export default function Countdown({ endTime }: CountdownProps) {
+function Countdown({ endTime }: CountdownProps) {
   const [timeLeft, setTimeLeft] = useState('');
 
   useEffect(() => {
@@ -16,7 +16,7 @@ export default function Countdown({ endTime }: CountdownProps) {
 
       if (diff <= 0) {
         setTimeLeft('Event ended');
-        return;
+        return 0;
       }
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -31,14 +31,24 @@ export default function Countdown({ endTime }: CountdownProps) {
       } else {
         setTimeLeft(`${minutes}m ${seconds}s`);
       }
+
+      return diff;
     };
 
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
+    const diff = updateCountdown();
+    if (diff === 0) return;
 
-    return () => clearInterval(interval);
+    // Adaptive interval: update less frequently when far from deadline
+    const interval = diff > 24 * 60 * 60 * 1000 ? 60000  // > 1 day: every minute
+                   : diff > 60 * 60 * 1000 ? 30000         // > 1 hour: every 30s
+                   : 1000;                                   // < 1 hour: every second
+
+    const timer = setInterval(updateCountdown, interval);
+    return () => clearInterval(timer);
   }, [endTime]);
 
-  return <span>{timeLeft}</span>;
+  return <span className="tabular-nums">{timeLeft}</span>;
 }
+
+export default memo(Countdown);
 

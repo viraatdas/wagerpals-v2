@@ -24,7 +24,6 @@ const withIMessageXcodeProject = (config) => {
 
     const existingTarget = xcodeProject.pbxTargetByName(EXTENSION_NAME);
     if (existingTarget) {
-      console.log(`[iMessage] Target ${EXTENSION_NAME} already exists, skipping.`);
       return config;
     }
 
@@ -113,7 +112,6 @@ const withIMessageXcodeProject = (config) => {
     );
 
     if (!target || !target.uuid) {
-      console.error("[iMessage] Failed to add target");
       return config;
     }
 
@@ -335,7 +333,6 @@ const withIMessageXcodeProject = (config) => {
       }
     }
 
-    console.log(`[iMessage] Successfully added ${EXTENSION_NAME} extension target`);
     return config;
   });
 };

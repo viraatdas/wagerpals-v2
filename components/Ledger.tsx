@@ -146,7 +146,7 @@ export default function Ledger({ bets, comments = [], onBetDeleted, onCommentDel
       
       <div className="space-y-3">
         {entries.length === 0 ? (
-          <p className="text-gray-500 text-center py-8 font-light">No entries yet. Be the first!</p>
+          <p className="text-muted-2 text-center py-8">No entries yet. Be the first!</p>
         ) : (
           entries.map((entry) => {
             if (entry.type === 'bet') {
@@ -154,39 +154,39 @@ export default function Ledger({ bets, comments = [], onBetDeleted, onCommentDel
               return (
                 <div
                   key={`bet-${bet.id}`}
-                  className={`bg-white border rounded-lg p-4 ${
-                    bet.is_late ? 'border-orange-200 bg-orange-50' : 'border-gray-200'
+                  className={`glass rounded-2xl p-4 ${
+                    bet.is_late ? 'border-neon-amber/30' : ''
                   }`}
                 >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-gray-900">@{bet.username}</span>
-                        <span className="text-gray-500">→</span>
-                        <span className="font-light text-gray-700">{bet.side}</span>
-                        <span className="font-semibold text-gray-900">
+                        <span className="font-semibold text-foreground break-all">@{bet.username}</span>
+                        <span className="text-muted-2">→</span>
+                        <span className="text-muted break-words">{bet.side}</span>
+                        <span className="font-semibold text-foreground tabular-nums">
                           {isPublic ? `${bet.amount.toFixed(2)} pts` : `$${bet.amount.toFixed(2)}`}
                         </span>
                         {bet.is_late && (
-                          <span className="px-2 py-0.5 bg-orange-200 text-orange-800 text-xs font-light rounded">
+                          <span className="chip text-neon-amber bg-neon-amber/10 border-neon-amber/25">
                             Late
                           </span>
                         )}
                       </div>
                       {bet.note && (
-                        <p className="text-sm text-gray-600 mt-2 font-light italic">
+                        <p className="text-sm text-muted mt-2 italic">
                           "{bet.note}"
                         </p>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400 font-light">
+                    <div className="flex items-center justify-between gap-2 sm:justify-end">
+                      <span className="text-xs text-muted-2 tabular-nums">
                         {formatTimestamp(bet.timestamp)}
                       </span>
                       <button
                         onClick={() => handleDeleteBet(bet.id)}
                         disabled={deletingBets.has(bet.id)}
-                        className="text-xs text-red-600 hover:text-red-800 font-light px-2 py-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-xs text-muted-2 hover:text-neon-rose font-medium px-2 py-1 rounded-lg hover:bg-neon-rose/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Delete bet"
                       >
                         {deletingBets.has(bet.id) ? 'Deleting...' : 'Delete'}
@@ -200,28 +200,28 @@ export default function Ledger({ bets, comments = [], onBetDeleted, onCommentDel
               return (
                 <div
                   key={`comment-${comment.id}`}
-                  className="bg-blue-50 border border-blue-200 rounded-lg p-4"
+                  className="glass rounded-2xl p-4 border-neon-cyan/20"
                 >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-start">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-2">
-                        <span className="font-medium text-gray-900">@{comment.username}</span>
-                        <span className="px-2 py-0.5 bg-blue-200 text-blue-800 text-xs font-light rounded">
+                        <span className="font-semibold text-foreground break-all">@{comment.username}</span>
+                        <span className="chip text-neon-cyan bg-neon-cyan/10 border-neon-cyan/25">
                           💬 Comment
                         </span>
                       </div>
-                      <p className="text-sm text-gray-700 font-light">
+                      <p className="text-sm text-muted break-words">
                         {comment.content}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400 font-light">
+                    <div className="flex items-center justify-between gap-2 sm:justify-end">
+                      <span className="text-xs text-muted-2 tabular-nums">
                         {formatTimestamp(comment.timestamp)}
                       </span>
                       <button
                         onClick={() => handleDeleteComment(comment.id)}
                         disabled={deletingComments.has(comment.id)}
-                        className="text-xs text-red-600 hover:text-red-800 font-light px-2 py-1 rounded hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-xs text-muted-2 hover:text-neon-rose font-medium px-2 py-1 rounded-lg hover:bg-neon-rose/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Delete comment"
                       >
                         {deletingComments.has(comment.id) ? 'Deleting...' : 'Delete'}

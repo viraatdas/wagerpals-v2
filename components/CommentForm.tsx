@@ -43,13 +43,13 @@ export default function CommentForm({ eventId, userId, username, onCommentPosted
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+    <form onSubmit={handleSubmit} className="glass rounded-2xl p-4">
       <div className="mb-3">
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 font-light border border-gray-300 rounded-lg focus:border-orange-500 outline-none transition-colors resize-none"
+          className="w-full bg-white/5 border border-white/10 text-foreground placeholder:text-muted-2 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:border-brand-2/50 focus:ring-2 focus:ring-brand-2/20 transition"
           placeholder="Add a comment..."
           required
         />
@@ -57,7 +57,7 @@ export default function CommentForm({ eventId, userId, username, onCommentPosted
       <button
         type="submit"
         disabled={loading || !content.trim()}
-        className="px-4 py-2 bg-orange-600 text-white rounded-lg font-light hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all text-sm"
+        className="btn-primary text-sm px-4 py-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
       >
         {loading ? 'Posting...' : 'Post Comment'}
       </button>

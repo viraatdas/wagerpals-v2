@@ -10,17 +10,18 @@ import {
   Alert,
   RefreshControl,
   Share,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
-import { Event, GroupMember } from '../types';
+import { Event, GroupMember, Wallet } from '../types';
 import { formatDate, formatCurrency } from '../utils/helpers';
 
 export default function GroupDetailScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute();
   const { user } = useAuth();
   const { groupId } = route.params as { groupId: string };
@@ -28,6 +29,7 @@ export default function GroupDetailScreen() {
   const [group, setGroup] = useState<any>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [members, setMembers] = useState<GroupMember[]>([]);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -43,22 +45,27 @@ export default function GroupDetailScreen() {
     if (!user) return;
 
     try {
-      // Fetch group details
-      const groupData = await fetch(`${apiService.API_BASE_URL}/api/groups?id=${groupId}`).then(r => r.json());
+      const [groupData, eventsData] = await Promise.all([
+        apiService.getGroup(groupId),
+        apiService.getEvents(groupId),
+      ]);
       setGroup(groupData);
+      setEvents(eventsData);
 
       // Check user's role and status
       const userMember = groupData.members?.find((m: GroupMember) => m.user_id === user.id);
       setIsAdmin(userMember?.role === 'admin');
       setUserStatus(userMember?.status || 'pending');
 
-      // Fetch events
-      const eventsData = await apiService.getEvents(groupId);
-      setEvents(eventsData);
-
       // Fetch members
-      const membersData = await apiService.getGroupMembers(groupId);
+      const membersData = groupData.members || await apiService.getGroupMembers(groupId);
       setMembers(membersData);
+
+      if (!groupData.is_public) {
+        apiService.getWallet(user.id)
+          .then((data) => setWallet(data.wallet))
+          .catch((error) => console.error('Failed to load wallet:', error));
+      }
     } catch (error) {
       console.error('Failed to load group data:', error);
       Alert.alert('Error', 'Failed to load group data');
@@ -66,6 +73,10 @@ export default function GroupDetailScreen() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
+  };
+
+  const handleDeposit = () => {
+    Linking.openURL('https://wagerpals.io/profile?wallet=deposit');
   };
 
   const handleRefresh = () => {
@@ -181,6 +192,24 @@ export default function GroupDetailScreen() {
             <Text style={styles.memberCount}>{members.length} members</Text>
           </View>
         </View>
+
+        {!group?.is_public && (
+          <View style={styles.walletCard}>
+            <View style={styles.walletHeader}>
+              <View>
+                <Text style={styles.walletLabel}>Paid group wallet</Text>
+                <Text style={styles.walletBalance}>{formatCurrency(wallet?.balance || 0)}</Text>
+              </View>
+              <TouchableOpacity style={styles.depositButton} onPress={handleDeposit}>
+                <Ionicons name="card-outline" size={18} color="#fff" />
+                <Text style={styles.depositButtonText}>Deposit</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.resolverText}>
+              Resolver: @{group.resolver?.username || 'Not set'}
+            </Text>
+          </View>
+        )}
 
         {/* Action Buttons */}
         <View style={styles.actionsRow}>
@@ -332,6 +361,49 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 16,
     gap: 12,
+  },
+  walletCard: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: '#fff7ed',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+  },
+  walletHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+  },
+  walletLabel: {
+    fontSize: 13,
+    color: '#9a3412',
+    marginBottom: 4,
+  },
+  walletBalance: {
+    fontSize: 24,
+    color: '#111827',
+    fontWeight: '700',
+  },
+  depositButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#ea580c',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  depositButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  resolverText: {
+    marginTop: 10,
+    color: '#7c2d12',
+    fontSize: 13,
   },
   actionButton: {
     flex: 1,

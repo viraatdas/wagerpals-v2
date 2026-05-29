@@ -83,6 +83,7 @@ export interface Group {
   id: string;
   name: string;
   created_by: string;
+  resolver_user_id?: string;
   is_public: boolean;
   created_at?: string;
 }
@@ -110,4 +111,23 @@ export interface GroupWithMembers extends Group {
   members: GroupMember[];
   member_count: number;
   admin_count: number;
+}
+
+// Wallet & Payments
+export interface Wallet {
+  user_id: string;
+  balance: number;
+  currency: string;
+  updated_at?: string;
+}
+
+export interface Transaction {
+  id: string;
+  user_id: string;
+  type: 'deposit' | 'withdrawal' | 'bet_placed' | 'bet_refund' | 'winnings';
+  amount: number;
+  status: 'pending' | 'completed' | 'failed';
+  stripe_payment_intent_id?: string;
+  description?: string;
+  created_at?: string;
 }

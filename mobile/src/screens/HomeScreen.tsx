@@ -19,9 +19,10 @@ import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
 import { Group } from '../types';
 import TextInputModal from '../components/TextInputModal';
+import { tapLight, tapMedium, success, error as hapticError } from '../utils/haptics';
 
 export default function HomeScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { user } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,33 +57,37 @@ export default function HomeScreen() {
 
   const handleCreateGroup = async (groupName: string) => {
     if (!user) return;
-    
+
     setShowCreateModal(false);
     try {
       const newGroup = await apiService.createGroup(groupName, user.id);
+      success();
       navigation.navigate('GroupDetail' as never, { groupId: newGroup.id } as never);
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to create group');
+    } catch (err: any) {
+      hapticError();
+      Alert.alert('Error', err.message || 'Failed to create group');
     }
   };
 
   const handleJoinGroup = async (groupCode: string) => {
     if (!user) return;
-    
+
     setShowJoinModal(false);
     try {
       await apiService.joinGroup(groupCode.toUpperCase(), user.id);
+      success();
       Alert.alert('Success', 'Join request submitted! Waiting for admin approval.');
       loadGroups();
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to join group');
+    } catch (err: any) {
+      hapticError();
+      Alert.alert('Error', err.message || 'Failed to join group');
     }
   };
 
   const renderGroupItem = ({ item }: { item: Group }) => (
     <TouchableOpacity
       style={styles.groupCard}
-      onPress={() => navigation.navigate('GroupDetail' as never, { groupId: item.id } as never)}
+      onPress={() => { tapLight(); navigation.navigate('GroupDetail' as never, { groupId: item.id } as never); }}
       activeOpacity={0.7}
     >
       <View style={styles.groupCardInner}>
@@ -132,7 +137,7 @@ export default function HomeScreen() {
           </Text>
         </View>
         <TouchableOpacity
-          onPress={() => navigation.navigate('Profile' as never)}
+          onPress={() => { tapLight(); navigation.navigate('Profile' as never); }}
           style={styles.profileButton}
           activeOpacity={0.7}
         >
@@ -146,7 +151,7 @@ export default function HomeScreen() {
       <View style={styles.actionCards}>
         <TouchableOpacity 
           style={styles.actionCard} 
-          onPress={() => setShowCreateModal(true)}
+          onPress={() => { tapMedium(); setShowCreateModal(true); }}
           activeOpacity={0.8}
         >
           <View style={styles.actionIconContainer}>
@@ -158,7 +163,7 @@ export default function HomeScreen() {
 
         <TouchableOpacity 
           style={[styles.actionCard, styles.actionCardAlt]} 
-          onPress={() => setShowJoinModal(true)}
+          onPress={() => { tapMedium(); setShowJoinModal(true); }}
           activeOpacity={0.8}
         >
           <View style={[styles.actionIconContainer, styles.actionIconAlt]}>

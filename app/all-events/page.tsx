@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@stackframe/stack';
 import EventCard from '@/components/EventCard';
@@ -60,61 +61,68 @@ export default function AllEventsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <p className="text-center text-gray-600 font-light">Loading...</p>
+      <div className="max-w-6xl mx-auto px-4 py-8 mobile-page">
+        <div className="space-y-4">
+          <div className="skeleton h-9 w-56 rounded-xl" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="skeleton h-56 rounded-3xl" />
+            <div className="skeleton h-56 rounded-3xl" />
+            <div className="skeleton h-56 rounded-3xl" />
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 mobile-page animate-rise">
       <div className="mb-8">
-        <button
-          onClick={() => router.push('/')}
-          className="text-orange-600 hover:text-orange-700 font-light mb-2"
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-sm font-medium text-muted hover:text-foreground transition-colors mb-3"
         >
           ← Back to Groups
-        </button>
-        <h1 className="text-4xl font-extralight text-gray-900 mb-2">
-          All <span className="font-semibold text-orange-600">Events</span>
+        </Link>
+        <h1 className="font-display text-3xl sm:text-4xl font-semibold text-foreground mb-2">
+          All <span className="text-gradient">Events</span>
         </h1>
-        <p className="text-lg text-gray-600 font-light">
+        <p className="text-base sm:text-lg text-muted font-light">
           Events from all your groups
         </p>
       </div>
 
       {groupedEvents.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-600 mb-4 font-light">No events in any of your groups yet.</p>
-          <button
-            onClick={() => router.push('/create')}
-            className="inline-block px-6 py-3 bg-orange-600 text-white font-light rounded-lg hover:bg-orange-700"
+        <div className="glass rounded-3xl text-center py-14 px-6 animate-fade-in">
+          <p className="text-muted mb-5 font-light">No events in any of your groups yet.</p>
+          <Link
+            href="/create"
+            className="btn-primary"
           >
             Create Event
-          </button>
+          </Link>
         </div>
       ) : (
         groupedEvents.map(({ group, events }) => {
           const { ongoing, ended } = categorizeEvents(events);
-          
+
           return (
             <section key={group.id} className="mb-12">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-light text-gray-900 border-b-2 border-orange-600 pb-2 inline-block">
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center mb-4">
+                <h2 className="font-display text-xl sm:text-2xl font-semibold text-foreground pb-2 inline-block break-words border-b-2 border-brand-2/50">
                   {group.name}
                 </h2>
-                <button
-                  onClick={() => router.push(`/groups/${group.id}`)}
-                  className="text-sm text-orange-600 hover:text-orange-700 font-light"
+                <Link
+                  href={`/groups/${group.id}`}
+                  className="w-fit text-sm font-medium text-brand-2 hover:text-foreground transition-colors"
                 >
                   View Group →
-                </button>
+                </Link>
               </div>
 
               {ongoing.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="text-lg font-light text-gray-700 mb-3">Ongoing</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <h3 className="text-lg font-medium text-muted mb-3">Ongoing</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger">
                     {ongoing.map((event) => (
                       <EventCard key={event.id} event={event} />
                     ))}
@@ -124,8 +132,8 @@ export default function AllEventsPage() {
 
               {ended.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-light text-gray-700 mb-3">Ended</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <h3 className="text-lg font-medium text-muted mb-3">Ended</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger">
                     {ended.map((event) => (
                       <EventCard key={event.id} event={event} />
                     ))}
@@ -139,4 +147,3 @@ export default function AllEventsPage() {
     </div>
   );
 }
-

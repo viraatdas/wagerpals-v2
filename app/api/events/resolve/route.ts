@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { calculateNetResults } from '@/lib/utils';
+import { calculateNetResults, generateId } from '@/lib/utils';
 import { sendPushToAllSubscribers } from '@/lib/push';
+import { requireAuth } from '@/lib/auth';
+import { getGroupResolver } from '@/lib/group-resolver';
 
 export async function POST(request: NextRequest) {
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) return authResult;
+
   const body = await request.json();
   const { event_id, winning_side } = body;
 
@@ -16,6 +21,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 });
   }
 
+  const group = await db.groups.get(event.group_id);
+  const isRealMoney = group && !group.is_public;
+
+  if (isRealMoney) {
+    const resolver = await getGroupResolver(event.group_id);
+    if (!resolver || resolver.user_id !== authResult.userId) {
+      return NextResponse.json({ error: 'Only the chosen resolver can resolve paid group events' }, { status: 403 });
+    }
+  } else {
+    // Only group admins can resolve free/public events
+    const isAdmin = await db.groupMembers.isAdmin(event.group_id, authResult.userId);
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Only group admins can resolve events' }, { status: 403 });
+    }
+  }
+
   if (event.status === 'resolved') {
     return NextResponse.json({ error: 'Event already resolved' }, { status: 400 });
   }
@@ -23,7 +44,7 @@ export async function POST(request: NextRequest) {
   const bets = await db.bets.getByEvent(event_id);
   const netResults = calculateNetResults(bets, winning_side);
 
-  // Update user totals
+  // Update user totals and credit wallets for real-money groups
   for (const result of netResults) {
     const user = await db.users.get(result.user_id);
     if (user) {
@@ -33,6 +54,44 @@ export async function POST(request: NextRequest) {
         net_total: newTotal,
         streak: newStreak,
       });
+
+      // Credit wallet for winners (return original bet + winnings)
+      if (isRealMoney && result.net > 0) {
+        // Find user's original bet amount
+        const userBets = bets.filter(b => b.user_id === result.user_id && !b.is_late);
+        const originalBet = userBets.reduce((sum, b) => sum + b.amount, 0);
+        const payout = originalBet + result.net;
+
+        await db.wallets.getOrCreate(result.user_id);
+        await db.wallets.updateBalance(result.user_id, payout);
+
+        await db.transactions.create({
+          id: generateId(),
+          user_id: result.user_id,
+          type: 'winnings',
+          amount: payout,
+          status: 'completed',
+          description: `Won on "${event.title}" - ${winning_side}`,
+        });
+      } else if (isRealMoney && result.net === 0) {
+        // Push bet: return original bet amount
+        const userBets = bets.filter(b => b.user_id === result.user_id && !b.is_late);
+        const originalBet = userBets.reduce((sum, b) => sum + b.amount, 0);
+        if (originalBet > 0) {
+          await db.wallets.getOrCreate(result.user_id);
+          await db.wallets.updateBalance(result.user_id, originalBet);
+
+          await db.transactions.create({
+            id: generateId(),
+            user_id: result.user_id,
+            type: 'bet_refund',
+            amount: originalBet,
+            status: 'completed',
+            description: `Push on "${event.title}" - bet returned`,
+          });
+        }
+      }
+      // Losers: their money was already deducted when the bet was placed
     }
   }
 

@@ -50,21 +50,21 @@ export default function ConfirmationModal({
   const typeStyles = {
     danger: {
       icon: '🗑️',
-      iconBg: 'bg-red-100',
-      iconColor: 'text-red-600',
-      confirmBg: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
+      iconBg: 'bg-neon-rose/10 border border-neon-rose/25',
+      iconColor: 'text-neon-rose',
+      confirmBg: 'bg-neon-rose/15 border border-neon-rose/40 text-neon-rose hover:bg-neon-rose/25 hover:shadow-glow-rose focus:ring-neon-rose/40',
     },
     warning: {
       icon: '⚠️',
-      iconBg: 'bg-yellow-100',
-      iconColor: 'text-yellow-600',
-      confirmBg: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500',
+      iconBg: 'bg-neon-amber/10 border border-neon-amber/25',
+      iconColor: 'text-neon-amber',
+      confirmBg: 'bg-neon-amber/15 border border-neon-amber/40 text-neon-amber hover:bg-neon-amber/25 focus:ring-neon-amber/40',
     },
     success: {
       icon: '✓',
-      iconBg: 'bg-green-100',
-      iconColor: 'text-green-600',
-      confirmBg: 'bg-green-600 hover:bg-green-700 focus:ring-green-500',
+      iconBg: 'bg-neon-mint/10 border border-neon-mint/25',
+      iconColor: 'text-neon-mint',
+      confirmBg: 'bg-neon-mint/15 border border-neon-mint/40 text-neon-mint hover:bg-neon-mint/25 hover:shadow-glow-mint focus:ring-neon-mint/40',
     },
   };
 
@@ -74,26 +74,26 @@ export default function ConfirmationModal({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={loading ? undefined : onClose}
       />
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full transform transition-all animate-fade-in">
+        <div className="relative glass-strong rounded-3xl max-w-md w-full transform transition-all animate-slide-up overflow-hidden">
           {/* Icon */}
           <div className="flex items-center justify-center pt-6">
-            <div className={`${styles.iconBg} rounded-full w-16 h-16 flex items-center justify-center`}>
+            <div className={`${styles.iconBg} ${styles.iconColor} rounded-full w-16 h-16 flex items-center justify-center`}>
               <span className="text-3xl">{styles.icon}</span>
             </div>
           </div>
 
           {/* Content */}
           <div className="px-6 py-4 text-center">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <h3 className="font-display text-xl font-semibold text-foreground mb-2">
               {title}
             </h3>
-            <p className="text-gray-600 font-light">
+            <p className="text-muted">
               {message}
             </p>
           </div>
@@ -103,14 +103,14 @@ export default function ConfirmationModal({
             <button
               onClick={onClose}
               disabled={loading}
-              className="flex-1 px-4 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+              className="btn-glass flex-1 px-4 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-0"
             >
               {cancelText}
             </button>
             <button
               onClick={onConfirm}
               disabled={loading}
-              className={`flex-1 px-4 py-2.5 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 ${styles.confirmBg}`}
+              className={`flex-1 px-4 py-2.5 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none focus:outline-none focus:ring-2 focus:ring-offset-0 ${styles.confirmBg}`}
             >
               {loading ? 'Processing...' : confirmText}
             </button>

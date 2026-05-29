@@ -12,7 +12,6 @@ export default function PushNotificationPrompt() {
 
   const checkSubscriptionStatus = async () => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      console.log('Push notifications not supported');
       return;
     }
 
@@ -54,7 +53,6 @@ export default function PushNotificationPrompt() {
       const permission = await Notification.requestPermission();
       
       if (permission !== 'granted') {
-        console.log('Notification permission denied');
         setShowPrompt(false);
         return;
       }
@@ -82,7 +80,6 @@ export default function PushNotificationPrompt() {
       });
 
       if (response.ok) {
-        console.log('Successfully subscribed to push notifications');
         setIsSubscribed(true);
         setShowPrompt(false);
       } else {
@@ -103,28 +100,28 @@ export default function PushNotificationPrompt() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 max-w-sm bg-white rounded-lg shadow-lg p-4 border-2 border-orange-600 z-50">
+    <div className="fixed bottom-24 left-4 right-4 max-w-sm glass-strong rounded-3xl p-4 border border-brand-2/30 shadow-glow-ember z-50 animate-slide-up sm:bottom-4 sm:left-auto">
       <div className="flex items-start">
-        <div className="flex-shrink-0">
-          <span className="text-2xl">🔔</span>
+        <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-brand-2/15 border border-brand-2/30 flex items-center justify-center">
+          <span className="text-xl">🔔</span>
         </div>
         <div className="ml-3 flex-1">
-          <h3 className="text-lg font-bold text-gray-900">
+          <h3 className="text-lg font-display font-semibold text-foreground">
             Want notifications?
           </h3>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-1 text-sm text-muted">
             Get push notifications for new bets!
           </p>
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
             <button
               onClick={subscribeToPushNotifications}
-              className="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700"
+              className="btn-primary text-sm px-4 py-2"
             >
               Enable
             </button>
             <button
               onClick={dismissPrompt}
-              className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300"
+              className="btn-glass text-sm px-4 py-2"
             >
               Later
             </button>
@@ -134,4 +131,3 @@ export default function PushNotificationPrompt() {
     </div>
   );
 }
-

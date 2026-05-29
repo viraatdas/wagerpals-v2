@@ -4,11 +4,8 @@ import { sendPushNotification } from '@/lib/push';
 
 export async function POST() {
   try {
-    console.log('[Test] Starting push notification test...');
-    
     // Get all subscriptions
     const subscriptions = await db.pushSubscriptions.getAll();
-    console.log('[Test] Found subscriptions:', subscriptions.length);
     
     if (subscriptions.length === 0) {
       return NextResponse.json({
@@ -21,11 +18,8 @@ export async function POST() {
     // Try to send to each subscription
     const results = [];
     for (const sub of subscriptions) {
-      console.log('[Test] Attempting to send to:', sub.endpoint.substring(0, 50));
-      
       // Skip mobile subscriptions (they don't have p256dh/auth)
       if (!sub.p256dh || !sub.auth) {
-        console.log('[Test] Skipping mobile subscription');
         results.push({
           endpoint: sub.endpoint.substring(0, 50) + '...',
           success: false,

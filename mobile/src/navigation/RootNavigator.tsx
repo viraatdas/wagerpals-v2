@@ -99,6 +99,8 @@ export default function RootNavigator() {
             title: (title: string) => decodeURIComponent(title),
             sideA: (sideA: string) => decodeURIComponent(sideA),
             sideB: (sideB: string) => decodeURIComponent(sideB),
+            pick: (pick: string) => decodeURIComponent(pick),
+            amount: (amount: string) => decodeURIComponent(amount),
           },
         },
       },

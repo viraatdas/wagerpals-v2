@@ -1,16 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { sendPushToUser } from '@/lib/push';
+import { requireAuth, verifyUserMatch } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) return authResult;
+
   const body = await request.json();
   const { action, group_id, user_id, target_user_id, admin_user_id } = body;
 
   if (!action || !group_id || !admin_user_id) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
+
+  // Verify the requester is who they claim to be
+  const mismatch = verifyUserMatch(authResult.userId, admin_user_id);
+  if (mismatch) return mismatch;
 
   // Verify admin status
   const isAdmin = await db.groupMembers.isAdmin(group_id, admin_user_id);

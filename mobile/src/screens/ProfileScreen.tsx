@@ -20,7 +20,7 @@ import { formatCurrency } from '../utils/helpers';
 import notificationService from '../services/notifications';
 
 export default function ProfileScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { user: authUser, signOut } = useAuth();
   const [userData, setUserData] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);

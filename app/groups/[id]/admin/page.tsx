@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useUser } from '@stackframe/stack';
 import Toast, { ToastType } from '@/components/Toast';
@@ -14,6 +15,7 @@ export default function GroupAdminPage() {
   const [group, setGroup] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
 
   useEffect(() => {
@@ -76,22 +78,85 @@ export default function GroupAdminPage() {
     }
   };
 
+  const handleGroupSettings = async (settings: { resolver_user_id?: string; is_public?: boolean }) => {
+    if (!user) return;
+
+    setProcessing(true);
+    try {
+      const response = await fetch('/api/groups', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-stack-user-id': user.id,
+        },
+        body: JSON.stringify({
+          id: params.id,
+          ...settings,
+        }),
+      });
+
+      if (response.ok) {
+        setToast({ message: 'Group settings updated', type: 'success' });
+        fetchGroup(user.id);
+      } else {
+        const data = await response.json();
+        setToast({ message: data.error || 'Failed to update group settings', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Failed to update group settings:', error);
+      setToast({ message: 'Failed to update group settings', type: 'error' });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!user) return;
+    if (!confirm(`Delete ${group.name}? This removes the group and all of its events, bets, and comments.`)) return;
+
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/groups?id=${params.id}`, {
+        method: 'DELETE',
+        headers: { 'x-stack-user-id': user.id },
+      });
+
+      if (response.ok) {
+        router.push('/');
+      } else {
+        const data = await response.json();
+        setToast({ message: data.error || 'Failed to delete group', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Failed to delete group:', error);
+      setToast({ message: 'Failed to delete group', type: 'error' });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (!user) {
     return null; // Will redirect to signin
   }
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <p className="text-center text-gray-600 font-light">Loading...</p>
+      <div className="max-w-4xl mx-auto px-4 py-8 mobile-page">
+        <div className="space-y-4">
+          <div className="skeleton h-8 w-1/2 rounded-xl" />
+          <div className="skeleton h-32 rounded-2xl" />
+          <div className="skeleton h-20 rounded-2xl" />
+        </div>
       </div>
     );
   }
 
   if (!group) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <p className="text-center text-gray-600 font-light">Group not found</p>
+      <div className="max-w-4xl mx-auto px-4 py-8 mobile-page">
+        <div className="glass-subtle rounded-3xl text-center py-12 px-6">
+          <p className="text-center text-muted">Group not found</p>
+        </div>
       </div>
     );
   }
@@ -104,49 +169,98 @@ export default function GroupAdminPage() {
         message={toast?.message || ''}
         type={toast?.type || 'info'}
       />
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-8 mobile-page animate-rise">
         <div className="mb-6">
-          <button
-            onClick={() => router.push(`/groups/${params.id}`)}
-            className="text-orange-600 hover:text-orange-700 font-light mb-2"
+          <Link
+            href={`/groups/${params.id}`}
+            className="inline-block text-brand-2 hover:text-brand-1 transition-colors mb-2"
           >
             ← Back to Group
-          </button>
-        <h1 className="text-3xl font-light text-gray-900">
+          </Link>
+        <h1 className="text-2xl sm:text-3xl font-display font-semibold text-foreground break-words leading-tight">
           Manage {group.name}
         </h1>
-        <p className="text-gray-600 font-light">Group Code: {group.id}</p>
+        <p className="text-muted">Group Code: <span className="font-mono text-foreground">{group.id}</span></p>
       </div>
+
+      <section className="mb-8">
+        <h2 className="text-xl sm:text-2xl font-display font-semibold text-foreground mb-4 inline-block border-b-2 border-brand-2/60 pb-2">
+          Paid Group Settings
+        </h2>
+        <div className="glass rounded-2xl p-4 mt-2 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-foreground">
+                Status: <span className="font-semibold text-brand-2">{group.is_public ? 'Free points' : 'Paid wallet betting'}</span>
+              </p>
+              <p className="text-sm text-muted">
+                Paid groups require wallet funds before members can place bets.
+              </p>
+            </div>
+            <button
+              onClick={() => handleGroupSettings({ is_public: !group.is_public })}
+              disabled={processing}
+              className="btn-primary w-full sm:w-auto text-sm disabled:opacity-50"
+            >
+              {group.is_public ? 'Enable Paid Betting' : 'Use Free Points'}
+            </button>
+          </div>
+
+          {!group.is_public && (
+            <div>
+              <p className="text-foreground mb-2">
+                Resolver: <span className="font-medium text-neon-mint">@{group.resolver?.username || 'Not set'}</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {group.members.map((member: any) => (
+                  <button
+                    key={member.user_id}
+                    onClick={() => handleGroupSettings({ resolver_user_id: member.user_id })}
+                    disabled={processing || group.resolver?.user_id === member.user_id}
+                    className={`px-3 py-2 rounded-xl text-sm border break-all transition-colors ${
+                      group.resolver?.user_id === member.user_id
+                        ? 'bg-neon-mint/10 border-neon-mint/30 text-neon-mint'
+                        : 'bg-white/5 border-white/10 text-muted hover:border-brand-2/40 hover:text-foreground'
+                    } disabled:cursor-not-allowed`}
+                  >
+                    @{member.username}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
 
       {group.pending_requests && group.pending_requests.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-2xl font-light text-gray-900 mb-4 border-b-2 border-orange-600 pb-2 inline-block">
+          <h2 className="text-xl sm:text-2xl font-display font-semibold text-foreground mb-4 inline-block border-b-2 border-brand-2/60 pb-2">
             Pending Requests
           </h2>
-          <div className="space-y-3 mt-6">
+          <div className="space-y-3 mt-6 stagger">
             {group.pending_requests.map((member: any) => (
               <div
                 key={member.user_id}
-                className="bg-white border border-gray-200 rounded-lg p-4 flex justify-between items-center"
+                className="glass rounded-2xl p-4 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center"
               >
-                <div>
-                  <p className="font-light text-gray-900">{member.username}</p>
-                  <p className="text-sm text-gray-600 font-light">
+                <div className="min-w-0">
+                  <p className="text-foreground break-all">{member.username}</p>
+                  <p className="text-sm text-muted">
                     Requested: {new Date(member.joined_at).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                   <button
                     onClick={() => handleMemberAction('approve', member.user_id)}
                     disabled={processing}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 font-light text-sm"
+                    className="px-4 py-2 rounded-full text-sm font-semibold text-neon-mint bg-neon-mint/10 border border-neon-mint/30 hover:bg-neon-mint/20 disabled:opacity-50 transition-colors"
                   >
                     Approve
                   </button>
                   <button
                     onClick={() => handleMemberAction('decline', member.user_id)}
                     disabled={processing}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 font-light text-sm"
+                    className="px-4 py-2 rounded-full text-sm font-semibold text-neon-rose bg-neon-rose/10 border border-neon-rose/30 hover:bg-neon-rose/20 disabled:opacity-50 transition-colors"
                   >
                     Decline
                   </button>
@@ -158,30 +272,30 @@ export default function GroupAdminPage() {
       )}
 
       <section>
-        <h2 className="text-2xl font-light text-gray-900 mb-4 border-b-2 border-gray-400 pb-2 inline-block">
+        <h2 className="text-xl sm:text-2xl font-display font-semibold text-foreground mb-4 inline-block border-b-2 border-white/20 pb-2">
           Members ({group.members.length})
         </h2>
-        <div className="space-y-3 mt-6">
+        <div className="space-y-3 mt-6 stagger">
           {group.members.map((member: any) => (
             <div
               key={member.user_id}
-              className="bg-white border border-gray-200 rounded-lg p-4 flex justify-between items-center"
+              className="glass rounded-2xl p-4 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center"
             >
-              <div className="flex items-center gap-3">
-                <div>
-                  <p className="font-light text-gray-900">{member.username}</p>
-                  <p className="text-sm text-gray-600 font-light">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="min-w-0">
+                  <p className="text-foreground break-all">{member.username}</p>
+                  <p className="text-sm text-muted">
                     {member.role === 'admin' ? '👑 Admin' : 'Member'}
                   </p>
                 </div>
               </div>
               {member.user_id !== group.created_by && member.user_id !== user.id && (
-                <div className="flex gap-2">
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                   {member.role === 'member' ? (
                     <button
                       onClick={() => handleMemberAction('promote', member.user_id)}
                       disabled={processing}
-                      className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-300 font-light text-sm"
+                      className="btn-primary text-sm disabled:opacity-50"
                     >
                       Promote to Admin
                     </button>
@@ -189,7 +303,7 @@ export default function GroupAdminPage() {
                     <button
                       onClick={() => handleMemberAction('demote', member.user_id)}
                       disabled={processing}
-                      className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:bg-gray-300 font-light text-sm"
+                      className="btn-glass text-sm disabled:opacity-50"
                     >
                       Demote
                     </button>
@@ -201,14 +315,14 @@ export default function GroupAdminPage() {
                       }
                     }}
                     disabled={processing}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 font-light text-sm"
+                    className="px-4 py-2 rounded-full text-sm font-semibold text-neon-rose bg-neon-rose/10 border border-neon-rose/30 hover:bg-neon-rose/20 disabled:opacity-50 transition-colors"
                   >
                     Remove
                   </button>
                 </div>
               )}
               {member.user_id === group.created_by && (
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded font-light">
+                <span className="chip text-neon-cyan border-neon-cyan/25 bg-neon-cyan/10 w-fit">
                   Creator
                 </span>
               )}
@@ -216,8 +330,23 @@ export default function GroupAdminPage() {
           ))}
         </div>
       </section>
+
+      {user.id === group.created_by && (
+        <section className="mt-8 glass rounded-2xl p-4 border-neon-rose/20">
+          <h2 className="text-xl font-display font-semibold text-neon-rose mb-2">Delete Group</h2>
+          <p className="text-sm text-muted mb-4">
+            This permanently removes the group, events, bets, comments, and memberships.
+          </p>
+          <button
+            onClick={handleDeleteGroup}
+            disabled={deleting}
+            className="px-4 py-2 rounded-full text-sm font-semibold text-neon-rose bg-neon-rose/10 border border-neon-rose/30 hover:bg-neon-rose/20 disabled:opacity-50 transition-colors"
+          >
+            {deleting ? 'Deleting...' : 'Delete Group'}
+          </button>
+        </section>
+      )}
       </div>
     </>
   );
 }
-

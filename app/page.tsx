@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@stackframe/stack';
 import PushNotificationPrompt from '@/components/PushNotificationPrompt';
@@ -30,9 +31,13 @@ export default function Home() {
       return;
     }
     
-    // Create or update user in our database, then check username and pending invite
-    createOrUpdateUser().then(async () => {
-      await checkUsernameSelected();
+    // Create/update returns the user row, so avoid an extra username lookup on first load.
+    createOrUpdateUser().then(async (userData) => {
+      if (userData) {
+        setShowUsernameModal(!userData.username_selected);
+      } else {
+        await checkUsernameSelected();
+      }
       checkAndHandlePendingInvite();
     });
     fetchGroups(user.id);
@@ -74,7 +79,7 @@ export default function Home() {
       // Generate initial username from displayName or email
       let initialUsername = user.displayName || user.primaryEmail?.split('@')[0] || 'User';
       
-      await fetch('/api/users', {
+      const response = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -83,9 +88,14 @@ export default function Home() {
           // Don't set username_selected - let the user choose their username
         }),
       });
+      if (response.ok) {
+        return await response.json();
+      }
     } catch (error) {
       console.error('Failed to create/update user:', error);
     }
+
+    return null;
   };
 
   const handleUsernameSubmit = async (username: string) => {
@@ -191,8 +201,16 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <p className="text-center text-gray-600 font-light">Loading...</p>
+      <div className="max-w-4xl mx-auto px-4 py-8 mobile-page">
+        <div className="space-y-4">
+          <div className="skeleton h-32 rounded-3xl" />
+          <div className="skeleton h-6 w-32 rounded-lg" />
+          <div className="grid gap-3">
+            <div className="skeleton h-20 rounded-2xl" />
+            <div className="skeleton h-20 rounded-2xl" />
+            <div className="skeleton h-20 rounded-2xl" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -213,30 +231,30 @@ export default function Home() {
       />
 
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-2xl font-light mb-4">Create a Group</h2>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="glass-strong rounded-3xl p-6 max-w-md w-full animate-fade-in">
+            <h2 className="text-2xl font-display font-semibold text-foreground mb-4">Create a Group</h2>
             <form onSubmit={handleCreateGroup}>
               <input
                 type="text"
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
                 placeholder="Group name"
-                className="w-full px-4 py-2 border-b-2 border-gray-300 focus:border-orange-500 outline-none font-light mb-6"
+                className="w-full bg-white/5 border border-white/10 text-foreground placeholder:text-muted-2 rounded-xl px-3 py-2 focus:outline-none focus:border-brand-2/50 focus:ring-2 focus:ring-brand-2/20 transition mb-6"
                 required
               />
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-light hover:bg-gray-50"
+                  className="btn-glass flex-1"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg font-light hover:bg-orange-700 disabled:bg-gray-300"
+                  className="btn-primary flex-1 disabled:opacity-50"
                 >
                   {creating ? 'Creating...' : 'Create'}
                 </button>
@@ -247,9 +265,9 @@ export default function Home() {
       )}
 
       {showJoinModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-2xl font-light mb-4">Join a Group</h2>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="glass-strong rounded-3xl p-6 max-w-md w-full animate-fade-in">
+            <h2 className="text-2xl font-display font-semibold text-foreground mb-4">Join a Group</h2>
             <form onSubmit={handleJoinGroup}>
               <input
                 type="text"
@@ -257,21 +275,21 @@ export default function Home() {
                 onChange={(e) => setGroupCode(e.target.value)}
                 placeholder="Enter 6-digit group code"
                 maxLength={6}
-                className="w-full px-4 py-2 border-b-2 border-gray-300 focus:border-orange-500 outline-none font-light mb-6 text-center text-2xl tracking-widest"
+                className="w-full bg-white/5 border border-white/10 text-foreground placeholder:text-muted-2 rounded-xl px-3 py-2 focus:outline-none focus:border-brand-2/50 focus:ring-2 focus:ring-brand-2/20 transition mb-6 text-center text-2xl tracking-widest"
                 required
               />
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={() => setShowJoinModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-light hover:bg-gray-50"
+                  className="btn-glass flex-1"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={joining}
-                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg font-light hover:bg-orange-700 disabled:bg-gray-300"
+                  className="btn-primary flex-1 disabled:opacity-50"
                 >
                   {joining ? 'Joining...' : 'Join'}
                 </button>
@@ -281,79 +299,109 @@ export default function Home() {
         </div>
       )}
       
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-extralight text-gray-900 mb-2">
-            Welcome to <span className="font-semibold text-orange-600">WagerPals</span>
-          </h1>
-          <p className="text-lg text-gray-600 font-light">
-            Choose a group or create a new one
+      {/* Hero Section */}
+      <div className="relative overflow-hidden">
+        <div className="pointer-events-none absolute -top-24 -left-16 w-72 h-72 rounded-full bg-brand-2/20 blur-3xl" />
+        <div className="pointer-events-none absolute -top-10 right-0 w-80 h-80 rounded-full bg-neon-violet/20 blur-3xl" />
+        <div className="relative max-w-4xl mx-auto px-4 py-10 sm:py-14 animate-rise">
+          <div className="flex items-center gap-3 mb-3">
+            <img src="/icons/icon-192x192.svg" alt="" className="w-11 h-11 rounded-2xl ring-1 ring-white/10 animate-floaty" />
+            <h1 className="text-4xl sm:text-5xl font-display font-semibold text-foreground">
+              Wager<span className="text-gradient">Pals</span>
+            </h1>
+          </div>
+          <p className="text-muted text-lg mb-6 max-w-lg">
+            Bet on anything with friends. Real stakes, real fun.
           </p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="btn-primary w-full sm:w-auto"
+            >
+              Create Group
+            </button>
+            <button
+              onClick={() => setShowJoinModal(true)}
+              className="btn-glass w-full sm:w-auto"
+            >
+              Join Group
+            </button>
+          </div>
         </div>
+      </div>
 
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="p-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-orange-500 hover:bg-orange-50 transition-colors"
-          >
-            <div className="text-4xl mb-2">+</div>
-            <div className="text-lg font-light text-gray-700">Create Group</div>
-          </button>
-          
-          <button
-            onClick={() => setShowJoinModal(true)}
-            className="p-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-orange-500 hover:bg-orange-50 transition-colors"
-          >
-            <div className="text-4xl mb-2">🔗</div>
-            <div className="text-lg font-light text-gray-700">Join Group</div>
-          </button>
-        </div>
-
-        {groups.length > 0 && (
-          <div>
-            <h2 className="text-2xl font-light text-gray-900 mb-4 border-b-2 border-orange-600 pb-2 inline-block">
+      <div className="max-w-4xl mx-auto px-4 py-8 mobile-page">
+        {groups.length > 0 ? (
+          <div className="animate-rise">
+            <h2 className="text-lg font-display font-semibold text-foreground mb-4">
               Your Groups
             </h2>
-            <div className="grid gap-4 mt-6">
+            <div className="grid gap-3 stagger">
               {groups.map((group) => (
-                <div
+                <Link
                   key={group.id}
-                  onClick={() => router.push(`/groups/${group.id}`)}
-                  className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                  href={`/groups/${group.id}`}
+                  className="glass glass-hover rounded-2xl p-5 cursor-pointer group"
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-xl font-light text-gray-900">{group.name}</h3>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 ${
+                        group.is_public
+                          ? 'bg-gradient-to-br from-neon-cyan to-neon-violet'
+                          : 'bg-brand-gradient'
+                      }`}>
+                        {group.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-base font-semibold text-foreground truncate group-hover:text-gradient transition-colors">
+                          {group.name}
+                        </h3>
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-2">
+                          <span>{group.member_count} members</span>
+                          <span className="w-1 h-1 rounded-full bg-white/20" />
+                          <span className="font-mono">{group.id}</span>
+                          {group.is_admin && (
+                            <>
+                              <span className="w-1 h-1 rounded-full bg-white/20" />
+                              <span className="text-brand-2">Admin</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-shrink-0 items-center gap-2">
                       {group.is_public ? (
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded font-light">
-                          🌐 Public
+                        <span className="chip text-neon-cyan border-neon-cyan/25 bg-neon-cyan/10">
+                          Public
                         </span>
                       ) : (
-                        <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-light">
-                          🔒 Private
+                        <span className="chip">
+                          Private
                         </span>
                       )}
-                    </div>
-                    <div className="flex gap-2">
-                      {group.is_admin && (
-                        <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded font-light">
-                          Admin
-                        </span>
-                      )}
+                      <svg className="w-4 h-4 text-muted-2 group-hover:text-brand-2 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </div>
                   </div>
-                  <div className="flex gap-4 text-sm text-gray-600 font-light">
-                    <span>Code: {group.id}</span>
-                    <span>•</span>
-                    <span>{group.member_count} members</span>
-                  </div>
-                </div>
+                </Link>
               ))}
             </div>
+          </div>
+        ) : (
+          <div className="glass-subtle rounded-3xl text-center py-12 px-6 animate-rise">
+            <div className="text-5xl mb-4">🎲</div>
+            <h2 className="text-xl font-display font-semibold text-foreground mb-2">No groups yet</h2>
+            <p className="text-muted mb-6">Create a group and invite your friends to start wagering</p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="btn-primary"
+            >
+              Create Your First Group
+            </button>
           </div>
         )}
       </div>
     </>
   );
 }
-

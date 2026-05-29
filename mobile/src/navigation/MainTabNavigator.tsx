@@ -3,6 +3,7 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 
 import { MainTabParamList } from '../types/navigation';
 import HomeScreen from '../screens/HomeScreen';
@@ -54,6 +55,11 @@ export default function MainTabNavigator() {
         },
         headerShown: false,
       })}
+      screenListeners={{
+        tabPress: () => {
+          Haptics.selectionAsync();
+        },
+      }}
     >
       <Tab.Screen 
         name="Home" 

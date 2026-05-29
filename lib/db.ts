@@ -1,5 +1,5 @@
 import { sql } from '@vercel/postgres';
-import { User, Event, Bet, ActivityItem, PushSubscription, Group, GroupMember, Comment } from './types';
+import { User, Event, Bet, ActivityItem, PushSubscription, Group, GroupMember, Comment, Wallet, Transaction } from './types';
 
 export const db = {
   users: {
@@ -176,8 +176,74 @@ export const db = {
     delete: async (id: string): Promise<void> => {
       await sql`DELETE FROM events WHERE id = ${id}`;
     },
+
+    // Optimized: get all events with bet stats in a single query (fixes N+1)
+    getAllWithStats: async (groupId?: string): Promise<any[]> => {
+      const result = groupId
+        ? await sql`
+            SELECT
+              e.*,
+              COALESCE(COUNT(b.id), 0)::int as total_bets,
+              COALESCE(COUNT(DISTINCT b.user_id), 0)::int as total_participants,
+              COALESCE(SUM(CASE WHEN b.side = e.side_a THEN 1 ELSE 0 END), 0)::int as side_a_count,
+              COALESCE(SUM(CASE WHEN b.side = e.side_a THEN b.amount ELSE 0 END), 0)::numeric as side_a_total,
+              COALESCE(SUM(CASE WHEN b.side = e.side_b THEN 1 ELSE 0 END), 0)::int as side_b_count,
+              COALESCE(SUM(CASE WHEN b.side = e.side_b THEN b.amount ELSE 0 END), 0)::numeric as side_b_total
+            FROM events e
+            LEFT JOIN bets b ON e.id = b.event_id
+            WHERE e.group_id = ${groupId}
+            GROUP BY e.id
+            ORDER BY
+              CASE WHEN e.status = 'active' THEN 0 ELSE 1 END,
+              e.end_time DESC
+          `
+        : await sql`
+            SELECT
+              e.*,
+              COALESCE(COUNT(b.id), 0)::int as total_bets,
+              COALESCE(COUNT(DISTINCT b.user_id), 0)::int as total_participants,
+              COALESCE(SUM(CASE WHEN b.side = e.side_a THEN 1 ELSE 0 END), 0)::int as side_a_count,
+              COALESCE(SUM(CASE WHEN b.side = e.side_a THEN b.amount ELSE 0 END), 0)::numeric as side_a_total,
+              COALESCE(SUM(CASE WHEN b.side = e.side_b THEN 1 ELSE 0 END), 0)::int as side_b_count,
+              COALESCE(SUM(CASE WHEN b.side = e.side_b THEN b.amount ELSE 0 END), 0)::numeric as side_b_total
+            FROM events e
+            LEFT JOIN bets b ON e.id = b.event_id
+            GROUP BY e.id
+            ORDER BY
+              CASE WHEN e.status = 'active' THEN 0 ELSE 1 END,
+              e.end_time DESC
+          `;
+
+      return result.rows.map(row => {
+        const event: any = {
+          id: row.id,
+          title: row.title,
+          description: row.description,
+          side_a: row.side_a,
+          side_b: row.side_b,
+          end_time: parseInt(row.end_time),
+          group_id: row.group_id,
+          status: row.status,
+          side_stats: {
+            [row.side_a]: { count: parseInt(row.side_a_count), total: Math.round(parseFloat(row.side_a_total) * 100) / 100 },
+            [row.side_b]: { count: parseInt(row.side_b_count), total: Math.round(parseFloat(row.side_b_total) * 100) / 100 },
+          },
+          total_bets: parseInt(row.total_bets),
+          total_participants: parseInt(row.total_participants),
+        };
+
+        if (row.winning_side) {
+          event.resolution = {
+            winning_side: row.winning_side,
+            resolved_at: parseInt(row.resolved_at),
+          };
+        }
+
+        return event;
+      });
+    },
   },
-  
+
   bets: {
     get: async (id: string): Promise<Bet | null> => {
       const result = await sql`SELECT * FROM bets WHERE id = ${id}`;
@@ -295,9 +361,9 @@ export const db = {
       }));
     },
 
-    getByUserGroups: async (userId: string): Promise<ActivityItem[]> => {
+    getByUserGroups: async (userId: string, limit: number = 50, offset: number = 0): Promise<ActivityItem[]> => {
       const result = await sql`
-        SELECT 
+        SELECT
           a.*,
           e.group_id,
           g.name as group_name
@@ -305,10 +371,10 @@ export const db = {
         INNER JOIN events e ON a.event_id = e.id
         INNER JOIN groups g ON e.group_id = g.id
         INNER JOIN group_members gm ON g.id = gm.group_id
-        WHERE gm.user_id = ${userId} 
+        WHERE gm.user_id = ${userId}
           AND gm.status = 'active'
         ORDER BY a.timestamp DESC
-        LIMIT 50
+        LIMIT ${limit} OFFSET ${offset}
       `;
       
       return result.rows.map(row => ({
@@ -455,6 +521,7 @@ export const db = {
         id: row.id,
         name: row.name,
         created_by: row.created_by,
+        resolver_user_id: row.resolver_user_id || undefined,
         is_public: row.is_public || false,
         created_at: row.created_at,
       };
@@ -466,6 +533,7 @@ export const db = {
         id: row.id,
         name: row.name,
         created_by: row.created_by,
+        resolver_user_id: row.resolver_user_id || undefined,
         is_public: row.is_public || false,
         created_at: row.created_at,
       }));
@@ -481,6 +549,7 @@ export const db = {
         id: row.id,
         name: row.name,
         created_by: row.created_by,
+        resolver_user_id: row.resolver_user_id || undefined,
         is_public: row.is_public || false,
         created_at: row.created_at,
       }));
@@ -497,6 +566,7 @@ export const db = {
         id: row.id,
         name: row.name,
         created_by: row.created_by,
+        resolver_user_id: row.resolver_user_id || undefined,
         is_public: row.is_public || false,
         created_at: row.created_at,
       }));
@@ -504,8 +574,8 @@ export const db = {
 
     create: async (group: Group): Promise<Group> => {
       await sql`
-        INSERT INTO groups (id, name, created_by, is_public)
-        VALUES (${group.id}, ${group.name}, ${group.created_by}, ${group.is_public || false})
+        INSERT INTO groups (id, name, created_by, resolver_user_id, is_public)
+        VALUES (${group.id}, ${group.name}, ${group.created_by}, ${group.resolver_user_id || group.created_by}, ${group.is_public || false})
       `;
       return group;
     },
@@ -513,6 +583,12 @@ export const db = {
     update: async (id: string, data: Partial<Group>): Promise<Group | null> => {
       if (data.name !== undefined) {
         await sql`UPDATE groups SET name = ${data.name} WHERE id = ${id}`;
+      }
+      if (data.resolver_user_id !== undefined) {
+        await sql`UPDATE groups SET resolver_user_id = ${data.resolver_user_id} WHERE id = ${id}`;
+      }
+      if (data.is_public !== undefined) {
+        await sql`UPDATE groups SET is_public = ${data.is_public} WHERE id = ${id}`;
       }
       return await db.groups.get(id);
     },
@@ -685,6 +761,141 @@ export const db = {
 
     delete: async (id: string): Promise<void> => {
       await sql`DELETE FROM comments WHERE id = ${id}`;
+    },
+  },
+
+  wallets: {
+    get: async (userId: string): Promise<Wallet | null> => {
+      const result = await sql`SELECT * FROM wallets WHERE user_id = ${userId}`;
+      if (result.rows.length === 0) return null;
+      const row = result.rows[0];
+      return {
+        user_id: row.user_id,
+        balance: parseFloat(row.balance),
+        currency: row.currency,
+        updated_at: row.updated_at,
+      };
+    },
+
+    getOrCreate: async (userId: string): Promise<Wallet> => {
+      const existing = await db.wallets.get(userId);
+      if (existing) return existing;
+
+      await sql`
+        INSERT INTO wallets (user_id, balance, currency)
+        VALUES (${userId}, 0, 'usd')
+        ON CONFLICT (user_id) DO NOTHING
+      `;
+      const wallet = await db.wallets.get(userId);
+      return wallet!;
+    },
+
+    updateBalance: async (userId: string, amount: number): Promise<Wallet | null> => {
+      await sql`
+        UPDATE wallets
+        SET balance = balance + ${amount}, updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = ${userId}
+      `;
+      return await db.wallets.get(userId);
+    },
+
+    deductBalance: async (userId: string, amount: number): Promise<{ success: boolean; wallet: Wallet | null }> => {
+      // Atomic deduction with balance check to prevent overdraft
+      const result = await sql`
+        UPDATE wallets
+        SET balance = balance - ${amount}, updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = ${userId} AND balance >= ${amount}
+        RETURNING *
+      `;
+      if (result.rows.length === 0) {
+        const wallet = await db.wallets.get(userId);
+        return { success: false, wallet };
+      }
+      const row = result.rows[0];
+      return {
+        success: true,
+        wallet: {
+          user_id: row.user_id,
+          balance: parseFloat(row.balance),
+          currency: row.currency,
+          updated_at: row.updated_at,
+        },
+      };
+    },
+  },
+
+  transactions: {
+    get: async (id: string): Promise<Transaction | null> => {
+      const result = await sql`SELECT * FROM transactions WHERE id = ${id}`;
+      if (result.rows.length === 0) return null;
+      const row = result.rows[0];
+      return {
+        id: row.id,
+        user_id: row.user_id,
+        type: row.type,
+        amount: parseFloat(row.amount),
+        status: row.status,
+        stripe_payment_intent_id: row.stripe_payment_intent_id || undefined,
+        description: row.description || undefined,
+        created_at: row.created_at,
+      };
+    },
+
+    getByUser: async (userId: string, limit: number = 50, offset: number = 0): Promise<Transaction[]> => {
+      const result = await sql`
+        SELECT * FROM transactions
+        WHERE user_id = ${userId}
+        ORDER BY created_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      `;
+      return result.rows.map(row => ({
+        id: row.id,
+        user_id: row.user_id,
+        type: row.type,
+        amount: parseFloat(row.amount),
+        status: row.status,
+        stripe_payment_intent_id: row.stripe_payment_intent_id || undefined,
+        description: row.description || undefined,
+        created_at: row.created_at,
+      }));
+    },
+
+    create: async (transaction: Transaction): Promise<Transaction> => {
+      await sql`
+        INSERT INTO transactions (id, user_id, type, amount, status, stripe_payment_intent_id, description)
+        VALUES (
+          ${transaction.id},
+          ${transaction.user_id},
+          ${transaction.type},
+          ${transaction.amount},
+          ${transaction.status},
+          ${transaction.stripe_payment_intent_id || null},
+          ${transaction.description || null}
+        )
+      `;
+      return transaction;
+    },
+
+    updateStatus: async (id: string, status: string): Promise<void> => {
+      await sql`UPDATE transactions SET status = ${status} WHERE id = ${id}`;
+    },
+
+    getByStripeId: async (stripeId: string): Promise<Transaction | null> => {
+      const result = await sql`
+        SELECT * FROM transactions WHERE stripe_payment_intent_id = ${stripeId}
+      `;
+      if (result.rows.length === 0) return null;
+      const row = result.rows[0];
+      return {
+        id: row.id,
+        user_id: row.user_id,
+        type: row.type,
+        amount: parseFloat(row.amount),
+        status: row.status,
+        stripe_payment_intent_id: row.stripe_payment_intent_id || undefined,
+        description: row.description || undefined,
+        created_at: row.created_at,
+      };
     },
   },
 };

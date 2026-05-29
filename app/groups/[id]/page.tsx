@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useUser } from '@stackframe/stack';
 import EventCard from '@/components/EventCard';
@@ -17,6 +18,7 @@ export default function GroupPage() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [wallet, setWallet] = useState<{ balance: number } | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -28,25 +30,36 @@ export default function GroupPage() {
 
   const fetchGroupAndEvents = async (uid: string) => {
     try {
-      // Fetch group details
-      const groupResponse = await fetch(`/api/groups?id=${params.id}`);
+      const [groupResponse, eventsResponse] = await Promise.all([
+        fetch(`/api/groups?id=${params.id}`),
+        fetch(`/api/events?groupId=${params.id}`),
+      ]);
       if (!groupResponse.ok) {
         throw new Error('Failed to fetch group');
       }
+      if (!eventsResponse.ok) {
+        throw new Error('Failed to fetch events');
+      }
+
       const groupData = await groupResponse.json();
+      const eventsData = await eventsResponse.json();
       setGroup(groupData);
+      setEvents(Array.isArray(eventsData) ? eventsData : []);
 
       // Check if user is admin
       const userMember = groupData.members.find((m: any) => m.user_id === uid);
       setIsAdmin(userMember?.role === 'admin');
 
-      // Fetch events for this group
-      const eventsResponse = await fetch(`/api/events?groupId=${params.id}`);
-      if (!eventsResponse.ok) {
-        throw new Error('Failed to fetch events');
+      if (!groupData.is_public) {
+        fetch(`/api/wallet?userId=${uid}`, {
+          headers: { 'x-stack-user-id': uid },
+        })
+          .then((response) => response.ok ? response.json() : null)
+          .then((walletData) => {
+            if (walletData?.wallet) setWallet(walletData.wallet);
+          })
+          .catch((error) => console.error('Failed to fetch wallet:', error));
       }
-      const eventsData = await eventsResponse.json();
-      setEvents(Array.isArray(eventsData) ? eventsData : []);
     } catch (error) {
       console.error('Failed to fetch data:', error);
       setEvents([]);
@@ -102,16 +115,26 @@ export default function GroupPage() {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <p className="text-center text-gray-600 font-light">Loading...</p>
+      <div className="max-w-6xl mx-auto px-4 py-8 mobile-page">
+        <div className="space-y-4">
+          <div className="skeleton h-9 w-2/3 rounded-xl" />
+          <div className="skeleton h-24 rounded-2xl" />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="skeleton h-40 rounded-3xl" />
+            <div className="skeleton h-40 rounded-3xl" />
+            <div className="skeleton h-40 rounded-3xl" />
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!group) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <p className="text-center text-gray-600 font-light">Group not found</p>
+      <div className="max-w-6xl mx-auto px-4 py-8 mobile-page">
+        <div className="glass-subtle rounded-3xl text-center py-12 px-6">
+          <p className="text-center text-muted">Group not found</p>
+        </div>
       </div>
     );
   }
@@ -119,67 +142,94 @@ export default function GroupPage() {
   const { trendingEvents, ongoingEvents, endedEvents } = categorizeEvents();
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="mb-6 flex justify-between items-start">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-4xl font-extralight text-gray-900">
+    <div className="max-w-6xl mx-auto px-4 py-8 mobile-page animate-rise">
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:justify-between md:items-start">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+            <h1 className="text-3xl sm:text-4xl font-display font-semibold text-foreground break-words leading-tight">
               {group.name}
             </h1>
             {isAdmin && (
-              <span className="px-3 py-1 bg-orange-100 text-orange-800 text-sm rounded font-light">
+              <span className="chip text-brand-2 border-brand-2/30 bg-brand-2/10">
                 Admin
               </span>
             )}
           </div>
-          <p className="text-lg text-gray-600 font-light">
-            Group Code: <span className="font-mono font-semibold">{group.id}</span> • {group.member_count} members
+          <p className="text-base sm:text-lg text-muted">
+            Group Code: <span className="font-mono font-semibold text-foreground">{group.id}</span>
+            <span className="mx-2 text-muted-2">•</span>
+            {group.member_count} members
           </p>
-          <button
-            onClick={handleCopyInviteLink}
-            className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-light text-sm transition-colors"
-          >
-            {copied ? (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Link Copied!
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                </svg>
-                Share Group
-              </>
-            )}
-          </button>
-        </div>
-        <div className="flex gap-2">
-          {isAdmin && (
-            <button
-              onClick={() => router.push(`/groups/${group.id}/admin`)}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-light text-sm"
-            >
-              Manage Group
-            </button>
+          {!group.is_public && (
+            <div className="mt-4 glass rounded-2xl p-3 sm:p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0 space-y-1.5">
+                  <span className="chip chip-yes w-fit">
+                    Payments enabled
+                  </span>
+                  <p className="text-sm text-muted">
+                    Wallet: <span className="font-semibold text-neon-mint">${wallet?.balance?.toFixed(2) || '0.00'}</span>
+                  </p>
+                  {group.resolver && (
+                    <p className="text-sm text-muted break-all">
+                      Resolver: <span className="font-medium text-foreground">@{group.resolver.username || 'Unknown'}</span>
+                    </p>
+                  )}
+                </div>
+                <Link
+                  href="/profile?wallet=deposit#wallet"
+                  className="btn-primary w-full sm:w-auto text-sm"
+                >
+                  Deposit Funds
+                </Link>
+              </div>
+            </div>
           )}
-          <button
-            onClick={() => router.push('/create')}
-            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-light text-sm"
-          >
-            Create Event
-          </button>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+            <button
+              onClick={handleCopyInviteLink}
+              className="btn-glass w-full sm:w-auto text-sm"
+            >
+              {copied ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Link Copied!
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  </svg>
+                  Share Group
+                </>
+              )}
+            </button>
+            {isAdmin && (
+              <Link
+                href={`/groups/${group.id}/admin`}
+                className="btn-glass w-full sm:w-auto text-sm"
+              >
+                Manage Group
+              </Link>
+            )}
+            <Link
+              href="/create"
+              className="btn-primary w-full sm:w-auto text-sm"
+            >
+              Create Event
+            </Link>
+          </div>
         </div>
       </div>
 
       {trendingEvents.length > 0 && (
         <section className="mb-12">
-          <h2 className="text-2xl font-light text-gray-900 mb-4 border-b-2 border-red-500 pb-2 inline-block">
+          <h2 className="text-xl sm:text-2xl font-display font-semibold text-foreground mb-4 inline-block border-b-2 border-neon-rose/60 pb-2">
             🔥 Trending
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6 stagger">
             {trendingEvents.map((event) => (
               <EventCard key={event.id} event={event} />
             ))}
@@ -189,10 +239,10 @@ export default function GroupPage() {
 
       {ongoingEvents.length > 0 && (
         <section className="mb-12">
-          <h2 className="text-2xl font-light text-gray-900 mb-4 border-b-2 border-orange-600 pb-2 inline-block">
+          <h2 className="text-xl sm:text-2xl font-display font-semibold text-foreground mb-4 inline-block border-b-2 border-brand-2/60 pb-2">
             Ongoing Bets
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6 stagger">
             {ongoingEvents.map((event) => (
               <EventCard key={event.id} event={event} />
             ))}
@@ -202,10 +252,10 @@ export default function GroupPage() {
 
       {endedEvents.length > 0 && (
         <section className="mb-12">
-          <h2 className="text-2xl font-light text-gray-900 mb-4 border-b-2 border-gray-400 pb-2 inline-block">
+          <h2 className="text-xl sm:text-2xl font-display font-semibold text-foreground mb-4 inline-block border-b-2 border-white/20 pb-2">
             Ended Bets
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6 stagger">
             {endedEvents.map((event) => (
               <EventCard key={event.id} event={event} />
             ))}
@@ -214,17 +264,16 @@ export default function GroupPage() {
       )}
 
       {events.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-600 mb-4 font-light">No events yet. Create the first one!</p>
-          <button
-            onClick={() => router.push('/create')}
-            className="inline-block px-6 py-3 bg-orange-600 text-white font-light rounded-lg hover:bg-orange-700"
+        <div className="glass-subtle rounded-3xl text-center py-12 px-6">
+          <p className="text-muted mb-4">No events yet. Create the first one!</p>
+          <Link
+            href="/create"
+            className="btn-primary"
           >
             Create Event
-          </button>
+          </Link>
         </div>
       )}
     </div>
   );
 }
-

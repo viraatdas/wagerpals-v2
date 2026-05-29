@@ -12,17 +12,21 @@
     "db:test": "tsx scripts/test-activity.ts",
     "db:add-push": "tsx scripts/add-push-subscriptions.ts",
     "db:migrate-mobile": "tsx scripts/migrate-mobile.ts",
+    "db:migrate-wallet": "tsx scripts/migrate-wallet.ts",
     "verify-pwa": "tsx scripts/verify-pwa-setup.ts",
     "test:push": "tsx scripts/test-push-notification.ts"
   },
   "dependencies": {
     "@stackframe/stack": "^2.8.41",
+    "@stripe/react-stripe-js": "^6.3.0",
+    "@stripe/stripe-js": "^9.4.0",
     "@vercel/postgres": "^0.10.0",
     "date-fns": "^3.6.0",
     "next": "14.2.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "server-only": "^0.0.1",
+    "stripe": "^22.0.0",
     "web-push": "^3.6.7"
   },
   "devDependencies": {

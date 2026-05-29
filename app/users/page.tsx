@@ -118,7 +118,14 @@ export default function UsersPage() {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <p className="text-center text-gray-600 font-light">Loading...</p>
+        <div className="h-9 w-40 skeleton rounded-xl mb-2" />
+        <div className="h-5 w-56 skeleton rounded-lg mb-8" />
+        <div className="h-20 skeleton rounded-2xl mb-8" />
+        <div className="grid gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-28 skeleton rounded-2xl" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -128,20 +135,20 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-extralight text-gray-900 mb-2">
-        <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Users</span>
+    <div className="max-w-4xl mx-auto px-4 py-8 animate-rise">
+      <h1 className="font-display text-3xl font-semibold mb-2">
+        <span className="text-gradient">Users</span>
       </h1>
-      <p className="text-gray-600 font-light mb-8">
+      <p className="text-muted mb-8">
         View members from your groups
       </p>
 
       {groups.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-600 font-light mb-4">You're not part of any groups yet</p>
+        <div className="glass-subtle rounded-3xl p-12 text-center">
+          <p className="text-muted mb-4">You're not part of any groups yet</p>
           <button
             onClick={() => router.push('/')}
-            className="text-orange-600 hover:text-orange-700 font-light border-b border-orange-600"
+            className="btn-primary"
           >
             Go to Home
           </button>
@@ -150,27 +157,27 @@ export default function UsersPage() {
         <>
           {/* Modern Group Selector */}
           <div className="mb-8">
-            <label className="block text-sm font-light text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-muted mb-3">
               Select Group
             </label>
             <div className="relative group-dropdown">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="w-full bg-white border-2 border-gray-200 rounded-xl px-6 py-4 flex items-center justify-between hover:border-orange-300 transition-all focus:outline-none focus:border-orange-500"
+                className="w-full glass rounded-2xl px-6 py-4 flex items-center justify-between transition focus:outline-none focus:border-brand-2/50 focus:ring-2 focus:ring-brand-2/20"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center text-white font-semibold">
+                  <div className="w-10 h-10 bg-brand-gradient rounded-xl flex items-center justify-center text-white font-semibold shadow-glow-ember">
                     {selectedGroup?.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="text-left">
-                    <div className="font-medium text-gray-900">{selectedGroup?.name}</div>
-                    <div className="text-sm text-gray-500 font-light">
+                    <div className="font-medium text-foreground">{selectedGroup?.name}</div>
+                    <div className="text-sm text-muted-2">
                       {selectedGroup?.member_count} {selectedGroup?.member_count === 1 ? 'member' : 'members'}
                     </div>
                   </div>
                 </div>
                 <svg
-                  className={`w-5 h-5 text-gray-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
+                  className={`w-5 h-5 text-muted-2 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -181,7 +188,7 @@ export default function UsersPage() {
 
               {/* Dropdown Menu */}
               {dropdownOpen && (
-                <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                <div className="absolute z-10 w-full mt-2 glass-strong rounded-2xl overflow-hidden animate-fade-in">
                   {groups.map((group) => (
                     <button
                       key={group.id}
@@ -189,25 +196,25 @@ export default function UsersPage() {
                         setSelectedGroupId(group.id);
                         setDropdownOpen(false);
                       }}
-                      className={`w-full px-6 py-4 flex items-center gap-3 hover:bg-orange-50 transition-colors text-left ${
-                        selectedGroupId === group.id ? 'bg-orange-50' : ''
+                      className={`w-full px-6 py-4 flex items-center gap-3 hover:bg-white/5 transition-colors text-left ${
+                        selectedGroupId === group.id ? 'bg-brand-2/10' : ''
                       }`}
                     >
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold ${
-                        selectedGroupId === group.id 
-                          ? 'bg-gradient-to-br from-orange-400 to-orange-600' 
-                          : 'bg-gradient-to-br from-gray-400 to-gray-600'
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-semibold ${
+                        selectedGroupId === group.id
+                          ? 'bg-brand-gradient shadow-glow-ember'
+                          : 'bg-white/10'
                       }`}>
                         {group.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1">
-                        <div className="font-medium text-gray-900">{group.name}</div>
-                        <div className="text-sm text-gray-500 font-light">
+                        <div className="font-medium text-foreground">{group.name}</div>
+                        <div className="text-sm text-muted-2">
                           {group.member_count} {group.member_count === 1 ? 'member' : 'members'}
                         </div>
                       </div>
                       {selectedGroupId === group.id && (
-                        <svg className="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-5 h-5 text-brand-2" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       )}
@@ -220,30 +227,52 @@ export default function UsersPage() {
 
           {/* Users List */}
           {loadingMembers ? (
-            <p className="text-center text-gray-600 font-light py-8">Loading members...</p>
+            <div className="grid gap-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="h-28 skeleton rounded-2xl" />
+              ))}
+            </div>
           ) : users.length === 0 ? (
-            <p className="text-center text-gray-600 py-12 font-light">No members in this group yet</p>
+            <div className="glass-subtle rounded-3xl p-12 text-center">
+              <p className="text-muted">No members in this group yet</p>
+            </div>
           ) : (
             <div className="space-y-3">
               <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-gray-600 font-light">
+                <p className="text-sm text-muted">
                   {users.length} {users.length === 1 ? 'member' : 'members'}
                 </p>
               </div>
-              <div className="grid gap-4">
-                {sortedUsers.map((user, index) => (
+              <div className="grid gap-4 stagger">
+                {sortedUsers.map((user, index) => {
+                  const rank = index + 1;
+                  const isTop = rank <= 3;
+                  const rankStyles =
+                    rank === 1
+                      ? 'bg-gradient-to-br from-neon-amber to-brand-2 text-background shadow-glow-ember'
+                      : rank === 2
+                      ? 'bg-white/15 text-foreground'
+                      : rank === 3
+                      ? 'bg-brand-2/20 text-brand-2'
+                      : 'bg-white/5 text-muted-2';
+                  return (
                   <div
                     key={user.id}
-                    className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-orange-200 transition-all"
+                    className={`glass-subtle glass-hover rounded-2xl p-6 ${
+                      isTop ? 'border-brand-2/30 shadow-glow-ember' : ''
+                    }`}
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
+                    <div className="flex items-start gap-4">
+                      <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-sm font-bold tabular-nums ${rankStyles}`}>
+                        {rank}
+                      </div>
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-3">
-                          <span className="text-2xl font-light text-gray-900">
+                          <span className="text-2xl font-display font-semibold text-foreground break-words">
                             @{user.username}
                           </span>
                           {user.streak > 0 && (
-                            <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                            <span className="chip chip-yes">
                               🔥 {user.streak} streak
                             </span>
                           )}
@@ -251,34 +280,35 @@ export default function UsersPage() {
 
                         <div className="grid grid-cols-3 gap-4 mt-4">
                           <div>
-                            <div className="text-xs text-gray-500 font-light mb-1">Total Bet</div>
-                            <div className="text-xl font-medium text-blue-600">
+                            <div className="text-xs text-muted-2 mb-1">Total Bet</div>
+                            <div className="text-xl font-medium text-neon-cyan tabular-nums">
                               ${user.total_bet.toFixed(2)}
                             </div>
                           </div>
                           <div>
-                            <div className="text-xs text-gray-500 font-light mb-1">Net Total</div>
+                            <div className="text-xs text-muted-2 mb-1">Net Total</div>
                             <div
-                              className={`text-xl font-medium ${
+                              className={`text-xl font-medium tabular-nums ${
                                 user.net_total > 0
-                                  ? 'text-green-600'
+                                  ? 'text-neon-mint'
                                   : user.net_total < 0
-                                  ? 'text-red-600'
-                                  : 'text-gray-600'
+                                  ? 'text-neon-rose'
+                                  : 'text-muted'
                               }`}
                             >
                               {user.net_total > 0 ? '+' : ''}${user.net_total.toFixed(2)}
                             </div>
                           </div>
                           <div>
-                            <div className="text-xs text-gray-500 font-light mb-1">Win Streak</div>
-                            <div className="text-xl font-light text-gray-900">🔥 {user.streak}</div>
+                            <div className="text-xs text-muted-2 mb-1">Win Streak</div>
+                            <div className="text-xl font-light text-foreground tabular-nums">🔥 {user.streak}</div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

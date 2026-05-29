@@ -16,36 +16,38 @@ export default function ResolutionBanner({ event, netResults, isPublic = false }
   const sortedResults = [...netResults].sort((a, b) => b.net - a.net);
 
   return (
-    <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-6 shadow-sm">
+    <div className="glass-strong border border-neon-mint/30 rounded-3xl p-6 mb-6 shadow-glow-mint">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-xl font-light text-green-900 border-b-2 border-green-600 pb-1 inline-block">Event Resolved</h3>
-          <p className="text-green-700 mt-2 font-light">
-            Winning side: <span className="font-semibold">{event.resolution.winning_side}</span>
+          <h3 className="text-xl font-display font-semibold text-foreground inline-flex items-center gap-2">
+            <span className="text-neon-mint">✓</span> Event Resolved
+          </h3>
+          <p className="text-muted mt-2">
+            Winning side: <span className="font-semibold text-neon-mint">{event.resolution.winning_side}</span>
           </p>
         </div>
-        <div className="px-3 py-1 bg-green-200 text-green-800 rounded-full text-sm font-light">
+        <div className="chip chip-yes">
           Final
         </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <h4 className="font-light text-gray-900 mb-2 border-b border-gray-200 pb-1">Net Results</h4>
-          <div className="space-y-1">
+          <h4 className="text-sm font-semibold text-muted mb-2 pb-2 border-b border-white/10">Net Results</h4>
+          <div className="space-y-1.5">
             {sortedResults.map((result) => (
               <div
                 key={result.user_id}
-                className="flex justify-between items-center py-2 px-3 bg-white rounded"
+                className="flex justify-between items-center py-2 px-3 glass-subtle rounded-xl"
               >
-                <span className="text-gray-700 font-light">@{result.username}</span>
+                <span className="text-foreground/90">@{result.username}</span>
                 <span
-                  className={`font-medium ${
+                  className={`font-semibold tabular-nums ${
                     result.net > 0
-                      ? 'text-green-600'
+                      ? 'text-neon-mint'
                       : result.net < 0
-                      ? 'text-red-600'
-                      : 'text-gray-600'
+                      ? 'text-neon-rose'
+                      : 'text-muted'
                   }`}
                 >
                   {formatAmount(result.net, isPublic)}
@@ -57,18 +59,18 @@ export default function ResolutionBanner({ event, netResults, isPublic = false }
 
         {payments.length > 0 && (
           <div>
-            <h4 className="font-light text-gray-900 mb-2 border-b border-gray-200 pb-1">Payments</h4>
-            <div className="space-y-1">
+            <h4 className="text-sm font-semibold text-muted mb-2 pb-2 border-b border-white/10">Payments</h4>
+            <div className="space-y-1.5">
               {payments.map((payment, i) => (
                 <div
                   key={i}
-                  className="py-2 px-3 bg-white rounded text-sm text-gray-700 font-light"
+                  className="py-2 px-3 glass-subtle rounded-xl text-sm text-muted"
                 >
-                  <span className="font-medium">{payment.from}</span>
+                  <span className="font-medium text-foreground">{payment.from}</span>
                   {' → '}
-                  <span className="font-medium">{payment.to}</span>
+                  <span className="font-medium text-foreground">{payment.to}</span>
                   {': '}
-                  <span className="font-semibold">{isPublic ? `${payment.amount.toFixed(2)} pts` : `$${payment.amount.toFixed(2)}`}</span>
+                  <span className="font-semibold text-neon-mint tabular-nums">{isPublic ? `${payment.amount.toFixed(2)} pts` : `$${payment.amount.toFixed(2)}`}</span>
                 </div>
               ))}
             </div>

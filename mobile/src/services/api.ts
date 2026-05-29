@@ -1,5 +1,5 @@
 // API service layer for backend communication
-import { User, Group, Event, Bet, Comment, ActivityItem, GroupMember, EventWithStats } from '../types';
+import { User, Group, Event, Bet, Comment, ActivityItem, GroupMember, EventWithStats, Wallet } from '../types';
 import authService from './auth';
 
 // Use the backend API URL - can be configured via environment
@@ -17,15 +17,17 @@ class ApiService {
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     
-    // Get access token for authenticated requests
+    // Get access token and user ID for authenticated requests
     const token = await authService.getAccessToken();
-    
+    const currentUser = authService.getCurrentUser();
+
     try {
       const response = await fetch(url, {
         ...options,
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          ...(currentUser?.id ? { 'x-stack-user-id': currentUser.id } : {}),
           ...options.headers,
         },
       });
@@ -67,6 +69,10 @@ class ApiService {
     return this.request<Group[]>(`/api/groups?userId=${userId}`);
   }
 
+  async getGroup(groupId: string): Promise<Group & { members?: GroupMember[]; pending_requests?: GroupMember[] }> {
+    return this.request<Group & { members?: GroupMember[]; pending_requests?: GroupMember[] }>(`/api/groups?id=${groupId}`);
+  }
+
   async createGroup(name: string, createdBy: string): Promise<Group> {
     return this.request<Group>('/api/groups', {
       method: 'POST',
@@ -100,6 +106,27 @@ class ApiService {
         target_user_id: targetUserId,
       }),
     });
+  }
+
+  async updateGroupSettings(input: {
+    id: string;
+    resolver_user_id?: string;
+    is_public?: boolean;
+  }): Promise<Group> {
+    return this.request<Group>('/api/groups', {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async deleteGroup(groupId: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>(`/api/groups?id=${groupId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getWallet(userId: string): Promise<{ wallet: Wallet; transactions: any[] }> {
+    return this.request<{ wallet: Wallet; transactions: any[] }>(`/api/wallet?userId=${userId}`);
   }
 
   // Event APIs

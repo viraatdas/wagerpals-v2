@@ -53,8 +53,8 @@ class MessagesViewController: MSMessagesAppViewController {
     }
 
     private func showExpandedView(for conversation: MSConversation) {
-        let composeView = ComposeWagerView { [weak self] title, sideA, sideB in
-            self?.sendWager(title: title, sideA: sideA, sideB: sideB, conversation: conversation)
+        let composeView = ComposeWagerView { [weak self] title, sideA, sideB, pick, amount in
+            self?.sendWager(title: title, sideA: sideA, sideB: sideB, pick: pick, amount: amount, conversation: conversation)
         }
         let hostingController = UIHostingController(rootView: composeView)
         addChild(hostingController)
@@ -64,8 +64,8 @@ class MessagesViewController: MSMessagesAppViewController {
         hostingController.didMove(toParent: self)
     }
 
-    private func sendWager(title: String, sideA: String, sideB: String, conversation: MSConversation) {
-        let message = WagerMessageComposer.compose(title: title, sideA: sideA, sideB: sideB)
+    private func sendWager(title: String, sideA: String, sideB: String, pick: String?, amount: String?, conversation: MSConversation) {
+        let message = WagerMessageComposer.compose(title: title, sideA: sideA, sideB: sideB, pick: pick, amount: amount)
         conversation.insert(message) { error in
             if let error = error {
                 print("Failed to insert message: \(error)")

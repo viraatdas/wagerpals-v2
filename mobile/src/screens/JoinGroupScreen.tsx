@@ -15,7 +15,7 @@ import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
 
 export default function JoinGroupScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute();
   const { user } = useAuth();
   const [groupCode, setGroupCode] = useState('');

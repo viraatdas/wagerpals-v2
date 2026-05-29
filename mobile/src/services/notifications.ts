@@ -37,7 +37,6 @@ class NotificationService {
       }
 
       if (finalStatus !== 'granted') {
-        console.log('Failed to get push token for push notification!');
         return null;
       }
 
@@ -66,7 +65,6 @@ class NotificationService {
 
   async getExpoPushToken(): Promise<string | null> {
     if (!Device.isDevice) {
-      console.log('Must use physical device for Push Notifications');
       return null;
     }
 
@@ -79,7 +77,6 @@ class NotificationService {
         ? (await Notifications.getExpoPushTokenAsync({ projectId })).data
         : (await Notifications.getExpoPushTokenAsync()).data;
       this.expoPushToken = token;
-      console.log('Expo Push Token:', token);
       return token;
     } catch (error) {
       console.error('Error getting push token:', error);
@@ -90,15 +87,14 @@ class NotificationService {
   private setupListeners() {
     // Handle notifications received while app is in foreground
     this.notificationListener = Notifications.addNotificationReceivedListener(
-      notification => {
-        console.log('Notification received:', notification);
+      _notification => {
+        // Notification received in foreground
       }
     );
 
     // Handle user tapping on notification
     this.responseListener = Notifications.addNotificationResponseReceivedListener(
       response => {
-        console.log('Notification tapped:', response);
         const data = response.notification.request.content.data;
         
         // Handle navigation based on notification data
@@ -113,7 +109,6 @@ class NotificationService {
   async subscribeToPush(token: string, userId: string) {
     try {
       await apiService.subscribeToPush({ token, userId });
-      console.log('Subscribed to push notifications');
     } catch (error) {
       console.error('Failed to subscribe to push notifications:', error);
     }
@@ -123,7 +118,6 @@ class NotificationService {
     if (this.expoPushToken) {
       try {
         await apiService.unsubscribeFromPush(this.expoPushToken);
-        console.log('Unsubscribed from push notifications');
       } catch (error) {
         console.error('Failed to unsubscribe from push notifications:', error);
       }

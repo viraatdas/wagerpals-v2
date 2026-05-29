@@ -18,7 +18,7 @@ import apiService from '../services/api';
 import { validateUsername } from '../utils/helpers';
 
 export default function EditUsernameScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { user } = useAuth();
   const [username, setUsername] = useState('');
   const [currentUsername, setCurrentUsername] = useState('');

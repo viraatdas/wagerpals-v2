@@ -20,7 +20,7 @@ import { formatDate } from '../utils/helpers';
 type FilterType = 'all' | 'active' | 'resolved';
 
 export default function ExploreScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);

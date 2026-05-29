@@ -13,18 +13,12 @@ let vapidDetailsSet = false;
 // Set VAPID details only when needed (at runtime, not during build)
 function ensureVapidDetails() {
   if (!vapidDetailsSet && VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
-    console.log('[VAPID] Setting VAPID details...');
-    console.log('[VAPID] Public key length:', VAPID_PUBLIC_KEY.length);
-    console.log('[VAPID] Public key first 20:', VAPID_PUBLIC_KEY.substring(0, 20));
-    console.log('[VAPID] Public key last 20:', VAPID_PUBLIC_KEY.substring(VAPID_PUBLIC_KEY.length - 20));
-    
     try {
       webpush.setVapidDetails(
         VAPID_SUBJECT,
         VAPID_PUBLIC_KEY,
         VAPID_PRIVATE_KEY
       );
-      console.log('[VAPID] ✅ VAPID details set successfully');
       vapidDetailsSet = true;
     } catch (error: any) {
       console.error('[VAPID] ❌ Failed to set VAPID details:', error.message);
@@ -59,21 +53,14 @@ export async function sendPushNotification(
       },
     };
 
-    console.log(`[Push] Sending to: ${endpoint.substring(0, 50)}...`);
-    
     await webpush.sendNotification(
       subscription,
       JSON.stringify(payload)
     );
 
-    console.log(`[Push] ✅ Success for: ${endpoint.substring(0, 50)}...`);
     return true;
   } catch (error: any) {
-    console.error(`[Push] ❌ Error for ${endpoint.substring(0, 50)}...`);
-    console.error(`[Push] Full error object:`, JSON.stringify(error, null, 2));
-    console.error(`[Push] Status: ${error.statusCode}, Message: ${error.message}`);
-    console.error(`[Push] Body: ${error.body}`);
-    console.error(`[Push] Stack:`, error.stack);
+    console.error(`[Push] Error for ${endpoint.substring(0, 50)}:`, error.statusCode, error.message);
     
     // TEMPORARILY DISABLED - Don't auto-delete to see what's failing
     // if (error.statusCode === 410 || error.statusCode === 404) {
@@ -88,12 +75,9 @@ export async function sendPushNotification(
 export async function sendPushToAllSubscribers(
   payload: PushNotificationPayload
 ): Promise<{ success: number; failed: number }> {
-  console.log('[SendToAll] Getting all subscriptions...');
   const subscriptions = await db.pushSubscriptions.getAll();
-  console.log('[SendToAll] Found', subscriptions.length, 'subscriptions');
-  
+
   if (subscriptions.length === 0) {
-    console.log('[SendToAll] No subscriptions to send to');
     return { success: 0, failed: 0 };
   }
   
@@ -127,8 +111,6 @@ export async function sendPushToAllSubscribers(
     }
   });
 
-  console.log(`[SendToAll] Push notifications sent: ${success} succeeded, ${failed} failed`);
-  
   return { success, failed };
 }
 
@@ -137,12 +119,9 @@ export async function sendPushToUser(
   userId: string,
   payload: PushNotificationPayload
 ): Promise<{ success: number; failed: number }> {
-  console.log(`[SendToUser] Sending to user: ${userId}`);
   const subscriptions = await db.pushSubscriptions.getByUserId(userId);
-  console.log(`[SendToUser] Found ${subscriptions.length} subscriptions for user`);
-  
+
   if (subscriptions.length === 0) {
-    console.log(`[SendToUser] No subscriptions for user ${userId}`);
     return { success: 0, failed: 0 };
   }
   
@@ -176,8 +155,6 @@ export async function sendPushToUser(
     }
   });
 
-  console.log(`[SendToUser] Push notifications sent to ${userId}: ${success} succeeded, ${failed} failed`);
-  
   return { success, failed };
 }
 
@@ -187,8 +164,6 @@ async function sendExpoNotification(
   payload: PushNotificationPayload
 ): Promise<boolean> {
   try {
-    console.log(`[Expo] Sending to: ${expoToken}`);
-    
     const message = {
       to: expoToken,
       sound: 'default',
@@ -213,8 +188,7 @@ async function sendExpoNotification(
       throw new Error(`Expo push failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    console.log(`[Expo] ✅ Success:`, data);
+    await response.json();
     return true;
   } catch (error: any) {
     console.error(`[Expo] ❌ Error:`, error.message);

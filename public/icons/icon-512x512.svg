@@ -1,11 +1,95 @@
-<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#ea580c;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#fb923c;stop-opacity:1" />
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="coinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="handGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
     </linearGradient>
   </defs>
-  <rect width="512" height="512" fill="url(#grad)" rx="85"/>
-  <text x="256" y="345" font-family="Arial, sans-serif" font-size="300" font-weight="bold" fill="#ffffff" text-anchor="middle">W</text>
-</svg>
 
+  <!-- Background rounded square -->
+  <rect width="512" height="512" fill="url(#bgGrad)" rx="110"/>
+
+  <!-- Decorative coin ring - top left -->
+  <circle cx="120" cy="105" r="38" fill="none" stroke="#fbbf24" stroke-width="5" opacity="0.35"/>
+  <circle cx="120" cy="105" r="24" fill="none" stroke="#fbbf24" stroke-width="3" opacity="0.25"/>
+  <text x="120" y="114" font-family="Arial,sans-serif" font-size="28" font-weight="bold" fill="#fbbf24" text-anchor="middle" opacity="0.4">$</text>
+
+  <!-- Decorative coin ring - top right -->
+  <circle cx="392" cy="105" r="38" fill="none" stroke="#fbbf24" stroke-width="5" opacity="0.35"/>
+  <circle cx="392" cy="105" r="24" fill="none" stroke="#fbbf24" stroke-width="3" opacity="0.25"/>
+  <text x="392" y="114" font-family="Arial,sans-serif" font-size="28" font-weight="bold" fill="#fbbf24" text-anchor="middle" opacity="0.4">$</text>
+
+  <!-- Main handshake illustration -->
+  <g transform="translate(256, 250)">
+    <!-- Left hand (coming from left) -->
+    <g transform="rotate(-8)">
+      <!-- Forearm -->
+      <path d="M-160,20 C-140,18 -100,10 -60,0" stroke="url(#handGrad)" stroke-width="52" stroke-linecap="round" fill="none"/>
+      <!-- Palm -->
+      <ellipse cx="-45" cy="-2" rx="42" ry="32" fill="white" opacity="0.95"/>
+      <!-- Thumb -->
+      <path d="M-65,-18 C-58,-35 -42,-38 -32,-28" stroke="white" stroke-width="18" stroke-linecap="round" fill="none"/>
+      <!-- Fingers wrapping -->
+      <path d="M-15,8 C5,12 18,8 28,0" stroke="white" stroke-width="16" stroke-linecap="round" fill="none"/>
+      <path d="M-12,22 C8,28 20,24 30,16" stroke="white" stroke-width="14" stroke-linecap="round" fill="none"/>
+    </g>
+
+    <!-- Right hand (coming from right) -->
+    <g transform="rotate(8)">
+      <!-- Forearm -->
+      <path d="M160,20 C140,18 100,10 60,0" stroke="url(#handGrad)" stroke-width="52" stroke-linecap="round" fill="none"/>
+      <!-- Palm -->
+      <ellipse cx="45" cy="-2" rx="42" ry="32" fill="white" opacity="0.95"/>
+      <!-- Thumb -->
+      <path d="M65,-18 C58,-35 42,-38 32,-28" stroke="white" stroke-width="18" stroke-linecap="round" fill="none"/>
+      <!-- Fingers wrapping -->
+      <path d="M15,8 C-5,12 -18,8 -28,0" stroke="white" stroke-width="16" stroke-linecap="round" fill="none"/>
+      <path d="M12,22 C-8,28 -20,24 -30,16" stroke="white" stroke-width="14" stroke-linecap="round" fill="none"/>
+    </g>
+
+    <!-- Clasped center (overlap area) -->
+    <ellipse cx="0" cy="2" rx="28" ry="22" fill="white" opacity="0.9"/>
+  </g>
+
+  <!-- Sparkle/star effects around handshake -->
+  <g fill="#fbbf24" opacity="0.6">
+    <!-- Top center sparkle -->
+    <polygon points="256,155 260,165 270,168 260,171 256,181 252,171 242,168 252,165" />
+    <!-- Left sparkle -->
+    <polygon points="148,200 151,207 158,209 151,211 148,218 145,211 138,209 145,207" />
+    <!-- Right sparkle -->
+    <polygon points="364,200 367,207 374,209 367,211 364,218 361,211 354,209 361,207" />
+    <!-- Bottom left -->
+    <polygon points="170,310 173,317 180,319 173,321 170,328 167,321 160,319 167,317" />
+    <!-- Bottom right -->
+    <polygon points="342,310 345,317 352,319 345,321 342,328 339,321 332,319 339,317" />
+  </g>
+
+  <!-- Small dice - bottom left -->
+  <g transform="translate(105, 385) rotate(-15)">
+    <rect x="0" y="0" width="44" height="44" rx="8" fill="white" opacity="0.9"/>
+    <circle cx="12" cy="12" r="4" fill="#ea580c" opacity="0.7"/>
+    <circle cx="32" cy="32" r="4" fill="#ea580c" opacity="0.7"/>
+    <circle cx="22" cy="22" r="4" fill="#ea580c" opacity="0.7"/>
+  </g>
+
+  <!-- Small dice - bottom right -->
+  <g transform="translate(363, 385) rotate(15)">
+    <rect x="0" y="0" width="44" height="44" rx="8" fill="white" opacity="0.9"/>
+    <circle cx="12" cy="12" r="4" fill="#ea580c" opacity="0.7"/>
+    <circle cx="32" cy="12" r="4" fill="#ea580c" opacity="0.7"/>
+    <circle cx="12" cy="32" r="4" fill="#ea580c" opacity="0.7"/>
+    <circle cx="32" cy="32" r="4" fill="#ea580c" opacity="0.7"/>
+  </g>
+
+  <!-- "WP" monogram at bottom center -->
+  <text x="256" y="445" font-family="Arial,Helvetica,sans-serif" font-size="42" font-weight="300" fill="white" text-anchor="middle" letter-spacing="8" opacity="0.85">WAGERPALS</text>
+</svg>

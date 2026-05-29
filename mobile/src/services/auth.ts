@@ -73,8 +73,6 @@ class AuthService {
 
   async signInWithGoogle(): Promise<AuthUser> {
     try {
-      console.log('Starting Stack Auth Google sign in...');
-
       const callbackUrl = 'wagerpals://oauth-callback';
       const oauthUrl = `${API_BASE_URL}/api/auth/mobile-oauth?provider=google&callback_url=${encodeURIComponent(callbackUrl)}`;
 

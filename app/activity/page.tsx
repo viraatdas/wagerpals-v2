@@ -27,20 +27,13 @@ export default function ActivityPage() {
   const fetchActivities = async () => {
     if (!user) return;
     
-    console.log('[Activity] Starting fetch...');
     try {
       const response = await fetch(`/api/activity?userId=${user.id}`);
-      console.log('[Activity] Response status:', response.ok, response.status);
       const data = await response.json();
-      console.log('[Activity] Data received:', data);
-      console.log('[Activity] Data length:', data?.length);
-      console.log('[Activity] Is array?', Array.isArray(data));
       setActivities(data);
-      console.log('[Activity] State set with data');
     } catch (error) {
       console.error('[Activity] Failed to fetch activities:', error);
     } finally {
-      console.log('[Activity] Setting loading to false');
       setLoading(false);
     }
   };
@@ -49,135 +42,140 @@ export default function ActivityPage() {
     if (activity.type === 'bet') {
       return (
         <div className="flex justify-between items-start">
+          <span className="mt-1.5 mr-3 h-2 w-2 flex-shrink-0 rounded-full bg-neon-cyan shadow-[0_0_8px_var(--neon-cyan)]" />
           <div className="flex-1">
-            <p className="text-gray-900 font-light">
-              <span className="font-medium text-blue-600">@{activity.username || 'Unknown'}</span>
+            <p className="text-foreground">
+              <span className="font-medium text-neon-cyan">@{activity.username || 'Unknown'}</span>
               {' bet '}
-              <span className="font-semibold text-orange-600">${activity.amount?.toFixed(2)}</span>
+              <span className="font-semibold text-gradient">${activity.amount?.toFixed(2)}</span>
               {' on '}
               <span className="font-medium">{activity.side}</span>
               {' in '}
-              <span className="text-gray-700">"{activity.event_title}"</span>
+              <span className="text-muted">"{activity.event_title}"</span>
               {activity.group_name && (
                 <>
                   {' '}
-                  <span className="text-gray-500 text-sm">
+                  <span className="text-muted-2 text-sm">
                     · <span className="font-medium">{activity.group_name}</span>
                   </span>
                 </>
               )}
             </p>
             {activity.note && (
-              <p className="text-sm text-gray-600 mt-1 font-light italic">
+              <p className="text-sm text-muted mt-1 italic">
                 "{activity.note}"
               </p>
             )}
           </div>
-          <span className="text-xs text-gray-400 ml-2 whitespace-nowrap font-light">
+          <span className="text-xs text-muted-2 ml-2 whitespace-nowrap">
             {formatTimestamp(activity.timestamp)}
           </span>
         </div>
       );
     }
-    
+
     if (activity.type === 'event_created') {
       return (
         <div className="flex justify-between items-start">
+          <span className="mt-1.5 mr-3 h-2 w-2 flex-shrink-0 rounded-full bg-neon-violet shadow-[0_0_8px_var(--neon-violet)]" />
           <div>
-            <p className="text-gray-900 font-light">
-              <span className="font-medium text-purple-600">@{activity.username || 'Unknown'}</span>
+            <p className="text-foreground">
+              <span className="font-medium text-neon-violet">@{activity.username || 'Unknown'}</span>
               {' created '}
-              <span className="text-gray-700">"{activity.event_title}"</span>
+              <span className="text-muted">"{activity.event_title}"</span>
               {activity.group_name && (
                 <>
                   {' '}
-                  <span className="text-gray-500 text-sm">
+                  <span className="text-muted-2 text-sm">
                     · <span className="font-medium">{activity.group_name}</span>
                   </span>
                 </>
               )}
             </p>
           </div>
-          <span className="text-xs text-gray-400 ml-2 whitespace-nowrap font-light">
+          <span className="text-xs text-muted-2 ml-2 whitespace-nowrap">
             {formatTimestamp(activity.timestamp)}
           </span>
         </div>
       );
     }
-    
+
     if (activity.type === 'resolution') {
       return (
         <div className="flex justify-between items-start">
+          <span className="mt-1.5 mr-3 h-2 w-2 flex-shrink-0 rounded-full bg-neon-mint shadow-[0_0_8px_var(--neon-mint)]" />
           <div>
-            <p className="text-gray-900 font-light">
-              <span className="font-medium text-green-700">✓ Resolved:</span>
+            <p className="text-foreground">
+              <span className="font-medium text-neon-mint">✓ Resolved:</span>
               {' '}
-              <span className="text-gray-700">"{activity.event_title}"</span>
+              <span className="text-muted">"{activity.event_title}"</span>
               {activity.group_name && (
                 <>
                   {' '}
-                  <span className="text-gray-500 text-sm">
+                  <span className="text-muted-2 text-sm">
                     · <span className="font-medium">{activity.group_name}</span>
                   </span>
                 </>
               )}
             </p>
-            <p className="text-sm text-gray-600 mt-1 font-light">
-              Winner: <span className="font-medium text-green-600">{activity.winning_side}</span>
+            <p className="text-sm text-muted mt-1">
+              Winner: <span className="font-medium text-neon-mint">{activity.winning_side}</span>
             </p>
           </div>
-          <span className="text-xs text-gray-400 ml-2 whitespace-nowrap font-light">
+          <span className="text-xs text-muted-2 ml-2 whitespace-nowrap">
             {formatTimestamp(activity.timestamp)}
           </span>
         </div>
       );
     }
-    
+
     if (activity.type === 'comment') {
       return (
         <div className="flex justify-between items-start">
+          <span className="mt-1.5 mr-3 h-2 w-2 flex-shrink-0 rounded-full bg-neon-amber shadow-[0_0_8px_var(--neon-amber)]" />
           <div className="flex-1">
-            <p className="text-gray-900 font-light">
-              <span className="font-medium text-indigo-600">@{activity.username || 'Unknown'}</span>
+            <p className="text-foreground">
+              <span className="font-medium text-neon-amber">@{activity.username || 'Unknown'}</span>
               {' commented on '}
-              <span className="text-gray-700">"{activity.event_title}"</span>
+              <span className="text-muted">"{activity.event_title}"</span>
               {activity.group_name && (
                 <>
                   {' '}
-                  <span className="text-gray-500 text-sm">
+                  <span className="text-muted-2 text-sm">
                     · <span className="font-medium">{activity.group_name}</span>
                   </span>
                 </>
               )}
             </p>
             {(activity.content || activity.note) && (
-              <p className="text-sm text-gray-600 mt-1 font-light italic">
+              <p className="text-sm text-muted mt-1 italic">
                 "{activity.content || activity.note}"
               </p>
             )}
           </div>
-          <span className="text-xs text-gray-400 ml-2 whitespace-nowrap font-light">
+          <span className="text-xs text-muted-2 ml-2 whitespace-nowrap">
             {formatTimestamp(activity.timestamp)}
           </span>
         </div>
       );
     }
-    
+
     return (
-      <div className="text-gray-500">
+      <div className="text-muted-2">
         Unknown activity type: {activity.type}
       </div>
     );
   };
 
-  console.log('[Activity] Render - loading:', loading, 'activities.length:', activities.length);
-
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-orange-600 border-t-transparent"></div>
-          <p className="text-gray-600 font-light mt-4">Loading activities...</p>
+        <div className="h-9 w-48 skeleton rounded-xl mb-2" />
+        <div className="h-5 w-72 skeleton rounded-lg mb-8" />
+        <div className="space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-16 skeleton rounded-2xl" />
+          ))}
         </div>
       </div>
     );
@@ -188,35 +186,35 @@ export default function ActivityPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-extralight text-gray-900 mb-2">
-        Activity <span className="font-semibold text-orange-600 border-b-2 border-orange-600">Feed</span>
+    <div className="max-w-4xl mx-auto px-4 py-8 animate-rise">
+      <h1 className="font-display text-3xl font-semibold text-foreground mb-2">
+        Activity <span className="text-gradient">Feed</span>
       </h1>
-      <p className="text-gray-600 font-light mb-8">
+      <p className="text-muted mb-8">
         Recent events, bets, and resolutions from your groups
       </p>
 
       {activities.length === 0 ? (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
-          <p className="text-gray-600 font-light text-lg mb-2">No activity yet</p>
-          <p className="text-gray-500 font-light text-sm">
+        <div className="glass-subtle rounded-3xl p-12 text-center">
+          <p className="text-foreground text-lg mb-2">No activity yet</p>
+          <p className="text-muted text-sm">
             Start by creating an event and placing bets!
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3 stagger">
           {activities.map((activity, index) => (
-            <Link 
-              key={`${activity.type}-${activity.event_id}-${activity.timestamp}-${index}`} 
+            <Link
+              key={`${activity.type}-${activity.event_id}-${activity.timestamp}-${index}`}
               href={`/events/${activity.event_id}`}
             >
-              <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer hover:border-orange-300">
+              <div className="glass-subtle glass-hover rounded-2xl p-4 cursor-pointer">
                 {renderActivity(activity, index)}
               </div>
             </Link>
           ))}
-          
-          <div className="text-center text-xs text-gray-400 pt-4">
+
+          <div className="text-center text-xs text-muted-2 pt-4">
             Showing {activities.length} {activities.length === 50 ? '(limit reached)' : ''} activities from your groups
           </div>
         </div>

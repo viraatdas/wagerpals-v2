@@ -138,8 +138,10 @@ export default function JoinGroupPage() {
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12">
-        <div className="text-center">
-          <p className="text-gray-600 font-light">Loading group information...</p>
+        <div className="glass rounded-3xl p-8 space-y-4">
+          <div className="skeleton h-8 w-1/2 mx-auto rounded-xl" />
+          <div className="skeleton h-24 rounded-2xl" />
+          <div className="skeleton h-12 rounded-full" />
         </div>
       </div>
     );
@@ -148,17 +150,17 @@ export default function JoinGroupPage() {
   if (error && !group) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12">
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <div className="text-red-600 mb-4">
+        <div className="glass-strong rounded-3xl p-8 text-center animate-fade-in">
+          <div className="text-neon-rose mb-4">
             <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-light text-gray-900 mb-2">Group Not Found</h1>
-          <p className="text-gray-600 font-light mb-6">{error}</p>
+          <h1 className="text-2xl font-display font-semibold text-foreground mb-2">Group Not Found</h1>
+          <p className="text-muted mb-6">{error}</p>
           <button
             onClick={() => router.push('/')}
-            className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-light"
+            className="btn-primary"
           >
             Go to Home
           </button>
@@ -170,19 +172,19 @@ export default function JoinGroupPage() {
   if (alreadyMember) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12">
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <div className="text-green-600 mb-4">
+        <div className="glass-strong rounded-3xl p-8 text-center animate-fade-in">
+          <div className="text-neon-mint mb-4">
             <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-light text-gray-900 mb-2">You're Already a Member!</h1>
-          <p className="text-gray-600 font-light mb-6">
-            You're already part of <span className="font-semibold">{group?.name}</span>
+          <h1 className="text-2xl font-display font-semibold text-foreground mb-2">You're Already a Member!</h1>
+          <p className="text-muted mb-6">
+            You're already part of <span className="font-semibold text-foreground">{group?.name}</span>
           </p>
           <button
             onClick={() => router.push(`/groups/${params.id}`)}
-            className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-light"
+            className="btn-primary"
           >
             Go to Group
           </button>
@@ -193,32 +195,32 @@ export default function JoinGroupPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
-      <div className="bg-white rounded-lg shadow-md p-8">
+      <div className="glass-strong rounded-3xl p-8 animate-rise">
         {isNewUser && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <p className="text-blue-800 font-light text-center">
+          <div className="glass-subtle rounded-2xl p-4 mb-6 border-neon-cyan/20">
+            <p className="text-neon-cyan text-center">
               👋 Welcome to WagerPals! You've been invited to join a group.
             </p>
           </div>
         )}
-        
+
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-light text-gray-900 mb-2">Join Group</h1>
-          <p className="text-gray-600 font-light">You've been invited to join:</p>
+          <h1 className="text-3xl font-display font-semibold text-gradient mb-2">Join Group</h1>
+          <p className="text-muted">You've been invited to join:</p>
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-6 mb-6">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">{group?.name}</h2>
-          <div className="flex items-center gap-4 text-gray-600 font-light">
-            <span>Group Code: <span className="font-mono font-semibold">{group?.id}</span></span>
-            <span>•</span>
+        <div className="glass-subtle rounded-2xl p-6 mb-6">
+          <h2 className="text-2xl font-display font-semibold text-foreground mb-2">{group?.name}</h2>
+          <div className="flex items-center gap-4 text-muted">
+            <span>Group Code: <span className="font-mono font-semibold text-foreground">{group?.id}</span></span>
+            <span className="text-muted-2">•</span>
             <span>{group?.member_count} {group?.member_count === 1 ? 'member' : 'members'}</span>
           </div>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-red-800 font-light">{error}</p>
+          <div className="glass-subtle rounded-2xl p-4 mb-6 border-neon-rose/20">
+            <p className="text-neon-rose">{error}</p>
           </div>
         )}
 
@@ -226,19 +228,19 @@ export default function JoinGroupPage() {
           <button
             onClick={handleJoin}
             disabled={joining}
-            className="flex-1 px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-light disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {joining ? 'Joining...' : 'Join Group'}
           </button>
           <button
             onClick={() => router.push('/')}
-            className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-light"
+            className="btn-glass"
           >
             Cancel
           </button>
         </div>
 
-        <p className="text-sm text-gray-500 font-light mt-6 text-center">
+        <p className="text-sm text-muted-2 mt-6 text-center">
           Your join request will be pending until a group admin approves it.
         </p>
       </div>

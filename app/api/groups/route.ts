@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { Group } from '@/lib/types';
+import { requireAuth, verifyUserMatch } from '@/lib/auth';
+import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
-// Generate a random 6-digit group ID
+// Generate a cryptographically secure random 6-digit group ID
 function generateGroupId(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  const num = crypto.randomInt(100000, 999999);
+  return num.toString();
 }
 
 export async function GET(request: NextRequest) {
@@ -47,13 +50,22 @@ export async function GET(request: NextRequest) {
     // Get members
     const members = await db.groupMembers.getByGroup(groupId);
     const pendingRequests = await db.groupMembers.getPendingByGroup(groupId);
+    const activeMembers = members.filter(m => m.status === 'active');
+    const resolver = group.is_public
+      ? null
+      : activeMembers.find(m => m.user_id === group.resolver_user_id) ||
+        activeMembers.find(m => m.user_id === group.created_by) ||
+        activeMembers.find(m => m.role === 'admin') ||
+        activeMembers[0] ||
+        null;
 
     return NextResponse.json({
       ...group,
-      members: members.filter(m => m.status === 'active'),
+      resolver,
+      members: activeMembers,
       pending_requests: pendingRequests,
-      member_count: members.filter(m => m.status === 'active').length,
-      admin_count: members.filter(m => m.status === 'active' && m.role === 'admin').length,
+      member_count: activeMembers.length,
+      admin_count: activeMembers.filter(m => m.role === 'admin').length,
     });
   }
 
@@ -67,9 +79,17 @@ export async function GET(request: NextRequest) {
         const members = await db.groupMembers.getByGroup(group.id);
         const activeMembers = members.filter(m => m.status === 'active');
         const userMembership = members.find(m => m.user_id === userId);
+        const resolver = group.is_public
+          ? null
+          : activeMembers.find(m => m.user_id === group.resolver_user_id) ||
+            activeMembers.find(m => m.user_id === group.created_by) ||
+            activeMembers.find(m => m.role === 'admin') ||
+            activeMembers[0] ||
+            null;
         
         return {
           ...group,
+          resolver,
           member_count: activeMembers.length,
           admin_count: activeMembers.filter(m => m.role === 'admin').length,
           user_role: userMembership?.role || 'member',
@@ -86,12 +106,18 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) return authResult;
+
   const body = await request.json();
   const { name, created_by, is_public } = body;
 
   if (!name || !created_by) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
+
+  const mismatch = verifyUserMatch(authResult.userId, created_by);
+  if (mismatch) return mismatch;
 
   // Generate unique group ID
   let groupId = generateGroupId();
@@ -127,3 +153,58 @@ export async function POST(request: NextRequest) {
   return NextResponse.json(newGroup);
 }
 
+export async function PATCH(request: NextRequest) {
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) return authResult;
+
+  const body = await request.json();
+  const { id, resolver_user_id, is_public } = body;
+
+  if (!id) {
+    return NextResponse.json({ error: 'Missing group id' }, { status: 400 });
+  }
+
+  const isAdmin = await db.groupMembers.isAdmin(id, authResult.userId);
+  if (!isAdmin) {
+    return NextResponse.json({ error: 'Only group admins can update group settings' }, { status: 403 });
+  }
+
+  if (resolver_user_id) {
+    const resolverMember = await db.groupMembers.get(id, resolver_user_id);
+    if (!resolverMember || resolverMember.status !== 'active') {
+      return NextResponse.json({ error: 'Resolver must be an active group member' }, { status: 400 });
+    }
+  }
+
+  const group = await db.groups.update(id, {
+    resolver_user_id,
+    is_public,
+  });
+
+  return NextResponse.json(group);
+}
+
+export async function DELETE(request: NextRequest) {
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) return authResult;
+
+  const { searchParams } = new URL(request.url);
+  const groupId = searchParams.get('id');
+
+  if (!groupId) {
+    return NextResponse.json({ error: 'Missing group id' }, { status: 400 });
+  }
+
+  const group = await db.groups.get(groupId);
+  if (!group) {
+    return NextResponse.json({ error: 'Group not found' }, { status: 404 });
+  }
+
+  if (group.created_by !== authResult.userId) {
+    return NextResponse.json({ error: 'Only the group creator can delete this group' }, { status: 403 });
+  }
+
+  await db.groups.delete(groupId);
+
+  return NextResponse.json({ success: true });
+}

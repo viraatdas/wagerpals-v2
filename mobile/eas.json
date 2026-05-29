@@ -25,6 +25,7 @@
     },
     "production": {
       "autoIncrement": true,
+      "credentialsSource": "remote",
       "ios": {
         "buildConfiguration": "Release"
       },
@@ -45,5 +46,3 @@
     }
   }
 }
-
-

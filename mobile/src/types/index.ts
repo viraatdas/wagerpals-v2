@@ -18,6 +18,8 @@ export interface Event {
   end_time: number;
   status: 'active' | 'resolved';
   group_id: string;
+  is_public?: boolean;
+  resolver?: GroupMember | null;
   resolution?: {
     winning_side: string;
     resolved_at: number;
@@ -75,6 +77,9 @@ export interface Group {
   id: string;
   name: string;
   created_by: string;
+  resolver_user_id?: string;
+  resolver?: GroupMember | null;
+  is_public?: boolean;
   created_at?: string;
   is_admin?: boolean;
   member_count?: number;
@@ -106,13 +111,19 @@ export interface GroupWithMembers extends Group {
   admin_count: number;
 }
 
+export interface Wallet {
+  user_id: string;
+  balance: number;
+  currency: string;
+  updated_at?: string;
+}
+
 export interface AuthUser {
   id: string;
   email?: string;
   displayName?: string;
   primaryEmail?: string;
 }
-
 
 
 

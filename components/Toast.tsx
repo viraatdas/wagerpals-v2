@@ -34,48 +34,44 @@ export default function Toast({
   const typeStyles = {
     success: {
       icon: '✓',
-      bgColor: 'bg-green-50',
-      borderColor: 'border-green-200',
-      textColor: 'text-green-800',
-      iconBg: 'bg-green-100',
+      borderColor: 'border-neon-mint/30',
+      textColor: 'text-neon-mint',
+      iconBg: 'bg-neon-mint/15',
     },
     error: {
       icon: '✕',
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-200',
-      textColor: 'text-red-800',
-      iconBg: 'bg-red-100',
+      borderColor: 'border-neon-rose/30',
+      textColor: 'text-neon-rose',
+      iconBg: 'bg-neon-rose/15',
     },
     warning: {
       icon: '⚠',
-      bgColor: 'bg-yellow-50',
-      borderColor: 'border-yellow-200',
-      textColor: 'text-yellow-800',
-      iconBg: 'bg-yellow-100',
+      borderColor: 'border-neon-amber/30',
+      textColor: 'text-neon-amber',
+      iconBg: 'bg-neon-amber/15',
     },
     info: {
       icon: 'ℹ',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-      textColor: 'text-blue-800',
-      iconBg: 'bg-blue-100',
+      borderColor: 'border-neon-cyan/30',
+      textColor: 'text-neon-cyan',
+      iconBg: 'bg-neon-cyan/15',
     },
   };
 
   const styles = typeStyles[type];
 
   return (
-    <div className="fixed top-4 right-4 z-50 animate-fade-in">
-      <div className={`${styles.bgColor} ${styles.borderColor} border rounded-lg shadow-lg p-4 max-w-md flex items-start gap-3`}>
+    <div className="fixed left-4 right-4 top-4 z-50 animate-fade-in sm:left-auto">
+      <div className={`glass-strong ${styles.borderColor} border rounded-2xl p-4 max-w-md flex items-start gap-3`}>
         <div className={`${styles.iconBg} rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0`}>
           <span className={`${styles.textColor} font-semibold text-lg`}>{styles.icon}</span>
         </div>
         <div className="flex-1">
-          <p className={`${styles.textColor} font-light`}>{message}</p>
+          <p className="text-foreground">{message}</p>
         </div>
         <button
           onClick={onClose}
-          className={`${styles.textColor} hover:opacity-70 transition-opacity flex-shrink-0`}
+          className="text-muted-2 hover:text-foreground transition-colors flex-shrink-0"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -85,4 +81,3 @@ export default function Toast({
     </div>
   );
 }
-

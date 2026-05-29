@@ -14,6 +14,14 @@ import { calculateNetResults } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
+type EventPageData = EventWithStats & {
+  is_public?: boolean;
+  resolver?: {
+    user_id: string;
+    username?: string;
+  } | null;
+};
+
 type ConfirmationModalConfig = {
   isOpen: boolean;
   title: string;
@@ -27,7 +35,7 @@ export default function EventPage() {
   const params = useParams();
   const router = useRouter();
   const user = useUser({ or: "return-null" });
-  const [event, setEvent] = useState<EventWithStats | null>(null);
+  const [event, setEvent] = useState<EventPageData | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [resolving, setResolving] = useState(false);
@@ -76,18 +84,7 @@ export default function EventPage() {
       
       setEvent(data);
 
-      // Fetch group info to check if it's public
-      if (data.group_id) {
-        try {
-          const groupResponse = await fetch(`/api/groups?id=${data.group_id}`);
-          if (groupResponse.ok) {
-            const groupData = await groupResponse.json();
-            setIsPublic(groupData.is_public || false);
-          }
-        } catch (error) {
-          console.error('Failed to fetch group info:', error);
-        }
-      }
+      setIsPublic(data.is_public || false);
 
       if (commentsResponse.ok) {
         const commentsData = await commentsResponse.json();
@@ -208,7 +205,7 @@ export default function EventPage() {
       });
 
       if (response.ok) {
-        window.location.href = '/';
+        router.push('/');
       }
     } catch (error) {
       console.error('Failed to delete event:', error);
@@ -223,22 +220,33 @@ export default function EventPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <p className="text-center text-gray-600 font-light">Loading...</p>
+      <div className="max-w-4xl mx-auto px-4 py-8 mobile-page">
+        <div className="space-y-4">
+          <div className="skeleton h-9 w-3/4 rounded-xl" />
+          <div className="skeleton h-9 w-40 rounded-full" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="skeleton h-28 rounded-2xl" />
+            <div className="skeleton h-28 rounded-2xl" />
+          </div>
+          <div className="skeleton h-40 rounded-3xl" />
+        </div>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <p className="text-center text-gray-600 font-light">Event not found</p>
+      <div className="max-w-4xl mx-auto px-4 py-8 mobile-page">
+        <div className="glass rounded-3xl text-center py-14 px-6">
+          <p className="text-muted font-light">Event not found</p>
+        </div>
       </div>
     );
   }
 
   const isEnded = event.end_time < Date.now();
-  const canResolve = event.status === 'active';
+  const paidResolver = !isPublic ? event.resolver : null;
+  const canResolve = event.status === 'active' && (!paidResolver || paidResolver.user_id === user.id);
   const username = user.displayName || user.primaryEmail || 'User';
 
   return (
@@ -254,30 +262,43 @@ export default function EventPage() {
         loading={deleting || resolving}
       />
       
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-8 mobile-page animate-rise">
         <div className="mb-6 relative">
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="absolute top-0 right-0 px-3 py-1 text-sm font-light text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute top-0 right-0 hidden sm:inline-flex px-3 py-1 text-sm font-medium text-muted-2 hover:text-neon-rose hover:bg-neon-rose/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="Delete event"
           >
             Delete
           </button>
-          
-          <h1 className="text-3xl font-light text-gray-900 mb-3 pr-20">{event.title}</h1>
-          <div className="flex items-center gap-4">
-            <div className={`px-3 py-1 rounded-lg text-sm font-light ${
-              isEnded ? 'bg-gray-100 text-gray-600' : 'bg-orange-100 text-orange-800'
-            }`}>
-              {isEnded ? 'Event ended' : <Countdown endTime={event.end_time} />}
-            </div>
+
+          <h1 className="font-display text-2xl sm:text-3xl font-semibold text-foreground mb-3 sm:pr-20 break-words leading-tight">{event.title}</h1>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            {isEnded ? (
+              <span className="chip">⏳ Event ended</span>
+            ) : (
+              <span className="chip chip-live">
+                <span className="live-dot" /> <Countdown endTime={event.end_time} />
+              </span>
+            )}
             {event.status === 'resolved' && (
-              <div className="px-3 py-1 bg-green-100 text-green-800 rounded-lg text-sm font-light">
-                Resolved
-              </div>
+              <span className="chip chip-yes">✓ Resolved</span>
+            )}
+            {paidResolver && (
+              <span className="chip text-neon-cyan bg-neon-cyan/10 border-neon-cyan/25 break-all">
+                Resolver: @{paidResolver.username || 'Unknown'}
+              </span>
             )}
           </div>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="mt-3 inline-flex sm:hidden px-3 py-1 text-sm font-medium text-neon-rose hover:bg-neon-rose/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Delete event"
+          >
+            Delete Event
+          </button>
         </div>
 
         {event.status === 'resolved' && netResults.length > 0 && (
@@ -287,7 +308,7 @@ export default function EventPage() {
               <button
                 onClick={handleUnresolve}
                 disabled={resolving}
-                className="px-4 py-2 bg-yellow-600 text-white text-sm font-light rounded-lg hover:bg-yellow-700 disabled:bg-gray-300 transition-colors"
+                className="px-4 py-2 text-neon-amber bg-neon-amber/10 border border-neon-amber/30 text-sm font-medium rounded-full hover:bg-neon-amber/20 disabled:opacity-50 transition-colors"
               >
                 {resolving ? 'Unresolving...' : 'Unresolve Event'}
               </button>
@@ -295,9 +316,15 @@ export default function EventPage() {
           </>
         )}
 
+        {event.status === 'active' && paidResolver && paidResolver.user_id !== user.id && (
+          <div className="glass rounded-2xl p-4 mb-6 text-sm text-muted font-light border-neon-cyan/20">
+            @{paidResolver.username || 'The chosen resolver'} is responsible for resolving this paid event.
+          </div>
+        )}
+
         {canResolve && (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-            <h3 className="font-light text-orange-900 mb-2">
+          <div className="glass rounded-3xl p-5 mb-6">
+            <h3 className="font-medium text-foreground mb-3">
               If this event has been resolved, what has it been resolved to?
             </h3>
             <div className="flex gap-2 flex-wrap">
@@ -306,7 +333,7 @@ export default function EventPage() {
                   key={side}
                   onClick={() => handleResolve(side)}
                   disabled={resolving}
-                  className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-300 transition-colors font-light"
+                  className="btn-primary w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {side}
                 </button>
@@ -315,18 +342,33 @@ export default function EventPage() {
           </div>
         )}
 
-        <div className="grid md:grid-cols-2 gap-4 mb-6">
-          {[event.side_a, event.side_b].map((side) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
+          {[
+            { side: event.side_a, tone: 'mint' as const },
+            { side: event.side_b, tone: 'rose' as const },
+          ].map(({ side, tone }) => {
             const stats = event.side_stats[side];
+            const isMint = tone === 'mint';
             return (
               <div
                 key={side}
-                className="bg-white border-2 border-gray-200 rounded-lg p-4"
+                className={`glass rounded-3xl p-5 relative overflow-hidden transition-shadow ${
+                  isMint
+                    ? 'border-neon-mint/25 hover:shadow-[0_0_40px_-12px_var(--neon-mint)]'
+                    : 'border-neon-rose/25 hover:shadow-[0_0_40px_-12px_var(--neon-rose)]'
+                }`}
               >
-                <h3 className="text-xl font-light text-gray-900 mb-2 border-b border-gray-200 pb-2">{side}</h3>
-                <div className="text-sm text-gray-600 font-light">
+                <div
+                  className={`absolute -top-10 -right-10 w-28 h-28 rounded-full blur-3xl opacity-40 pointer-events-none ${
+                    isMint ? 'bg-neon-mint/40' : 'bg-neon-rose/40'
+                  }`}
+                />
+                <h3 className={`text-lg sm:text-xl font-semibold mb-2 border-b border-white/10 pb-2 break-words ${
+                  isMint ? 'text-neon-mint' : 'text-neon-rose'
+                }`}>{side}</h3>
+                <div className="text-sm text-muted font-light">
                   <div>{stats.count} participants</div>
-                  <div className="text-2xl font-light text-gray-900 mt-1">${stats.total}</div>
+                  <div className="text-3xl font-semibold text-foreground mt-1 tabular-nums">${stats.total}</div>
                 </div>
               </div>
             );
@@ -348,7 +390,7 @@ export default function EventPage() {
 
         {user && (
           <div className="mb-6">
-            <h3 className="text-lg font-light text-gray-900 mb-3">Add a Comment</h3>
+            <h3 className="font-display text-lg font-semibold text-foreground mb-3">Add a Comment</h3>
             <CommentForm
               eventId={event.id}
               userId={user.id}
@@ -359,9 +401,9 @@ export default function EventPage() {
         )}
 
         <div>
-          <h2 className="text-2xl font-light text-gray-900 mb-4 border-b-2 border-orange-600 pb-2 inline-block">Ledger</h2>
+          <h2 className="font-display text-2xl font-semibold text-foreground mb-4 border-b-2 border-brand-2/50 pb-2 inline-block">Ledger</h2>
           <div className="mt-6">
-            <Ledger 
+            <Ledger
               bets={event.bets} 
               comments={comments}
               onBetDeleted={fetchEvent}
@@ -374,4 +416,3 @@ export default function EventPage() {
     </>
   );
 }
-

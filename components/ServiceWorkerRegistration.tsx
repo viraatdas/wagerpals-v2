@@ -13,16 +13,12 @@ export default function ServiceWorkerRegistration() {
       navigator.serviceWorker
         .register('/service-worker.js')
         .then((registration) => {
-          console.log('Service Worker registered:', registration);
-          
           // Silently update service worker when new version is available
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'activated') {
-                  console.log('New service worker activated');
-                }
+                // New service worker activated
               });
             }
           });

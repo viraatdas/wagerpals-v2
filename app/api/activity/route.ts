@@ -8,6 +8,8 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const offset = parseInt(searchParams.get('offset') || '0');
 
     if (!userId) {
       return NextResponse.json(
@@ -16,8 +18,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const activities = await db.activities.getByUserGroups(userId);
-    return NextResponse.json(activities);
+    const activities = await db.activities.getByUserGroups(userId, limit, offset);
+
+    return NextResponse.json(activities, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
+      },
+    });
   } catch (error: any) {
     console.error('[Activity API] Error fetching activities:', error);
     return NextResponse.json(

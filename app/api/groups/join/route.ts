@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, verifyUserMatch } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+  const authResult = await requireAuth(request);
+  if (authResult instanceof NextResponse) return authResult;
+
   try {
     const body = await request.json();
     const { group_id, user_id } = body;
@@ -11,6 +15,9 @@ export async function POST(request: NextRequest) {
     if (!group_id || !user_id) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    const mismatch = verifyUserMatch(authResult.userId, user_id);
+    if (mismatch) return mismatch;
 
     // Check if group exists
     const group = await db.groups.get(group_id);

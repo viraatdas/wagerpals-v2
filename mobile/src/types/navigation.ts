@@ -12,7 +12,7 @@ export type RootStackParamList = {
   JoinGroup: { groupId?: string };
   Profile: undefined;
   EditUsername: undefined;
-  CreateEventFromInvite: { title: string; sideA: string; sideB: string };
+  CreateEventFromInvite: { title: string; sideA: string; sideB: string; pick?: string; amount?: string };
 };
 
 export type MainTabParamList = {
@@ -26,7 +26,6 @@ declare global {
     interface RootParamList extends RootStackParamList {}
   }
 }
-
 
 
 

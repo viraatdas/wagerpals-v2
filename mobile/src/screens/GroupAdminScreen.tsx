@@ -11,7 +11,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
@@ -19,9 +19,11 @@ import { GroupMember } from '../types';
 
 export default function GroupAdminScreen() {
   const route = useRoute();
+  const navigation = useNavigation<any>();
   const { user } = useAuth();
   const { groupId } = route.params as { groupId: string };
 
+  const [group, setGroup] = useState<any>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -32,7 +34,11 @@ export default function GroupAdminScreen() {
 
   const loadMembers = async () => {
     try {
-      const data = await apiService.getGroupMembers(groupId);
+      const [groupData, data] = await Promise.all([
+        apiService.getGroup(groupId),
+        apiService.getGroupMembers(groupId),
+      ]);
+      setGroup(groupData);
       setMembers(data);
     } catch (error) {
       console.error('Failed to load members:', error);
@@ -41,6 +47,59 @@ export default function GroupAdminScreen() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
+  };
+
+  const handleResolverChange = async (member: GroupMember) => {
+    Alert.alert(
+      'Set Resolver',
+      `Make ${member.username} the resolver for paid events?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Set Resolver',
+          onPress: async () => {
+            try {
+              await apiService.updateGroupSettings({ id: groupId, resolver_user_id: member.user_id });
+              Alert.alert('Updated', `${member.username} is now the resolver.`);
+              loadMembers();
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Failed to set resolver');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handlePaidToggle = async () => {
+    try {
+      await apiService.updateGroupSettings({ id: groupId, is_public: !group?.is_public });
+      loadMembers();
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update group');
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    Alert.alert(
+      'Delete Group',
+      `Delete ${group?.name || 'this group'} and all of its events?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await apiService.deleteGroup(groupId);
+              navigation.navigate('Home' as never);
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Failed to delete group');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleAction = async (
@@ -97,6 +156,49 @@ export default function GroupAdminScreen() {
       <ScrollView
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => { setIsRefreshing(true); loadMembers(); }} />}
       >
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Paid Group Settings</Text>
+          <View style={styles.settingsCard}>
+            <Text style={styles.settingsText}>
+              Status: {group?.is_public ? 'Free points' : 'Paid wallet betting'}
+            </Text>
+            <TouchableOpacity style={styles.fullButton} onPress={handlePaidToggle}>
+              <Text style={styles.fullButtonText}>
+                {group?.is_public ? 'Enable Paid Betting' : 'Use Free Points'}
+              </Text>
+            </TouchableOpacity>
+
+            {!group?.is_public && (
+              <>
+                <Text style={styles.settingsText}>
+                  Resolver: @{group?.resolver?.username || 'Not set'}
+                </Text>
+                <View style={styles.resolverList}>
+                  {activeMembers.map((member) => (
+                    <TouchableOpacity
+                      key={member.user_id}
+                      style={[
+                        styles.resolverChip,
+                        group?.resolver?.user_id === member.user_id && styles.resolverChipSelected,
+                      ]}
+                      onPress={() => handleResolverChange(member)}
+                    >
+                      <Text
+                        style={[
+                          styles.resolverChipText,
+                          group?.resolver?.user_id === member.user_id && styles.resolverChipTextSelected,
+                        ]}
+                      >
+                        @{member.username}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+
         {/* Pending Requests */}
         {pendingMembers.length > 0 && (
           <View style={styles.section}>
@@ -174,6 +276,15 @@ export default function GroupAdminScreen() {
             </View>
           ))}
         </View>
+
+        {user?.id === group?.created_by && (
+          <View style={styles.section}>
+            <TouchableOpacity style={styles.deleteGroupButton} onPress={handleDeleteGroup}>
+              <Ionicons name="trash-outline" size={18} color="#fff" />
+              <Text style={styles.deleteGroupButtonText}>Delete Group</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -196,6 +307,53 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 12,
+  },
+  settingsCard: {
+    backgroundColor: '#fff7ed',
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+    borderRadius: 12,
+    padding: 14,
+    gap: 12,
+  },
+  settingsText: {
+    color: '#7c2d12',
+    fontSize: 14,
+  },
+  fullButton: {
+    backgroundColor: '#ea580c',
+    paddingVertical: 11,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  fullButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  resolverList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  resolverChip: {
+    borderWidth: 1,
+    borderColor: '#fdba74',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: '#fff',
+  },
+  resolverChipSelected: {
+    backgroundColor: '#dcfce7',
+    borderColor: '#86efac',
+  },
+  resolverChipText: {
+    color: '#9a3412',
+    fontSize: 13,
+  },
+  resolverChipTextSelected: {
+    color: '#166534',
+    fontWeight: '600',
   },
   memberCard: {
     flexDirection: 'row',
@@ -251,6 +409,19 @@ const styles = StyleSheet.create({
   },
   removeBtn: {
     backgroundColor: '#dc2626',
+  },
+  deleteGroupButton: {
+    backgroundColor: '#dc2626',
+    borderRadius: 10,
+    paddingVertical: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  deleteGroupButtonText: {
+    color: '#fff',
+    fontWeight: '600',
   },
   btnText: {
     color: '#fff',

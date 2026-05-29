@@ -50,34 +50,58 @@ export default function BetForm({ sides, eventId, userId, username, onBetPlaced,
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-      <h3 className="text-lg font-light mb-4 border-b border-gray-200 pb-2">Place Your Bet</h3>
+    <form onSubmit={handleSubmit} className="glass rounded-3xl p-4 sm:p-6 relative overflow-hidden animate-rise">
+      {/* decorative ember glow */}
+      <div className="pointer-events-none absolute -top-16 -right-12 h-40 w-40 rounded-full bg-brand-2/20 blur-3xl" />
 
-      <div className="space-y-6">
+      <h3 className="font-display text-lg font-semibold text-foreground mb-4 border-b border-white/10 pb-3 relative">
+        Place Your <span className="text-gradient">Bet</span>
+      </h3>
+
+      <div className="space-y-5 sm:space-y-6 relative">
         <div>
-          <label className="block text-sm font-light text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-muted mb-3">
             Pick a side
           </label>
-          <div className="grid grid-cols-2 gap-2">
-            {sides.map((side) => (
-              <button
-                key={side}
-                type="button"
-                onClick={() => setSelectedSide(side)}
-                className={`px-4 py-2 rounded-lg font-light transition-colors ${
-                  selectedSide === side
-                    ? 'bg-orange-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {side}
-              </button>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {sides.map((side, i) => {
+              const selected = selectedSide === side;
+              const tone = i % 2 === 0 ? 'mint' : 'rose';
+              const selectedClasses =
+                tone === 'mint'
+                  ? 'border-neon-mint/60 bg-neon-mint/10 text-neon-mint shadow-glow-mint'
+                  : 'border-neon-rose/60 bg-neon-rose/10 text-neon-rose shadow-glow-rose';
+              return (
+                <button
+                  key={side}
+                  type="button"
+                  onClick={() => setSelectedSide(side)}
+                  className={`relative px-4 py-3.5 rounded-2xl font-semibold border transition-all break-words ${
+                    selected
+                      ? selectedClasses
+                      : 'border-white/10 bg-white/5 text-foreground/90 hover:bg-white/[0.08] hover:border-white/20'
+                  }`}
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <span
+                      className={`h-2 w-2 rounded-full transition-all ${
+                        selected
+                          ? tone === 'mint'
+                            ? 'bg-neon-mint shadow-glow-mint'
+                            : 'bg-neon-rose shadow-glow-rose'
+                          : 'bg-white/20'
+                      }`}
+                    />
+                    {side}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         <div>
-          <label htmlFor="amount" className="block text-sm font-light text-gray-700 mb-3">
+          <label htmlFor="amount" className="block text-sm font-medium text-muted mb-3">
             Amount ({isPublic ? 'pts' : '$'})
           </label>
           <input
@@ -87,14 +111,15 @@ export default function BetForm({ sides, eventId, userId, username, onBetPlaced,
             onChange={(e) => setAmount(e.target.value)}
             min="0.01"
             step="0.01"
-            className="w-full px-3 py-2 font-light border-b-2 border-gray-300 focus:border-orange-500 outline-none transition-colors bg-transparent"
+            className="w-full bg-white/5 border border-white/10 text-foreground placeholder:text-muted-2 rounded-xl px-3 py-2.5 tabular-nums focus:outline-none focus:border-brand-2/50 focus:ring-2 focus:ring-brand-2/20 transition"
+            inputMode="decimal"
             placeholder="10.00"
             required
           />
         </div>
 
         <div>
-          <label htmlFor="note" className="block text-sm font-light text-gray-700 mb-3">
+          <label htmlFor="note" className="block text-sm font-medium text-muted mb-3">
             Note (optional)
           </label>
           <textarea
@@ -102,7 +127,7 @@ export default function BetForm({ sides, eventId, userId, username, onBetPlaced,
             value={note}
             onChange={(e) => setNote(e.target.value)}
             rows={2}
-            className="w-full px-3 py-2 font-light border-b-2 border-gray-300 focus:border-orange-500 outline-none transition-colors bg-transparent resize-none"
+            className="w-full bg-white/5 border border-white/10 text-foreground placeholder:text-muted-2 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:border-brand-2/50 focus:ring-2 focus:ring-brand-2/20 transition"
             placeholder="Your prediction or reasoning..."
           />
         </div>
@@ -110,7 +135,7 @@ export default function BetForm({ sides, eventId, userId, username, onBetPlaced,
         <button
           type="submit"
           disabled={loading || !amount || parseFloat(amount) <= 0}
-          className="w-full bg-orange-600 text-white py-3 rounded-xl font-light hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all hover:shadow-lg"
+          className="btn-primary w-full py-3 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
         >
           {loading ? 'Placing...' : 'Place Bet'}
         </button>
@@ -118,4 +143,3 @@ export default function BetForm({ sides, eventId, userId, username, onBetPlaced,
     </form>
   );
 }
-
