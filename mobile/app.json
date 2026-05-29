@@ -67,7 +67,8 @@
           "color": "#ea580c",
           "sounds": []
         }
-      ]
+      ],
+      "./plugins/imessage-extension/withIMessageExtension"
     ],
     "extra": {
       "apiUrl": "${EXPO_PUBLIC_API_URL}",

@@ -337,16 +337,22 @@ export default function ProfilePage() {
               </button>
             </div>
           ) : depositClientSecret && stripePromise && walletAction === 'deposit' ? (
-            <div className="bg-white rounded-2xl p-3 text-gray-900">
+            <div className="glass-subtle rounded-2xl p-3">
               <Elements
                 stripe={stripePromise}
                 options={{
                   clientSecret: depositClientSecret,
                   appearance: {
-                    theme: 'stripe',
+                    theme: 'night',
                     variables: {
-                      colorPrimary: '#ea580c',
-                      borderRadius: '8px',
+                      colorPrimary: '#ff3d81',
+                      colorBackground: '#0d0d1a',
+                      colorText: '#f4f5fb',
+                      colorTextSecondary: '#9a9eb8',
+                      colorTextPlaceholder: '#6f7390',
+                      colorDanger: '#ff5d7e',
+                      borderRadius: '12px',
+                      fontFamily: 'Inter, system-ui, sans-serif',
                     },
                   },
                 }}
@@ -527,7 +533,7 @@ function DepositPaymentForm({
           type="button"
           onClick={onCancel}
           disabled={loading}
-          className="w-full sm:w-auto px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 disabled:opacity-50"
+          className="btn-glass w-full sm:w-auto px-4 py-2.5 disabled:opacity-50"
         >
           Cancel
         </button>
