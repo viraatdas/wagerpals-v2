@@ -15,6 +15,7 @@ import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
 import { ActivityItem } from '../types';
 import { formatDate, formatCurrency } from '../utils/helpers';
+import { colors, radius, spacing, glow } from '../theme';
 
 export default function ActivityScreen() {
   const { user } = useAuth();
@@ -46,15 +47,15 @@ export default function ActivityScreen() {
   const getActivityIcon = (type: string): { name: keyof typeof Ionicons.glyphMap; color: string; bg: string } => {
     switch (type) {
       case 'bet':
-        return { name: 'cash-outline', color: '#10b981', bg: '#d1fae5' };
+        return { name: 'cash-outline', color: colors.cyan, bg: colors.cyanFill };
       case 'resolution':
-        return { name: 'trophy-outline', color: '#f59e0b', bg: '#fef3c7' };
+        return { name: 'trophy-outline', color: colors.mint, bg: colors.mintFill };
       case 'event_created':
-        return { name: 'add-circle-outline', color: '#3b82f6', bg: '#dbeafe' };
+        return { name: 'add-circle-outline', color: colors.violet, bg: 'rgba(139,123,255,0.12)' };
       case 'comment':
-        return { name: 'chatbubble-outline', color: '#8b5cf6', bg: '#ede9fe' };
+        return { name: 'chatbubble-outline', color: colors.amber, bg: 'rgba(255,194,61,0.12)' };
       default:
-        return { name: 'ellipse', color: '#6b7280', bg: '#f3f4f6' };
+        return { name: 'ellipse', color: colors.textMuted, bg: colors.surfaceGlass };
     }
   };
 
@@ -87,8 +88,9 @@ export default function ActivityScreen() {
 
     return (
       <View style={[styles.activityCard, index === 0 && styles.firstCard]}>
-        <View style={[styles.iconContainer, { backgroundColor: icon.bg }]}>
+        <View style={[styles.iconContainer, { backgroundColor: icon.bg, borderColor: icon.color }]}>
           <Ionicons name={icon.name} size={20} color={icon.color} />
+          <View style={[styles.accentDot, { backgroundColor: icon.color }]} />
         </View>
         <View style={styles.activityContent}>
           <View style={styles.activityHeader}>
@@ -113,7 +115,7 @@ export default function ActivityScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ea580c" />
+        <ActivityIndicator size="large" color={colors.brand2} />
         <Text style={styles.loadingText}>Loading activity...</Text>
       </View>
     );
@@ -121,8 +123,8 @@ export default function ActivityScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="dark-content" />
-      
+      <StatusBar barStyle="light-content" />
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Activity</Text>
@@ -137,17 +139,17 @@ export default function ActivityScreen() {
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl 
-              refreshing={isRefreshing} 
+            <RefreshControl
+              refreshing={isRefreshing}
               onRefresh={handleRefresh}
-              tintColor="#ea580c"
+              tintColor={colors.brand2}
             />
           }
         />
       ) : (
         <View style={styles.emptyState}>
           <View style={styles.emptyIconContainer}>
-            <Ionicons name="pulse-outline" size={48} color="#d1d5db" />
+            <Ionicons name="pulse-outline" size={48} color={colors.textFaint} />
           </View>
           <Text style={styles.emptyStateText}>No activity yet</Text>
           <Text style={styles.emptyStateSubtext}>
@@ -162,18 +164,18 @@ export default function ActivityScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textMuted,
   },
   header: {
     paddingHorizontal: 20,
@@ -183,12 +185,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1f2937',
+    color: colors.text,
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textMuted,
   },
   list: {
     paddingHorizontal: 20,
@@ -196,15 +198,12 @@ const styles = StyleSheet.create({
   },
   activityCard: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
   },
   firstCard: {
     marginTop: 4,
@@ -213,9 +212,18 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
+    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
+  },
+  accentDot: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
   },
   activityContent: {
     flex: 1,
@@ -229,17 +237,17 @@ const styles = StyleSheet.create({
   activityTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
     flex: 1,
     marginRight: 8,
   },
   activityTime: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: colors.textFaint,
   },
   activityDescription: {
     fontSize: 14,
-    color: '#4b5563',
+    color: colors.textMuted,
     lineHeight: 20,
     marginBottom: 8,
   },
@@ -249,18 +257,18 @@ const styles = StyleSheet.create({
   },
   eventTitle: {
     fontSize: 12,
-    color: '#ea580c',
+    color: colors.brand2,
     fontWeight: '500',
     flex: 1,
   },
   metaDot: {
     fontSize: 12,
-    color: '#d1d5db',
+    color: colors.textFaint,
     marginHorizontal: 6,
   },
   groupName: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: colors.textFaint,
   },
   emptyState: {
     flex: 1,
@@ -272,20 +280,22 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
   },
   emptyStateText: {
     fontSize: 18,
-    color: '#374151',
+    color: colors.text,
     fontWeight: '500',
     marginBottom: 8,
   },
   emptyStateSubtext: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: colors.textFaint,
     textAlign: 'center',
     lineHeight: 20,
     paddingHorizontal: 40,

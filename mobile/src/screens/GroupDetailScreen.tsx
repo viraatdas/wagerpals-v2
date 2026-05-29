@@ -15,10 +15,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
 import { Event, GroupMember, Wallet } from '../types';
 import { formatDate, formatCurrency } from '../utils/helpers';
+import { colors, gradients, radius, glow } from '../theme';
 
 export default function GroupDetailScreen() {
   const navigation = useNavigation<any>();
@@ -147,7 +149,7 @@ export default function GroupDetailScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ea580c" />
+        <ActivityIndicator size="large" color={colors.brand2} />
       </View>
     );
   }
@@ -157,7 +159,7 @@ export default function GroupDetailScreen() {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
         <View style={styles.pendingContainer}>
-          <Ionicons name="hourglass-outline" size={64} color="#f59e0b" />
+          <Ionicons name="hourglass-outline" size={64} color={colors.amber} />
           <Text style={styles.pendingTitle}>Pending Approval</Text>
           <Text style={styles.pendingText}>
             Your request to join "{group?.name}" is waiting for admin approval.
@@ -181,7 +183,7 @@ export default function GroupDetailScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.brand2} />}
       >
         {/* Group Header */}
         <View style={styles.header}>
@@ -200,9 +202,16 @@ export default function GroupDetailScreen() {
                 <Text style={styles.walletLabel}>Paid group wallet</Text>
                 <Text style={styles.walletBalance}>{formatCurrency(wallet?.balance || 0)}</Text>
               </View>
-              <TouchableOpacity style={styles.depositButton} onPress={handleDeposit}>
-                <Ionicons name="card-outline" size={18} color="#fff" />
-                <Text style={styles.depositButtonText}>Deposit</Text>
+              <TouchableOpacity style={styles.depositButtonWrap} onPress={handleDeposit} activeOpacity={0.85}>
+                <LinearGradient
+                  colors={gradients.brand}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.depositButton}
+                >
+                  <Ionicons name="card-outline" size={18} color="#fff" />
+                  <Text style={styles.depositButtonText}>Deposit</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </View>
             <Text style={styles.resolverText}>
@@ -214,7 +223,7 @@ export default function GroupDetailScreen() {
         {/* Action Buttons */}
         <View style={styles.actionsRow}>
           <TouchableOpacity style={styles.actionButton} onPress={handleShareInvite}>
-            <Ionicons name="share-outline" size={20} color="#ea580c" />
+            <Ionicons name="share-outline" size={20} color={colors.brand2} />
             <Text style={styles.actionButtonText}>Invite</Text>
           </TouchableOpacity>
 
@@ -223,7 +232,7 @@ export default function GroupDetailScreen() {
               style={styles.actionButton}
               onPress={() => navigation.navigate('GroupAdmin' as never, { groupId } as never)}
             >
-              <Ionicons name="settings-outline" size={20} color="#ea580c" />
+              <Ionicons name="settings-outline" size={20} color={colors.brand2} />
               <Text style={styles.actionButtonText}>Manage</Text>
             </TouchableOpacity>
           )}
@@ -232,7 +241,7 @@ export default function GroupDetailScreen() {
             style={styles.actionButton}
             onPress={() => navigation.navigate('CreateEvent' as never, { groupId } as never)}
           >
-            <Ionicons name="add-circle-outline" size={20} color="#ea580c" />
+            <Ionicons name="add-circle-outline" size={20} color={colors.brand2} />
             <Text style={styles.actionButtonText}>New Event</Text>
           </TouchableOpacity>
         </View>
@@ -289,12 +298,13 @@ export default function GroupDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.bg,
   },
   pendingContainer: {
     flex: 1,
@@ -305,40 +315,44 @@ const styles = StyleSheet.create({
   pendingTitle: {
     fontSize: 24,
     fontWeight: '600',
+    color: colors.text,
     marginTop: 16,
     marginBottom: 8,
   },
   pendingText: {
     fontSize: 16,
-    color: '#666',
+    color: colors.textMuted,
     textAlign: 'center',
     marginBottom: 8,
   },
   pendingSubtext: {
     fontSize: 14,
-    color: '#999',
+    color: colors.textFaint,
     textAlign: 'center',
     marginBottom: 24,
   },
   backButton: {
     paddingHorizontal: 24,
     paddingVertical: 12,
-    backgroundColor: '#ea580c',
-    borderRadius: 8,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.pill,
   },
   backButtonText: {
-    color: '#fff',
+    color: colors.text,
     fontSize: 16,
     fontWeight: '500',
   },
   header: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: colors.border,
   },
   groupName: {
     fontSize: 28,
     fontWeight: '600',
+    color: colors.text,
     marginBottom: 8,
   },
   groupInfo: {
@@ -347,15 +361,15 @@ const styles = StyleSheet.create({
   },
   groupCode: {
     fontSize: 14,
-    color: '#666',
+    color: colors.textMuted,
   },
   dot: {
     marginHorizontal: 8,
-    color: '#666',
+    color: colors.textMuted,
   },
   memberCount: {
     fontSize: 14,
-    color: '#666',
+    color: colors.textMuted,
   },
   actionsRow: {
     flexDirection: 'row',
@@ -366,10 +380,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 16,
     padding: 16,
-    backgroundColor: '#fff7ed',
-    borderRadius: 14,
+    backgroundColor: colors.surfaceGlass,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: '#fed7aa',
+    borderColor: colors.border,
   },
   walletHeader: {
     flexDirection: 'row',
@@ -379,22 +393,25 @@ const styles = StyleSheet.create({
   },
   walletLabel: {
     fontSize: 13,
-    color: '#9a3412',
+    color: colors.textMuted,
     marginBottom: 4,
   },
   walletBalance: {
     fontSize: 24,
-    color: '#111827',
+    color: colors.mint,
     fontWeight: '700',
+  },
+  depositButtonWrap: {
+    borderRadius: radius.pill,
+    ...glow(colors.brand2),
   },
   depositButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#ea580c',
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: radius.pill,
   },
   depositButtonText: {
     color: '#fff',
@@ -402,7 +419,7 @@ const styles = StyleSheet.create({
   },
   resolverText: {
     marginTop: 10,
-    color: '#7c2d12',
+    color: colors.textMuted,
     fontSize: 13,
   },
   actionButton: {
@@ -411,14 +428,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 12,
-    backgroundColor: '#fff5f3',
-    borderRadius: 8,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.pill,
     gap: 6,
   },
   actionButtonText: {
-    color: '#ea580c',
+    color: colors.brand2,
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   section: {
     padding: 16,
@@ -426,13 +445,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
+    color: colors.text,
     marginBottom: 12,
   },
   eventCard: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surfaceGlass,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
     padding: 16,
     marginBottom: 12,
   },
@@ -446,22 +466,24 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 18,
     fontWeight: '500',
+    color: colors.text,
     marginRight: 8,
   },
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: radius.pill,
   },
   activeBadge: {
-    backgroundColor: '#d1fae5',
+    backgroundColor: colors.mintFill,
   },
   endedBadge: {
-    backgroundColor: '#e5e7eb',
+    backgroundColor: colors.surfaceGlassStrong,
   },
   statusText: {
     fontSize: 12,
     fontWeight: '500',
+    color: colors.text,
   },
   sidesRow: {
     flexDirection: 'row',
@@ -471,26 +493,27 @@ const styles = StyleSheet.create({
   sideBox: {
     flex: 1,
     padding: 12,
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
+    backgroundColor: colors.surfaceGlassStrong,
+    borderRadius: radius.md,
   },
   sideText: {
     fontSize: 14,
     fontWeight: '500',
+    color: colors.text,
     textAlign: 'center',
   },
   vsText: {
     marginHorizontal: 8,
     fontSize: 12,
-    color: '#999',
+    color: colors.textFaint,
   },
   eventTime: {
     fontSize: 12,
-    color: '#666',
+    color: colors.textMuted,
   },
   winnerText: {
     fontSize: 14,
-    color: '#ea580c',
+    color: colors.mint,
     fontWeight: '500',
   },
   emptyState: {
@@ -499,12 +522,12 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 20,
-    color: '#666',
+    color: colors.textMuted,
     marginBottom: 8,
   },
   emptyStateSubtext: {
     fontSize: 16,
-    color: '#999',
+    color: colors.textFaint,
     textAlign: 'center',
   },
   memberItem: {
@@ -512,26 +535,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: colors.border,
   },
   memberName: {
     flex: 1,
     fontSize: 16,
+    color: colors.text,
   },
   adminBadge: {
-    backgroundColor: '#fed7aa',
+    backgroundColor: colors.brandFill,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: radius.pill,
   },
   adminBadgeText: {
     fontSize: 12,
-    color: '#9a3412',
+    color: colors.brand2,
   },
   moreText: {
     marginTop: 8,
     fontSize: 14,
-    color: '#666',
+    color: colors.textMuted,
     fontStyle: 'italic',
   },
 });

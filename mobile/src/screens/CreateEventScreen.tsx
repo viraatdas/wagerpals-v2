@@ -12,9 +12,11 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import type { RouteProp } from '@react-navigation/native';
+import { colors, gradients, radius, glow, inputStyle } from '../theme';
 import type { RootStackParamList } from '../types/navigation';
 import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
@@ -125,7 +127,7 @@ export default function CreateEventScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="Will it rain tomorrow?"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.textFaint}
                 value={title}
                 onChangeText={setTitle}
                 autoCapitalize="sentences"
@@ -137,14 +139,14 @@ export default function CreateEventScreen() {
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Sides</Text>
               <View style={styles.sidesContainer}>
-                <View style={styles.sideInputWrapper}>
-                  <View style={styles.sideIndicator}>
-                    <Text style={styles.sideIndicatorText}>A</Text>
+                <View style={[styles.sideInputWrapper, styles.sideInputWrapperA]}>
+                  <View style={[styles.sideIndicator, styles.sideIndicatorA]}>
+                    <Text style={[styles.sideIndicatorText, styles.sideIndicatorTextA]}>A</Text>
                   </View>
                   <TextInput
                     style={styles.sideInput}
                     placeholder="e.g. Yes"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor={colors.textFaint}
                     value={sideA}
                     onChangeText={setSideA}
                     autoCapitalize="sentences"
@@ -154,14 +156,14 @@ export default function CreateEventScreen() {
                 <View style={styles.vsContainer}>
                   <Text style={styles.vsText}>vs</Text>
                 </View>
-                <View style={styles.sideInputWrapper}>
-                  <View style={styles.sideIndicator}>
-                    <Text style={styles.sideIndicatorText}>B</Text>
+                <View style={[styles.sideInputWrapper, styles.sideInputWrapperB]}>
+                  <View style={[styles.sideIndicator, styles.sideIndicatorB]}>
+                    <Text style={[styles.sideIndicatorText, styles.sideIndicatorTextB]}>B</Text>
                   </View>
                   <TextInput
                     style={styles.sideInput}
                     placeholder="e.g. No"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor={colors.textFaint}
                     value={sideB}
                     onChangeText={setSideB}
                     autoCapitalize="sentences"
@@ -176,11 +178,11 @@ export default function CreateEventScreen() {
               <Text style={styles.label}>When does this end?</Text>
               <View style={styles.dateTimeRow}>
                 <View style={styles.dateTimeField}>
-                  <Ionicons name="calendar-outline" size={18} color="#ea580c" style={styles.dateIcon} />
+                  <Ionicons name="calendar-outline" size={18} color={colors.brand2} style={styles.dateIcon} />
                   <TextInput
                     style={styles.dateTimeInput}
                     placeholder="YYYY-MM-DD"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor={colors.textFaint}
                     value={endDate}
                     onChangeText={setEndDate}
                     keyboardType="numbers-and-punctuation"
@@ -188,11 +190,11 @@ export default function CreateEventScreen() {
                   />
                 </View>
                 <View style={styles.dateTimeField}>
-                  <Ionicons name="time-outline" size={18} color="#ea580c" style={styles.dateIcon} />
+                  <Ionicons name="time-outline" size={18} color={colors.brand2} style={styles.dateIcon} />
                   <TextInput
                     style={styles.dateTimeInput}
                     placeholder="HH:MM"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor={colors.textFaint}
                     value={endTime}
                     onChangeText={setEndTime}
                     keyboardType="numbers-and-punctuation"
@@ -205,19 +207,26 @@ export default function CreateEventScreen() {
 
             {/* Submit Button */}
             <TouchableOpacity
-              style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
               onPress={handleCreate}
               disabled={isSubmitting}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
+              style={isSubmitting && styles.submitButtonDisabled}
             >
-              {isSubmitting ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <>
-                  <Ionicons name="add-circle-outline" size={20} color="#fff" />
-                  <Text style={styles.submitButtonText}>Create Event</Text>
-                </>
-              )}
+              <LinearGradient
+                colors={gradients.brand}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.submitButton}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color={colors.white} size="small" />
+                ) : (
+                  <>
+                    <Ionicons name="add-circle-outline" size={20} color={colors.white} />
+                    <Text style={styles.submitButtonText}>Create Event</Text>
+                  </>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -229,7 +238,7 @@ export default function CreateEventScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   flex: {
     flex: 1,
@@ -244,23 +253,20 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#0f172a',
+    color: colors.text,
     marginBottom: 4,
   },
   subheading: {
     fontSize: 15,
-    color: '#6b7280',
+    color: colors.textMuted,
     fontWeight: '400',
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.xl,
     padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
   },
   fieldGroup: {
     marginBottom: 24,
@@ -268,20 +274,15 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#6b7280',
+    color: colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 10,
   },
   input: {
-    backgroundColor: '#f9fafb',
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
+    ...inputStyle,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    fontSize: 16,
-    color: '#1f2937',
   },
   sidesContainer: {
     gap: 12,
@@ -289,31 +290,48 @@ const styles = StyleSheet.create({
   sideInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
     overflow: 'hidden',
+  },
+  sideInputWrapperA: {
+    borderColor: colors.mint,
+  },
+  sideInputWrapperB: {
+    borderColor: colors.rose,
   },
   sideIndicator: {
     width: 40,
     height: '100%',
-    backgroundColor: '#fff5f3',
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 14,
   },
+  sideIndicatorA: {
+    backgroundColor: colors.mintFill,
+  },
+  sideIndicatorB: {
+    backgroundColor: colors.roseFill,
+  },
   sideIndicatorText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#ea580c',
+    color: colors.text,
+  },
+  sideIndicatorTextA: {
+    color: colors.mint,
+  },
+  sideIndicatorTextB: {
+    color: colors.rose,
   },
   sideInput: {
     flex: 1,
     paddingHorizontal: 14,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#1f2937',
+    color: colors.text,
   },
   vsContainer: {
     alignItems: 'center',
@@ -321,7 +339,7 @@ const styles = StyleSheet.create({
   vsText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#94a3b8',
+    color: colors.textFaint,
   },
   dateTimeRow: {
     flexDirection: 'row',
@@ -331,10 +349,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
     overflow: 'hidden',
   },
   dateIcon: {
@@ -345,34 +363,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#1f2937',
+    color: colors.text,
   },
   hint: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: colors.textFaint,
     marginTop: 6,
   },
   submitButton: {
-    backgroundColor: '#ea580c',
-    borderRadius: 12,
+    borderRadius: radius.pill,
     paddingVertical: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    shadowColor: '#ea580c',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    ...glow(colors.brand2),
   },
   submitButtonDisabled: {
-    backgroundColor: '#9ca3af',
-    shadowOpacity: 0,
+    opacity: 0.5,
   },
   submitButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

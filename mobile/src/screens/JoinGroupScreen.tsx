@@ -11,8 +11,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
+import { colors, gradients, radius, glow, inputStyle } from '../theme';
 
 export default function JoinGroupScreen() {
   const navigation = useNavigation<any>();
@@ -63,6 +65,7 @@ export default function JoinGroupScreen() {
         <TextInput
           style={styles.input}
           placeholder="000000"
+          placeholderTextColor={colors.textFaint}
           value={groupCode}
           onChangeText={setGroupCode}
           maxLength={6}
@@ -71,15 +74,23 @@ export default function JoinGroupScreen() {
         />
 
         <TouchableOpacity
-          style={[styles.button, isLoading && styles.buttonDisabled]}
+          style={[styles.buttonWrap, isLoading && styles.buttonDisabled]}
           onPress={handleJoin}
           disabled={isLoading || !groupCode}
+          activeOpacity={0.85}
         >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Join Group</Text>
-          )}
+          <LinearGradient
+            colors={gradients.brand}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.button}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Join Group</Text>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
 
         <Text style={styles.note}>
@@ -93,7 +104,7 @@ export default function JoinGroupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg,
   },
   content: {
     flex: 1,
@@ -102,31 +113,32 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '300',
+    color: colors.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: colors.textMuted,
     marginBottom: 32,
   },
   input: {
+    ...inputStyle,
     height: 60,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 16,
     fontSize: 24,
     textAlign: 'center',
     letterSpacing: 8,
     marginBottom: 24,
   },
+  buttonWrap: {
+    borderRadius: radius.pill,
+    marginBottom: 16,
+    ...glow(colors.brand2),
+  },
   button: {
     height: 50,
-    borderRadius: 8,
-    backgroundColor: '#ea580c',
+    borderRadius: radius.pill,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
   },
   buttonDisabled: {
     opacity: 0.5,
@@ -134,11 +146,11 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   note: {
     fontSize: 14,
-    color: '#666',
+    color: colors.textMuted,
     textAlign: 'center',
     fontStyle: 'italic',
   },

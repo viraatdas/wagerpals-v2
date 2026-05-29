@@ -13,9 +13,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
 import { GroupMember } from '../types';
+import { colors, gradients, radius, glow } from '../theme';
 
 export default function GroupAdminScreen() {
   const route = useRoute();
@@ -141,7 +143,7 @@ export default function GroupAdminScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ea580c" />
+        <ActivityIndicator size="large" color={colors.brand2} />
       </View>
     );
   }
@@ -154,7 +156,7 @@ export default function GroupAdminScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => { setIsRefreshing(true); loadMembers(); }} />}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => { setIsRefreshing(true); loadMembers(); }} tintColor={colors.brand2} />}
       >
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Paid Group Settings</Text>
@@ -162,10 +164,17 @@ export default function GroupAdminScreen() {
             <Text style={styles.settingsText}>
               Status: {group?.is_public ? 'Free points' : 'Paid wallet betting'}
             </Text>
-            <TouchableOpacity style={styles.fullButton} onPress={handlePaidToggle}>
-              <Text style={styles.fullButtonText}>
-                {group?.is_public ? 'Enable Paid Betting' : 'Use Free Points'}
-              </Text>
+            <TouchableOpacity style={styles.fullButtonWrap} onPress={handlePaidToggle} activeOpacity={0.85}>
+              <LinearGradient
+                colors={gradients.brand}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.fullButton}
+              >
+                <Text style={styles.fullButtonText}>
+                  {group?.is_public ? 'Enable Paid Betting' : 'Use Free Points'}
+                </Text>
+              </LinearGradient>
             </TouchableOpacity>
 
             {!group?.is_public && (
@@ -214,13 +223,13 @@ export default function GroupAdminScreen() {
                     style={[styles.actionBtn, styles.approveBtn]}
                     onPress={() => handleAction('approve', member.user_id, member.username || '')}
                   >
-                    <Ionicons name="checkmark" size={20} color="#fff" />
+                    <Ionicons name="checkmark" size={20} color={colors.mint} />
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.actionBtn, styles.declineBtn]}
                     onPress={() => handleAction('decline', member.user_id, member.username || '')}
                   >
-                    <Ionicons name="close" size={20} color="#fff" />
+                    <Ionicons name="close" size={20} color={colors.rose} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -261,16 +270,24 @@ export default function GroupAdminScreen() {
               </View>
               <View style={styles.actions}>
                 <TouchableOpacity
-                  style={[styles.actionBtn, styles.secondaryBtn]}
+                  style={styles.promoteBtnWrap}
                   onPress={() => handleAction('promote', member.user_id, member.username || '')}
+                  activeOpacity={0.85}
                 >
-                  <Text style={styles.btnText}>Promote</Text>
+                  <LinearGradient
+                    colors={gradients.brand}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.actionBtn}
+                  >
+                    <Text style={styles.btnText}>Promote</Text>
+                  </LinearGradient>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.actionBtn, styles.removeBtn]}
                   onPress={() => handleAction('remove', member.user_id, member.username || '')}
                 >
-                  <Ionicons name="trash-outline" size={18} color="#fff" />
+                  <Ionicons name="trash-outline" size={18} color={colors.rose} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -280,7 +297,7 @@ export default function GroupAdminScreen() {
         {user?.id === group?.created_by && (
           <View style={styles.section}>
             <TouchableOpacity style={styles.deleteGroupButton} onPress={handleDeleteGroup}>
-              <Ionicons name="trash-outline" size={18} color="#fff" />
+              <Ionicons name="trash-outline" size={18} color={colors.rose} />
               <Text style={styles.deleteGroupButtonText}>Delete Group</Text>
             </TouchableOpacity>
           </View>
@@ -293,12 +310,13 @@ export default function GroupAdminScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.bg,
   },
   section: {
     padding: 16,
@@ -306,24 +324,28 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
+    color: colors.text,
     marginBottom: 12,
   },
   settingsCard: {
-    backgroundColor: '#fff7ed',
+    backgroundColor: colors.surfaceGlass,
     borderWidth: 1,
-    borderColor: '#fed7aa',
-    borderRadius: 12,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
     padding: 14,
     gap: 12,
   },
   settingsText: {
-    color: '#7c2d12',
+    color: colors.textMuted,
     fontSize: 14,
   },
+  fullButtonWrap: {
+    borderRadius: radius.pill,
+    ...glow(colors.brand2),
+  },
   fullButton: {
-    backgroundColor: '#ea580c',
     paddingVertical: 11,
-    borderRadius: 8,
+    borderRadius: radius.pill,
     alignItems: 'center',
   },
   fullButtonText: {
@@ -337,22 +359,22 @@ const styles = StyleSheet.create({
   },
   resolverChip: {
     borderWidth: 1,
-    borderColor: '#fdba74',
-    borderRadius: 999,
+    borderColor: colors.border,
+    borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surfaceGlass,
   },
   resolverChipSelected: {
-    backgroundColor: '#dcfce7',
-    borderColor: '#86efac',
+    backgroundColor: colors.mintFill,
+    borderColor: colors.mint,
   },
   resolverChipText: {
-    color: '#9a3412',
+    color: colors.textMuted,
     fontSize: 13,
   },
   resolverChipTextSelected: {
-    color: '#166534',
+    color: colors.mint,
     fontWeight: '600',
   },
   memberCard: {
@@ -360,8 +382,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 12,
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
     marginBottom: 8,
   },
   memberInfo: {
@@ -370,22 +394,23 @@ const styles = StyleSheet.create({
   memberName: {
     fontSize: 16,
     fontWeight: '500',
+    color: colors.text,
     marginBottom: 4,
   },
   memberStatus: {
     fontSize: 14,
-    color: '#666',
+    color: colors.textMuted,
   },
   adminBadge: {
-    backgroundColor: '#fed7aa',
+    backgroundColor: colors.brandFill,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: radius.pill,
     alignSelf: 'flex-start',
   },
   adminBadgeText: {
     fontSize: 12,
-    color: '#9a3412',
+    color: colors.brand2,
   },
   actions: {
     flexDirection: 'row',
@@ -393,26 +418,40 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     padding: 8,
-    borderRadius: 6,
+    borderRadius: radius.pill,
     minWidth: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },
   approveBtn: {
-    backgroundColor: '#10b981',
+    backgroundColor: colors.mintFill,
+    borderWidth: 1,
+    borderColor: colors.mint,
   },
   declineBtn: {
-    backgroundColor: '#ef4444',
+    backgroundColor: colors.roseFill,
+    borderWidth: 1,
+    borderColor: colors.rose,
   },
   secondaryBtn: {
-    backgroundColor: '#ea580c',
+    backgroundColor: colors.surfaceGlassStrong,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  promoteBtnWrap: {
+    borderRadius: radius.pill,
+    ...glow(colors.brand2),
   },
   removeBtn: {
-    backgroundColor: '#dc2626',
+    backgroundColor: colors.roseFill,
+    borderWidth: 1,
+    borderColor: colors.rose,
   },
   deleteGroupButton: {
-    backgroundColor: '#dc2626',
-    borderRadius: 10,
+    backgroundColor: colors.roseFill,
+    borderWidth: 1,
+    borderColor: colors.rose,
+    borderRadius: radius.lg,
     paddingVertical: 13,
     alignItems: 'center',
     justifyContent: 'center',
@@ -420,12 +459,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   deleteGroupButtonText: {
-    color: '#fff',
+    color: colors.rose,
     fontWeight: '600',
   },
   btnText: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });

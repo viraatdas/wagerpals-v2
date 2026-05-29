@@ -13,9 +13,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
 import { validateUsername } from '../utils/helpers';
+import { colors, gradients, radius, glow } from '../theme';
 
 interface UsernameSetupScreenProps {
   onUsernameSet?: () => void;
@@ -56,7 +58,7 @@ export default function UsernameSetupScreen({ onUsernameSet }: UsernameSetupScre
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -64,9 +66,14 @@ export default function UsernameSetupScreen({ onUsernameSet }: UsernameSetupScre
         <View style={styles.content}>
           {/* Header */}
           <View style={styles.header}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="person-add" size={36} color="#ea580c" />
-            </View>
+            <LinearGradient
+              colors={gradients.brand}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.iconContainer}
+            >
+              <Ionicons name="person-add" size={36} color="#fff" />
+            </LinearGradient>
             <Text style={styles.title}>Create Your Profile</Text>
             <Text style={styles.subtitle}>
               Choose a username that others will see when you place bets
@@ -81,7 +88,7 @@ export default function UsernameSetupScreen({ onUsernameSet }: UsernameSetupScre
               <TextInput
                 style={styles.input}
                 placeholder="your_username"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.textFaint}
                 value={username}
                 onChangeText={(text) => {
                   setUsername(text.toLowerCase().replace(/[^a-z0-9_-]/g, ''));
@@ -94,14 +101,14 @@ export default function UsernameSetupScreen({ onUsernameSet }: UsernameSetupScre
               />
               {isValid && (
                 <View style={styles.checkIcon}>
-                  <Ionicons name="checkmark-circle" size={22} color="#10b981" />
+                  <Ionicons name="checkmark-circle" size={22} color={colors.mint} />
                 </View>
               )}
             </View>
 
             {error ? (
               <View style={styles.errorContainer}>
-                <Ionicons name="alert-circle" size={16} color="#dc2626" />
+                <Ionicons name="alert-circle" size={16} color={colors.rose} />
                 <Text style={styles.errorText}>{error}</Text>
               </View>
             ) : (
@@ -111,19 +118,26 @@ export default function UsernameSetupScreen({ onUsernameSet }: UsernameSetupScre
             )}
 
             <TouchableOpacity
-              style={[styles.button, (!isValid || isSaving) && styles.buttonDisabled]}
               onPress={handleSubmit}
               disabled={isSaving || !isValid}
               activeOpacity={0.8}
+              style={(!isValid || isSaving) && styles.buttonDisabled}
             >
-              {isSaving ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <>
-                  <Text style={styles.buttonText}>Continue</Text>
-                  <Ionicons name="arrow-forward" size={18} color="#fff" />
-                </>
-              )}
+              <LinearGradient
+                colors={gradients.brand}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.button}
+              >
+                {isSaving ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <>
+                    <Text style={styles.buttonText}>Continue</Text>
+                    <Ionicons name="arrow-forward" size={18} color="#fff" />
+                  </>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
           </View>
 
@@ -140,7 +154,7 @@ export default function UsernameSetupScreen({ onUsernameSet }: UsernameSetupScre
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   keyboardView: {
     flex: 1,
@@ -158,71 +172,63 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 20,
-    backgroundColor: '#fff5f3',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
-    shadowColor: '#ea580c',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 4,
+    ...glow(colors.brand2, 0.6),
   },
   title: {
     fontSize: 28,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 15,
-    color: '#6b7280',
+    color: colors.textMuted,
     textAlign: 'center',
     lineHeight: 22,
     paddingHorizontal: 16,
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 24,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.xl,
     padding: 28,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
-    elevation: 4,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.textMuted,
     marginBottom: 10,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     height: 56,
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 14,
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
+    borderWidth: 1,
+    borderColor: colors.border,
     paddingHorizontal: 16,
     marginBottom: 12,
   },
   inputContainerError: {
-    borderColor: '#fca5a5',
-    backgroundColor: '#fef2f2',
+    borderColor: colors.rose,
+    backgroundColor: colors.roseFill,
   },
   atSymbol: {
     fontSize: 18,
-    color: '#9ca3af',
+    color: colors.textFaint,
     marginRight: 4,
     fontWeight: '500',
   },
   input: {
     flex: 1,
     fontSize: 18,
-    color: '#1f2937',
+    color: colors.text,
     fontWeight: '500',
   },
   checkIcon: {
@@ -235,32 +241,26 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   errorText: {
-    color: '#dc2626',
+    color: colors.rose,
     fontSize: 13,
     fontWeight: '500',
   },
   hint: {
     fontSize: 13,
-    color: '#9ca3af',
+    color: colors.textFaint,
     marginBottom: 24,
   },
   button: {
     height: 56,
     borderRadius: 14,
-    backgroundColor: '#ea580c',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
-    shadowColor: '#ea580c',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    ...glow(colors.brand2, 0.5),
   },
   buttonDisabled: {
-    backgroundColor: '#fed7aa',
-    shadowOpacity: 0.1,
+    opacity: 0.45,
   },
   buttonText: {
     color: '#fff',
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 13,
-    color: '#9ca3af',
+    color: colors.textFaint,
     textAlign: 'center',
     marginTop: 24,
   },

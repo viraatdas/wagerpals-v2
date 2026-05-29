@@ -13,9 +13,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
 import { validateUsername } from '../utils/helpers';
+import { colors, gradients, radius, glow, inputStyle } from '../theme';
 
 export default function EditUsernameScreen() {
   const navigation = useNavigation<any>();
@@ -77,7 +79,7 @@ export default function EditUsernameScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ea580c" />
+        <ActivityIndicator size="large" color={colors.brand2} />
       </View>
     );
   }
@@ -93,6 +95,7 @@ export default function EditUsernameScreen() {
           <TextInput
             style={[styles.input, error ? styles.inputError : null]}
             placeholder="Username"
+            placeholderTextColor={colors.textFaint}
             value={username}
             onChangeText={(text) => {
               setUsername(text);
@@ -109,15 +112,22 @@ export default function EditUsernameScreen() {
           </Text>
 
           <TouchableOpacity
-            style={[styles.button, isSaving && styles.buttonDisabled]}
             onPress={handleSubmit}
             disabled={isSaving || !username}
+            style={(isSaving || !username) && styles.buttonDisabled}
           >
-            {isSaving ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Save Changes</Text>
-            )}
+            <LinearGradient
+              colors={gradients.brand}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.button}
+            >
+              {isSaving ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Save Changes</Text>
+              )}
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -128,13 +138,13 @@ export default function EditUsernameScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg,
   },
   content: {
     flex: 1,
@@ -147,39 +157,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     marginBottom: 8,
-    color: '#333',
+    color: colors.textMuted,
   },
   input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    marginBottom: 8,
+    ...inputStyle,
+    height: 52,
     fontSize: 18,
+    marginBottom: 8,
   },
   inputError: {
-    borderColor: '#dc2626',
+    borderColor: colors.rose,
   },
   errorText: {
-    color: '#dc2626',
+    color: colors.rose,
     fontSize: 14,
     marginBottom: 8,
   },
   hint: {
     fontSize: 14,
-    color: '#666',
+    color: colors.textFaint,
     marginBottom: 24,
   },
   button: {
-    height: 50,
-    borderRadius: 8,
-    backgroundColor: '#ea580c',
+    height: 52,
+    borderRadius: radius.pill,
     justifyContent: 'center',
     alignItems: 'center',
+    ...glow(colors.brand2, 0.5),
   },
   buttonDisabled: {
-    opacity: 0.5,
+    opacity: 0.45,
   },
   buttonText: {
     color: '#fff',

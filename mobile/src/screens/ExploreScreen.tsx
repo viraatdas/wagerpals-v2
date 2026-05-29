@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import apiService from '../services/api';
 import { Event } from '../types';
 import { formatDate } from '../utils/helpers';
+import { colors, radius } from '../theme';
 
 type FilterType = 'all' | 'active' | 'resolved';
 
@@ -98,7 +99,7 @@ export default function ExploreScreen() {
         <View style={styles.eventFooter}>
           {isActive ? (
             <View style={styles.timeContainer}>
-              <Ionicons name="time-outline" size={14} color="#6b7280" />
+              <Ionicons name="time-outline" size={14} color={colors.textMuted} />
               <Text style={styles.timeText}>
                 {hasEnded ? 'Betting closed' : `Ends ${formatDate(item.end_time)}`}
               </Text>
@@ -106,7 +107,7 @@ export default function ExploreScreen() {
           ) : (
             item.resolution && (
               <View style={styles.winnerContainer}>
-                <Ionicons name="trophy" size={14} color="#ea580c" />
+                <Ionicons name="trophy" size={14} color={colors.brand2} />
                 <Text style={styles.winnerText}>
                   {item.resolution.winning_side}
                 </Text>
@@ -121,7 +122,7 @@ export default function ExploreScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ea580c" />
+        <ActivityIndicator size="large" color={colors.brand2} />
         <Text style={styles.loadingText}>Loading events...</Text>
       </View>
     );
@@ -129,8 +130,8 @@ export default function ExploreScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="dark-content" />
-      
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Explore</Text>
@@ -166,17 +167,17 @@ export default function ExploreScreen() {
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl 
-              refreshing={isRefreshing} 
+            <RefreshControl
+              refreshing={isRefreshing}
               onRefresh={handleRefresh}
-              tintColor="#ea580c"
+              tintColor={colors.brand2}
             />
           }
         />
       ) : (
         <View style={styles.emptyState}>
           <View style={styles.emptyIconContainer}>
-            <Ionicons name="search-outline" size={48} color="#d1d5db" />
+            <Ionicons name="search-outline" size={48} color={colors.textFaint} />
           </View>
           <Text style={styles.emptyStateText}>No events found</Text>
           <Text style={styles.emptyStateSubtext}>
@@ -194,18 +195,18 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textMuted,
   },
   header: {
     paddingHorizontal: 20,
@@ -215,12 +216,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1f2937',
+    color: colors.text,
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textMuted,
   },
   filterContainer: {
     flexDirection: 'row',
@@ -233,55 +234,52 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 20,
-    backgroundColor: '#fff',
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceGlass,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: colors.border,
     gap: 6,
   },
   filterPillActive: {
-    backgroundColor: '#ea580c',
-    borderColor: '#ea580c',
+    backgroundColor: colors.brandFill,
+    borderColor: colors.brand2,
   },
   filterText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#4b5563',
+    color: colors.textMuted,
   },
   filterTextActive: {
-    color: '#fff',
+    color: colors.brand2,
   },
   filterCount: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.surfaceGlassStrong,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
   },
   filterCountActive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: colors.brandFill,
   },
   filterCountText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6b7280',
+    color: colors.textMuted,
   },
   filterCountTextActive: {
-    color: '#fff',
+    color: colors.brand2,
   },
   list: {
     paddingHorizontal: 20,
     paddingBottom: 100,
   },
   eventCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
   },
   firstCard: {
     marginTop: 4,
@@ -297,7 +295,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 17,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
     lineHeight: 22,
   },
   statusBadge: {
@@ -309,10 +307,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   activeBadge: {
-    backgroundColor: '#d1fae5',
+    backgroundColor: colors.mintFill,
   },
   resolvedBadge: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.surfaceGlassStrong,
   },
   statusDot: {
     width: 6,
@@ -320,10 +318,10 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   activeDot: {
-    backgroundColor: '#10b981',
+    backgroundColor: colors.mint,
   },
   resolvedDot: {
-    backgroundColor: '#9ca3af',
+    backgroundColor: colors.textFaint,
   },
   statusText: {
     fontSize: 12,
@@ -331,14 +329,14 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   activeText: {
-    color: '#059669',
+    color: colors.mint,
   },
   resolvedText: {
-    color: '#6b7280',
+    color: colors.textMuted,
   },
   eventDescription: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textMuted,
     lineHeight: 20,
     marginBottom: 14,
   },
@@ -351,27 +349,29 @@ const styles = StyleSheet.create({
   side: {
     flex: 1,
     padding: 12,
-    backgroundColor: '#f9fafb',
-    borderRadius: 10,
+    backgroundColor: colors.surfaceGlassStrong,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
   },
   sideLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.text,
     textAlign: 'center',
   },
   vsContainer: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.surfaceGlassStrong,
     justifyContent: 'center',
     alignItems: 'center',
   },
   vsText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#9ca3af',
+    color: colors.textFaint,
   },
   eventFooter: {
     flexDirection: 'row',
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 13,
-    color: '#6b7280',
+    color: colors.textMuted,
   },
   winnerContainer: {
     flexDirection: 'row',
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
   },
   winnerText: {
     fontSize: 14,
-    color: '#ea580c',
+    color: colors.brand2,
     fontWeight: '600',
   },
   emptyState: {
@@ -406,20 +406,22 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
   },
   emptyStateText: {
     fontSize: 18,
-    color: '#374151',
+    color: colors.text,
     fontWeight: '500',
     marginBottom: 8,
   },
   emptyStateSubtext: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: colors.textFaint,
     textAlign: 'center',
     lineHeight: 20,
     paddingHorizontal: 40,

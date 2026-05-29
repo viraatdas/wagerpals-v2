@@ -18,6 +18,8 @@ import apiService from '../services/api';
 import { User } from '../types';
 import { formatCurrency } from '../utils/helpers';
 import notificationService from '../services/notifications';
+import { colors, gradients, radius, glow } from '../theme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfileScreen() {
   const navigation = useNavigation<any>();
@@ -78,7 +80,7 @@ export default function ProfileScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ea580c" />
+        <ActivityIndicator size="large" color={colors.brand2} />
       </View>
     );
   }
@@ -88,15 +90,20 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Profile Header */}
         <View style={styles.profileHeader}>
-          <View style={styles.avatarContainer}>
+          <LinearGradient
+            colors={gradients.brand}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.avatarContainer}
+          >
             <Text style={styles.avatarText}>
               {userData?.username?.charAt(0).toUpperCase() || '?'}
             </Text>
-          </View>
+          </LinearGradient>
           <Text style={styles.username}>@{userData?.username}</Text>
           <Text style={styles.email}>{authUser?.email}</Text>
         </View>
@@ -131,11 +138,11 @@ export default function ProfileScreen() {
               onPress={() => navigation.navigate('EditUsername' as never)}
               activeOpacity={0.7}
             >
-              <View style={[styles.menuIconContainer, { backgroundColor: '#dbeafe' }]}>
-                <Ionicons name="create-outline" size={20} color="#3b82f6" />
+              <View style={[styles.menuIconContainer, { backgroundColor: colors.cyanFill }]}>
+                <Ionicons name="create-outline" size={20} color={colors.cyan} />
               </View>
               <Text style={styles.menuText}>Edit Username</Text>
-              <Ionicons name="chevron-forward" size={20} color="#d1d5db" />
+              <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
             </TouchableOpacity>
 
             <View style={styles.menuDivider} />
@@ -145,11 +152,11 @@ export default function ProfileScreen() {
               onPress={handleTestNotification}
               activeOpacity={0.7}
             >
-              <View style={[styles.menuIconContainer, { backgroundColor: '#fef3c7' }]}>
-                <Ionicons name="notifications-outline" size={20} color="#f59e0b" />
+              <View style={[styles.menuIconContainer, { backgroundColor: 'rgba(255,194,61,0.12)' }]}>
+                <Ionicons name="notifications-outline" size={20} color={colors.amber} />
               </View>
               <Text style={styles.menuText}>Test Notifications</Text>
-              <Ionicons name="chevron-forward" size={20} color="#d1d5db" />
+              <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
             </TouchableOpacity>
           </View>
 
@@ -159,11 +166,11 @@ export default function ProfileScreen() {
               onPress={handleSignOut}
               activeOpacity={0.7}
             >
-              <View style={[styles.menuIconContainer, { backgroundColor: '#fee2e2' }]}>
-                <Ionicons name="log-out-outline" size={20} color="#dc2626" />
+              <View style={[styles.menuIconContainer, { backgroundColor: colors.roseFill }]}>
+                <Ionicons name="log-out-outline" size={20} color={colors.rose} />
               </View>
               <Text style={[styles.menuText, styles.signOutText]}>Sign Out</Text>
-              <Ionicons name="chevron-forward" size={20} color="#d1d5db" />
+              <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
             </TouchableOpacity>
           </View>
         </View>
@@ -178,13 +185,13 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   profileHeader: {
     alignItems: 'center',
@@ -195,15 +202,10 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: '#ea580c',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
-    shadowColor: '#ea580c',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 4,
+    ...glow(colors.brand2, 0.5),
   },
   avatarText: {
     fontSize: 36,
@@ -213,12 +215,12 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
     marginBottom: 4,
   },
   email: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textMuted,
   },
   statsContainer: {
     paddingHorizontal: 20,
@@ -230,15 +232,12 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
     padding: 16,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
   },
   mainStatCard: {
     marginBottom: 12,
@@ -246,7 +245,7 @@ const styles = StyleSheet.create({
   },
   mainStatLabel: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textMuted,
     marginBottom: 4,
   },
   mainStatValue: {
@@ -254,20 +253,20 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   positive: {
-    color: '#10b981',
+    color: colors.mint,
   },
   negative: {
-    color: '#ef4444',
+    color: colors.rose,
   },
   statValue: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#6b7280',
+    color: colors.textMuted,
   },
   menuSection: {
     paddingHorizontal: 20,
@@ -275,20 +274,18 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6b7280',
+    color: colors.textMuted,
     marginBottom: 12,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   menuCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+    overflow: 'hidden',
   },
   menuItem: {
     flexDirection: 'row',
@@ -306,20 +303,20 @@ const styles = StyleSheet.create({
   menuText: {
     flex: 1,
     fontSize: 16,
-    color: '#1f2937',
+    color: colors.text,
     fontWeight: '500',
   },
   signOutText: {
-    color: '#dc2626',
+    color: colors.rose,
   },
   menuDivider: {
     height: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.border,
     marginLeft: 66,
   },
   versionText: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: colors.textFaint,
     textAlign: 'center',
     marginTop: 24,
     marginBottom: 32,

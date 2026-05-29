@@ -14,9 +14,11 @@ import {
   FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import type { RouteProp } from '@react-navigation/native';
+import { colors, gradients, radius, glow } from '../theme';
 import type { RootStackParamList } from '../types/navigation';
 import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
@@ -150,17 +152,17 @@ export default function CreateEventFromInviteScreen() {
             <View style={styles.sidesRow}>
               <View style={styles.sideBox}>
                 <Text style={styles.sideLabel}>Side A</Text>
-                <Text style={styles.sideValue}>{sideA}</Text>
+                <Text style={[styles.sideValue, styles.sideValueA]}>{sideA}</Text>
               </View>
               <Text style={styles.vs}>vs</Text>
               <View style={styles.sideBox}>
                 <Text style={styles.sideLabel}>Side B</Text>
-                <Text style={styles.sideValue}>{sideB}</Text>
+                <Text style={[styles.sideValue, styles.sideValueB]}>{sideB}</Text>
               </View>
             </View>
             {pick && amount && (
               <View style={styles.suggestedBetBox}>
-                <Ionicons name="chatbubble-ellipses-outline" size={16} color="#ea580c" />
+                <Ionicons name="chatbubble-ellipses-outline" size={16} color={colors.brand2} />
                 <Text style={styles.suggestedBetText}>
                   iMessage bet: ${amount} on {pick}
                 </Text>
@@ -172,10 +174,10 @@ export default function CreateEventFromInviteScreen() {
           <View style={styles.fieldGroup}>
             <Text style={styles.label}>Select Group</Text>
             {isLoadingGroups ? (
-              <ActivityIndicator color="#ea580c" style={styles.groupLoader} />
+              <ActivityIndicator color={colors.brand2} style={styles.groupLoader} />
             ) : groups.length === 0 ? (
               <View style={styles.noGroupsBox}>
-                <Ionicons name="people-outline" size={24} color="#9ca3af" />
+                <Ionicons name="people-outline" size={24} color={colors.textFaint} />
                 <Text style={styles.noGroupsText}>
                   You need to join or create a group first.
                 </Text>
@@ -209,7 +211,7 @@ export default function CreateEventFromInviteScreen() {
                 ) : (
                   <Text style={styles.groupPickerPlaceholder}>Choose a group...</Text>
                 )}
-                <Ionicons name="chevron-down" size={20} color="#9ca3af" />
+                <Ionicons name="chevron-down" size={20} color={colors.textFaint} />
               </TouchableOpacity>
             )}
           </View>
@@ -219,11 +221,11 @@ export default function CreateEventFromInviteScreen() {
             <Text style={styles.label}>When does this end?</Text>
             <View style={styles.dateTimeRow}>
               <View style={styles.dateTimeField}>
-                <Ionicons name="calendar-outline" size={18} color="#ea580c" style={styles.dateIcon} />
+                <Ionicons name="calendar-outline" size={18} color={colors.brand2} style={styles.dateIcon} />
                 <TextInput
                   style={styles.dateTimeInput}
                   placeholder="YYYY-MM-DD"
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor={colors.textFaint}
                   value={endDate}
                   onChangeText={setEndDate}
                   keyboardType="numbers-and-punctuation"
@@ -231,11 +233,11 @@ export default function CreateEventFromInviteScreen() {
                 />
               </View>
               <View style={styles.dateTimeField}>
-                <Ionicons name="time-outline" size={18} color="#ea580c" style={styles.dateIcon} />
+                <Ionicons name="time-outline" size={18} color={colors.brand2} style={styles.dateIcon} />
                 <TextInput
                   style={styles.dateTimeInput}
                   placeholder="HH:MM"
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor={colors.textFaint}
                   value={endTime}
                   onChangeText={setEndTime}
                   keyboardType="numbers-and-punctuation"
@@ -248,19 +250,26 @@ export default function CreateEventFromInviteScreen() {
 
           {/* Create Button */}
           <TouchableOpacity
-            style={[styles.createButton, (isCreating || !selectedGroup) && styles.createButtonDisabled]}
             onPress={handleCreate}
             disabled={isCreating || !selectedGroup}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
+            style={(isCreating || !selectedGroup) && styles.createButtonDisabled}
           >
-            {isCreating ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <>
-                <Ionicons name="flash" size={20} color="#fff" />
-                <Text style={styles.createButtonText}>Create Wager</Text>
-              </>
-            )}
+            <LinearGradient
+              colors={gradients.brand}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.createButton}
+            >
+              {isCreating ? (
+                <ActivityIndicator color={colors.white} size="small" />
+              ) : (
+                <>
+                  <Ionicons name="flash" size={20} color={colors.white} />
+                  <Text style={styles.createButtonText}>Create Wager</Text>
+                </>
+              )}
+            </LinearGradient>
           </TouchableOpacity>
 
           {/* Fallback: just open the app */}
@@ -284,7 +293,7 @@ export default function CreateEventFromInviteScreen() {
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Select Group</Text>
             <TouchableOpacity onPress={() => setShowGroupPicker(false)}>
-              <Ionicons name="close-circle" size={28} color="#9ca3af" />
+              <Ionicons name="close-circle" size={28} color={colors.textFaint} />
             </TouchableOpacity>
           </View>
           <FlatList
@@ -319,7 +328,7 @@ export default function CreateEventFromInviteScreen() {
                   </Text>
                 </View>
                 {selectedGroup?.id === item.id && (
-                  <Ionicons name="checkmark-circle" size={24} color="#ea580c" />
+                  <Ionicons name="checkmark-circle" size={24} color={colors.brand2} />
                 )}
               </TouchableOpacity>
             )}
@@ -333,7 +342,7 @@ export default function CreateEventFromInviteScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   flex: {
     flex: 1,
@@ -345,33 +354,30 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#0f172a',
+    color: colors.text,
     textAlign: 'center',
     marginBottom: 4,
   },
   subheading: {
     fontSize: 15,
-    color: '#6b7280',
+    color: colors.textMuted,
     textAlign: 'center',
     marginBottom: 24,
   },
 
   // Invite Preview Card
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.xl,
     padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
     marginBottom: 24,
   },
   eventTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#0f172a',
+    fontWeight: '700',
+    color: colors.text,
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -387,25 +393,33 @@ const styles = StyleSheet.create({
   sideLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#94a3b8',
+    color: colors.textFaint,
     textTransform: 'uppercase',
     marginBottom: 4,
   },
   sideValue: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#ea580c',
+    fontWeight: '700',
+    color: colors.text,
+  },
+  sideValueA: {
+    color: colors.mint,
+  },
+  sideValueB: {
+    color: colors.rose,
   },
   vs: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#94a3b8',
+    color: colors.textFaint,
     marginHorizontal: 12,
   },
   suggestedBetBox: {
     marginTop: 18,
-    backgroundColor: '#fff7ed',
-    borderRadius: 10,
+    backgroundColor: colors.brandFill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
     padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -413,7 +427,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   suggestedBetText: {
-    color: '#9a3412',
+    color: colors.brand2,
     fontSize: 13,
     fontWeight: '600',
   },
@@ -425,7 +439,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#6b7280',
+    color: colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 10,
@@ -440,18 +454,20 @@ const styles = StyleSheet.create({
   },
   noGroupsText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textMuted,
     textAlign: 'center',
   },
   goHomeButton: {
     marginTop: 8,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: '#fff5f3',
-    borderRadius: 8,
+    backgroundColor: colors.brandFill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.pill,
   },
   goHomeButtonText: {
-    color: '#ea580c',
+    color: colors.brand2,
     fontWeight: '600',
     fontSize: 14,
   },
@@ -459,16 +475,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
   groupPickerPlaceholder: {
     fontSize: 15,
-    color: '#9ca3af',
+    color: colors.textFaint,
   },
   selectedGroupRow: {
     flexDirection: 'row',
@@ -478,16 +494,19 @@ const styles = StyleSheet.create({
   groupAvatar: {
     width: 40,
     height: 40,
-    borderRadius: 10,
-    backgroundColor: '#ea580c',
+    borderRadius: radius.md,
+    backgroundColor: colors.brandFill,
+    borderWidth: 1,
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
   groupAvatarSelected: {
-    backgroundColor: '#ea580c',
+    backgroundColor: colors.brandFill,
+    borderColor: colors.brand2,
   },
   groupAvatarText: {
-    color: '#fff',
+    color: colors.brand2,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -497,11 +516,11 @@ const styles = StyleSheet.create({
   selectedGroupName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
   },
   selectedGroupMeta: {
     fontSize: 12,
-    color: '#6b7280',
+    color: colors.textMuted,
   },
 
   // Date/Time
@@ -513,10 +532,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
     overflow: 'hidden',
   },
   dateIcon: {
@@ -527,45 +546,39 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#1f2937',
+    color: colors.text,
   },
   hint: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: colors.textFaint,
     marginTop: 6,
   },
 
   // Buttons
   createButton: {
-    backgroundColor: '#ea580c',
-    borderRadius: 12,
+    borderRadius: radius.pill,
     paddingVertical: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    shadowColor: '#ea580c',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
     marginBottom: 12,
+    ...glow(colors.brand2),
   },
   createButtonDisabled: {
-    backgroundColor: '#9ca3af',
-    shadowOpacity: 0,
+    opacity: 0.5,
   },
   createButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   secondaryButton: {
     paddingVertical: 14,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#6b7280',
+    color: colors.textMuted,
     fontSize: 15,
     fontWeight: '500',
   },
@@ -573,7 +586,7 @@ const styles = StyleSheet.create({
   // Modal
   modalContainer: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -582,12 +595,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: colors.border,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#0f172a',
+    color: colors.text,
   },
   modalList: {
     padding: 16,
@@ -595,17 +608,17 @@ const styles = StyleSheet.create({
   groupListItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 14,
+    backgroundColor: colors.surfaceGlass,
+    borderRadius: radius.lg,
     padding: 14,
     marginBottom: 10,
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
+    borderWidth: 1,
+    borderColor: colors.border,
     gap: 12,
   },
   groupListItemSelected: {
-    borderColor: '#ea580c',
-    backgroundColor: '#fff7ed',
+    borderColor: colors.brand2,
+    backgroundColor: colors.brandFill,
   },
   groupListInfo: {
     flex: 1,
@@ -614,10 +627,10 @@ const styles = StyleSheet.create({
   groupListName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
   },
   groupListMeta: {
     fontSize: 13,
-    color: '#6b7280',
+    color: colors.textMuted,
   },
 });

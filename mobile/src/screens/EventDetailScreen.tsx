@@ -14,9 +14,11 @@ import {
   Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRoute, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import type { RouteProp } from '@react-navigation/native';
+import { colors, gradients, radius, glow, inputStyle } from '../theme';
 import type { RootStackParamList } from '../types/navigation';
 import { useAuth } from '../hooks/useAuth';
 import apiService from '../services/api';
@@ -179,7 +181,7 @@ export default function EventDetailScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ea580c" />
+        <ActivityIndicator size="large" color={colors.brand2} />
         <Text style={styles.loadingText}>Loading event...</Text>
       </View>
     );
@@ -189,7 +191,7 @@ export default function EventDetailScreen() {
     return (
       <SafeAreaView style={styles.container} edges={['bottom']}>
         <View style={styles.loadingContainer}>
-          <Ionicons name="alert-circle-outline" size={48} color="#d1d5db" />
+          <Ionicons name="alert-circle-outline" size={48} color={colors.textFaint} />
           <Text style={styles.emptyText}>Event not found</Text>
         </View>
       </SafeAreaView>
@@ -224,7 +226,7 @@ export default function EventDetailScreen() {
       >
         <ScrollView
           refreshControl={
-            <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor="#ea580c" />
+            <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.brand2} />
           }
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -232,12 +234,17 @@ export default function EventDetailScreen() {
         >
           {/* Resolution Banner */}
           {isResolved && event.resolution && (
-            <View style={styles.resolutionBanner}>
-              <Ionicons name="trophy" size={20} color="#fff" />
+            <LinearGradient
+              colors={gradients.mint}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.resolutionBanner}
+            >
+              <Ionicons name="trophy" size={20} color={colors.bg} />
               <Text style={styles.resolutionText}>
                 Resolved: {event.resolution.winning_side} wins!
               </Text>
-            </View>
+            </LinearGradient>
           )}
 
           {/* Title & Status */}
@@ -251,7 +258,7 @@ export default function EventDetailScreen() {
               </View>
               {!isEnded && isActive && (
                 <View style={styles.countdownContainer}>
-                  <Ionicons name="time-outline" size={14} color="#ea580c" />
+                  <Ionicons name="time-outline" size={14} color={colors.brand2} />
                   <Text style={styles.countdownText}>{countdown}</Text>
                 </View>
               )}
@@ -265,9 +272,16 @@ export default function EventDetailScreen() {
                   <Text style={styles.paidInfoLabel}>Wallet balance</Text>
                   <Text style={styles.paidInfoBalance}>{formatCurrency(wallet?.balance || 0)}</Text>
                 </View>
-                <TouchableOpacity style={styles.depositButton} onPress={handleDeposit}>
-                  <Ionicons name="card-outline" size={16} color="#fff" />
-                  <Text style={styles.depositButtonText}>Deposit</Text>
+                <TouchableOpacity onPress={handleDeposit} activeOpacity={0.85}>
+                  <LinearGradient
+                    colors={gradients.brand}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.depositButton}
+                  >
+                    <Ionicons name="card-outline" size={16} color={colors.white} />
+                    <Text style={styles.depositButtonText}>Deposit</Text>
+                  </LinearGradient>
                 </TouchableOpacity>
               </View>
               <Text style={styles.resolverText}>
@@ -280,14 +294,15 @@ export default function EventDetailScreen() {
           <View style={styles.sidesRow}>
             <View style={[
               styles.sideCard,
+              styles.sideCardA,
               isResolved && event.resolution?.winning_side === event.side_a && styles.winningSideCard,
             ]}>
               <Text style={styles.sideName}>{event.side_a}</Text>
-              <Text style={styles.sideTotal}>{formatCurrency(sideAStats.total)}</Text>
+              <Text style={[styles.sideTotal, styles.sideTotalA]}>{formatCurrency(sideAStats.total)}</Text>
               <Text style={styles.sideCount}>{sideAStats.count} bet{sideAStats.count !== 1 ? 's' : ''}</Text>
               {isResolved && event.resolution?.winning_side === event.side_a && (
                 <View style={styles.winnerTag}>
-                  <Ionicons name="trophy" size={12} color="#ea580c" />
+                  <Ionicons name="trophy" size={12} color={colors.mint} />
                   <Text style={styles.winnerTagText}>Winner</Text>
                 </View>
               )}
@@ -295,14 +310,15 @@ export default function EventDetailScreen() {
             <Text style={styles.vsCenter}>vs</Text>
             <View style={[
               styles.sideCard,
+              styles.sideCardB,
               isResolved && event.resolution?.winning_side === event.side_b && styles.winningSideCard,
             ]}>
               <Text style={styles.sideName}>{event.side_b}</Text>
-              <Text style={styles.sideTotal}>{formatCurrency(sideBStats.total)}</Text>
+              <Text style={[styles.sideTotal, styles.sideTotalB]}>{formatCurrency(sideBStats.total)}</Text>
               <Text style={styles.sideCount}>{sideBStats.count} bet{sideBStats.count !== 1 ? 's' : ''}</Text>
               {isResolved && event.resolution?.winning_side === event.side_b && (
                 <View style={styles.winnerTag}>
-                  <Ionicons name="trophy" size={12} color="#ea580c" />
+                  <Ionicons name="trophy" size={12} color={colors.mint} />
                   <Text style={styles.winnerTagText}>Winner</Text>
                 </View>
               )}
@@ -317,20 +333,20 @@ export default function EventDetailScreen() {
               {/* Side Selector */}
               <View style={styles.sideSelector}>
                 <TouchableOpacity
-                  style={[styles.sideButton, selectedSide === event.side_a && styles.sideButtonSelected]}
+                  style={[styles.sideButton, selectedSide === event.side_a && styles.sideButtonSelectedA]}
                   onPress={() => { selectionTick(); setSelectedSide(event.side_a); }}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.sideButtonText, selectedSide === event.side_a && styles.sideButtonTextSelected]}>
+                  <Text style={[styles.sideButtonText, selectedSide === event.side_a && styles.sideButtonTextSelectedA]}>
                     {event.side_a}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.sideButton, selectedSide === event.side_b && styles.sideButtonSelected]}
+                  style={[styles.sideButton, selectedSide === event.side_b && styles.sideButtonSelectedB]}
                   onPress={() => { selectionTick(); setSelectedSide(event.side_b); }}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.sideButtonText, selectedSide === event.side_b && styles.sideButtonTextSelected]}>
+                  <Text style={[styles.sideButtonText, selectedSide === event.side_b && styles.sideButtonTextSelectedB]}>
                     {event.side_b}
                   </Text>
                 </TouchableOpacity>
@@ -342,7 +358,7 @@ export default function EventDetailScreen() {
                 <TextInput
                   style={styles.amountInput}
                   placeholder="0.00"
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor={colors.textFaint}
                   value={betAmount}
                   onChangeText={setBetAmount}
                   keyboardType="decimal-pad"
@@ -354,7 +370,7 @@ export default function EventDetailScreen() {
               <TextInput
                 style={styles.noteInput}
                 placeholder="Add a note (optional)"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.textFaint}
                 value={betNote}
                 onChangeText={setBetNote}
                 returnKeyType="done"
@@ -362,16 +378,23 @@ export default function EventDetailScreen() {
 
               {/* Submit */}
               <TouchableOpacity
-                style={[styles.placeBetButton, isPlacingBet && styles.buttonDisabled]}
                 onPress={handlePlaceBet}
                 disabled={isPlacingBet}
-                activeOpacity={0.8}
+                activeOpacity={0.85}
+                style={isPlacingBet && styles.buttonDisabled}
               >
-                {isPlacingBet ? (
-                  <ActivityIndicator color="#fff" size="small" />
-                ) : (
-                  <Text style={styles.placeBetButtonText}>Place Bet</Text>
-                )}
+                <LinearGradient
+                  colors={gradients.brand}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.placeBetButton}
+                >
+                  {isPlacingBet ? (
+                    <ActivityIndicator color={colors.white} size="small" />
+                  ) : (
+                    <Text style={styles.placeBetButtonText}>Place Bet</Text>
+                  )}
+                </LinearGradient>
               </TouchableOpacity>
               {isPaid && (
                 <Text style={styles.walletHint}>
@@ -389,23 +412,30 @@ export default function EventDetailScreen() {
                 <TextInput
                   style={styles.commentInput}
                   placeholder="Say something..."
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor={colors.textFaint}
                   value={commentText}
                   onChangeText={setCommentText}
                   multiline
                   returnKeyType="default"
                 />
                 <TouchableOpacity
-                  style={[styles.commentSendButton, isPostingComment && styles.buttonDisabled]}
                   onPress={handlePostComment}
                   disabled={isPostingComment || !commentText.trim()}
                   activeOpacity={0.7}
+                  style={isPostingComment && styles.buttonDisabled}
                 >
-                  {isPostingComment ? (
-                    <ActivityIndicator color="#fff" size="small" />
-                  ) : (
-                    <Ionicons name="send" size={18} color="#fff" />
-                  )}
+                  <LinearGradient
+                    colors={gradients.brand}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.commentSendButton}
+                  >
+                    {isPostingComment ? (
+                      <ActivityIndicator color={colors.white} size="small" />
+                    ) : (
+                      <Ionicons name="send" size={18} color={colors.white} />
+                    )}
+                  </LinearGradient>
                 </TouchableOpacity>
               </View>
             </View>
@@ -417,7 +447,7 @@ export default function EventDetailScreen() {
 
             {ledgerItems.length === 0 ? (
               <View style={styles.emptyLedger}>
-                <Ionicons name="document-text-outline" size={36} color="#d1d5db" />
+                <Ionicons name="document-text-outline" size={36} color={colors.textFaint} />
                 <Text style={styles.emptyLedgerText}>No activity yet</Text>
               </View>
             ) : (
@@ -427,7 +457,7 @@ export default function EventDetailScreen() {
                   return (
                     <View key={`bet-${bet.id}`} style={styles.ledgerItem}>
                       <View style={[styles.ledgerIcon, styles.ledgerIconBet]}>
-                        <Ionicons name="cash-outline" size={16} color="#ea580c" />
+                        <Ionicons name="cash-outline" size={16} color={colors.brand2} />
                       </View>
                       <View style={styles.ledgerContent}>
                         <Text style={styles.ledgerMainText}>
@@ -453,7 +483,7 @@ export default function EventDetailScreen() {
                   return (
                     <View key={`comment-${comment.id}`} style={styles.ledgerItem}>
                       <View style={[styles.ledgerIcon, styles.ledgerIconComment]}>
-                        <Ionicons name="chatbubble-outline" size={16} color="#6366f1" />
+                        <Ionicons name="chatbubble-outline" size={16} color={colors.violet} />
                       </View>
                       <View style={styles.ledgerContent}>
                         <Text style={styles.ledgerMainText}>
@@ -480,7 +510,7 @@ export default function EventDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   flex: {
     flex: 1,
@@ -492,23 +522,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textMuted,
   },
   emptyText: {
     marginTop: 12,
     fontSize: 18,
-    color: '#6b7280',
+    color: colors.textMuted,
     fontWeight: '500',
   },
 
   // Resolution Banner
   resolutionBanner: {
-    backgroundColor: '#16a34a',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -516,9 +545,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   resolutionText: {
-    color: '#fff',
+    color: colors.bg,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 
   // Header
@@ -529,7 +558,7 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#0f172a',
+    color: colors.text,
     marginBottom: 10,
   },
   badgeRow: {
@@ -540,46 +569,51 @@ const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: radius.pill,
+    borderWidth: 1,
   },
   activeBadge: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: colors.mintFill,
+    borderColor: colors.mint,
   },
   endedBadge: {
-    backgroundColor: '#e5e7eb',
+    backgroundColor: colors.surfaceGlass,
+    borderColor: colors.border,
   },
   badgeText: {
     fontSize: 13,
     fontWeight: '600',
   },
   activeBadgeText: {
-    color: '#166534',
+    color: colors.mint,
   },
   endedBadgeText: {
-    color: '#4b5563',
+    color: colors.textMuted,
   },
   countdownContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#fff5f3',
+    backgroundColor: colors.brandFill,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   countdownText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#ea580c',
+    color: colors.brand2,
   },
   paidInfoCard: {
     marginHorizontal: 20,
     marginBottom: 16,
     padding: 16,
-    backgroundColor: '#fff7ed',
-    borderRadius: 14,
+    backgroundColor: colors.surfaceGlass,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: '#fed7aa',
+    borderColor: colors.border,
   },
   paidInfoRow: {
     flexDirection: 'row',
@@ -589,30 +623,30 @@ const styles = StyleSheet.create({
   },
   paidInfoLabel: {
     fontSize: 12,
-    color: '#9a3412',
+    color: colors.textMuted,
     marginBottom: 3,
   },
   paidInfoBalance: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#111827',
+    color: colors.text,
   },
   depositButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#ea580c',
     paddingHorizontal: 12,
     paddingVertical: 9,
-    borderRadius: 10,
+    borderRadius: radius.pill,
+    ...glow(colors.brand2),
   },
   depositButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontWeight: '600',
   },
   resolverText: {
     marginTop: 10,
-    color: '#7c2d12',
+    color: colors.textMuted,
     fontSize: 13,
   },
 
@@ -626,76 +660,82 @@ const styles = StyleSheet.create({
   },
   sideCard: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 14,
+    backgroundColor: colors.surfaceGlass,
+    borderRadius: radius.lg,
     padding: 16,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  sideCardA: {
+    backgroundColor: colors.mintFill,
+    borderColor: colors.border,
+  },
+  sideCardB: {
+    backgroundColor: colors.roseFill,
+    borderColor: colors.border,
   },
   winningSideCard: {
-    borderColor: '#ea580c',
-    backgroundColor: '#fff7ed',
+    borderColor: colors.mint,
+    ...glow(colors.mint),
   },
   sideName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
     marginBottom: 6,
   },
   sideTotal: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#0f172a',
+    color: colors.text,
     marginBottom: 2,
+  },
+  sideTotalA: {
+    color: colors.mint,
+  },
+  sideTotalB: {
+    color: colors.rose,
   },
   sideCount: {
     fontSize: 12,
-    color: '#6b7280',
+    color: colors.textMuted,
   },
   winnerTag: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     marginTop: 8,
-    backgroundColor: '#fff5f3',
+    backgroundColor: colors.mintFill,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: radius.pill,
   },
   winnerTagText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#ea580c',
+    color: colors.mint,
   },
   vsCenter: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#94a3b8',
+    color: colors.textFaint,
   },
 
   // Bet Form
   betFormCard: {
     marginHorizontal: 20,
     marginBottom: 16,
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.xl,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
   },
   sectionTitle: {
     fontSize: 17,
-    fontWeight: '600',
-    color: '#1f2937',
+    fontWeight: '700',
+    color: colors.text,
     marginBottom: 14,
   },
   sideSelector: {
@@ -705,74 +745,78 @@ const styles = StyleSheet.create({
   },
   sideButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
+    paddingVertical: 16,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceGlass,
     alignItems: 'center',
   },
-  sideButtonSelected: {
-    borderColor: '#ea580c',
-    backgroundColor: '#fff5f3',
+  sideButtonSelectedA: {
+    borderColor: colors.mint,
+    backgroundColor: colors.mintFill,
+    ...glow(colors.mint),
+  },
+  sideButtonSelectedB: {
+    borderColor: colors.rose,
+    backgroundColor: colors.roseFill,
+    ...glow(colors.rose),
   },
   sideButtonText: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#6b7280',
+    fontWeight: '700',
+    color: colors.textMuted,
   },
-  sideButtonTextSelected: {
-    color: '#ea580c',
+  sideButtonTextSelectedA: {
+    color: colors.mint,
+  },
+  sideButtonTextSelectedB: {
+    color: colors.rose,
   },
   amountRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
-    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
     marginBottom: 10,
     paddingHorizontal: 14,
   },
   dollarSign: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#6b7280',
+    color: colors.textMuted,
     marginRight: 4,
   },
   amountInput: {
     flex: 1,
     paddingVertical: 12,
     fontSize: 18,
-    color: '#1f2937',
+    color: colors.text,
   },
   noteInput: {
-    backgroundColor: '#f9fafb',
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    ...inputStyle,
     fontSize: 15,
-    color: '#1f2937',
     marginBottom: 14,
   },
   placeBetButton: {
-    backgroundColor: '#ea580c',
-    borderRadius: 10,
-    paddingVertical: 14,
+    borderRadius: radius.pill,
+    paddingVertical: 16,
     alignItems: 'center',
+    ...glow(colors.brand2),
   },
   buttonDisabled: {
-    backgroundColor: '#9ca3af',
+    opacity: 0.5,
   },
   placeBetButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   walletHint: {
     marginTop: 10,
-    color: '#6b7280',
+    color: colors.textMuted,
     fontSize: 12,
     textAlign: 'center',
   },
@@ -781,14 +825,11 @@ const styles = StyleSheet.create({
   commentFormCard: {
     marginHorizontal: 20,
     marginBottom: 16,
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.xl,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
   },
   commentInputRow: {
     flexDirection: 'row',
@@ -796,24 +837,18 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   commentInput: {
+    ...inputStyle,
     flex: 1,
-    backgroundColor: '#f9fafb',
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
     fontSize: 15,
-    color: '#1f2937',
     maxHeight: 100,
   },
   commentSendButton: {
-    backgroundColor: '#ea580c',
-    width: 42,
-    height: 42,
-    borderRadius: 10,
+    width: 46,
+    height: 46,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
+    ...glow(colors.brand2),
   },
 
   // Ledger
@@ -824,10 +859,10 @@ const styles = StyleSheet.create({
   ledgerTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#0f172a',
+    color: colors.text,
     marginBottom: 16,
     borderBottomWidth: 2,
-    borderBottomColor: '#ea580c',
+    borderBottomColor: colors.brand2,
     paddingBottom: 6,
     alignSelf: 'flex-start',
   },
@@ -838,7 +873,7 @@ const styles = StyleSheet.create({
   emptyLedgerText: {
     marginTop: 8,
     fontSize: 15,
-    color: '#9ca3af',
+    color: colors.textFaint,
   },
   ledgerItem: {
     flexDirection: 'row',
@@ -848,61 +883,61 @@ const styles = StyleSheet.create({
   ledgerIcon: {
     width: 36,
     height: 36,
-    borderRadius: 10,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 2,
   },
   ledgerIconBet: {
-    backgroundColor: '#fff5f3',
+    backgroundColor: colors.brandFill,
   },
   ledgerIconComment: {
-    backgroundColor: '#eef2ff',
+    backgroundColor: colors.cyanFill,
   },
   ledgerContent: {
     flex: 1,
   },
   ledgerMainText: {
     fontSize: 14,
-    color: '#374151',
+    color: colors.textMuted,
     lineHeight: 20,
   },
   boldText: {
-    fontWeight: '600',
-    color: '#1f2937',
+    fontWeight: '700',
+    color: colors.text,
   },
   orangeText: {
-    fontWeight: '600',
-    color: '#ea580c',
+    fontWeight: '700',
+    color: colors.brand2,
   },
   ledgerNote: {
     fontSize: 13,
-    color: '#6b7280',
+    color: colors.textMuted,
     fontStyle: 'italic',
     marginTop: 2,
   },
   lateBadge: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: colors.roseFill,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: radius.pill,
     alignSelf: 'flex-start',
     marginTop: 4,
   },
   lateBadgeText: {
     fontSize: 11,
-    color: '#92400e',
+    color: colors.rose,
     fontWeight: '600',
   },
   commentContent: {
     fontSize: 14,
-    color: '#374151',
+    color: colors.textMuted,
     marginTop: 2,
     lineHeight: 20,
   },
   ledgerTime: {
     fontSize: 11,
-    color: '#9ca3af',
+    color: colors.textFaint,
     marginTop: 4,
   },
 });

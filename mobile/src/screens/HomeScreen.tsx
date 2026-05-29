@@ -20,6 +20,8 @@ import apiService from '../services/api';
 import { Group } from '../types';
 import TextInputModal from '../components/TextInputModal';
 import { tapLight, tapMedium, success, error as hapticError } from '../utils/haptics';
+import { colors, gradients, radius, glow } from '../theme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
@@ -92,7 +94,7 @@ export default function HomeScreen() {
     >
       <View style={styles.groupCardInner}>
         <View style={styles.groupIconContainer}>
-          <Ionicons name="people" size={24} color="#ea580c" />
+          <Ionicons name="people" size={24} color={colors.brand2} />
         </View>
         <View style={styles.groupInfo}>
           <View style={styles.groupHeader}>
@@ -109,7 +111,7 @@ export default function HomeScreen() {
             <Text style={styles.memberCount}>{item.member_count} members</Text>
           </View>
         </View>
-        <Ionicons name="chevron-forward" size={20} color="#d1d5db" />
+        <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
       </View>
     </TouchableOpacity>
   );
@@ -117,7 +119,7 @@ export default function HomeScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ea580c" />
+        <ActivityIndicator size="large" color={colors.brand2} />
         <Text style={styles.loadingText}>Loading groups...</Text>
       </View>
     );
@@ -125,8 +127,8 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="dark-content" />
-      
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
+
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -149,16 +151,23 @@ export default function HomeScreen() {
 
       {/* Action Cards */}
       <View style={styles.actionCards}>
-        <TouchableOpacity 
-          style={styles.actionCard} 
+        <TouchableOpacity
+          style={styles.actionCardWrap}
           onPress={() => { tapMedium(); setShowCreateModal(true); }}
           activeOpacity={0.8}
         >
-          <View style={styles.actionIconContainer}>
-            <Ionicons name="add" size={28} color="#fff" />
-          </View>
-          <Text style={styles.actionTitle}>Create Group</Text>
-          <Text style={styles.actionSubtitle}>Start a new betting group</Text>
+          <LinearGradient
+            colors={gradients.brand}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.actionCard}
+          >
+            <View style={styles.actionIconContainer}>
+              <Ionicons name="add" size={28} color="#fff" />
+            </View>
+            <Text style={styles.actionTitle}>Create Group</Text>
+            <Text style={styles.actionSubtitle}>Start a new betting group</Text>
+          </LinearGradient>
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -167,7 +176,7 @@ export default function HomeScreen() {
           activeOpacity={0.8}
         >
           <View style={[styles.actionIconContainer, styles.actionIconAlt]}>
-            <Ionicons name="enter-outline" size={24} color="#ea580c" />
+            <Ionicons name="enter-outline" size={24} color={colors.brand2} />
           </View>
           <Text style={[styles.actionTitle, styles.actionTitleAlt]}>Join Group</Text>
           <Text style={[styles.actionSubtitle, styles.actionSubtitleAlt]}>Enter a group code</Text>
@@ -186,17 +195,17 @@ export default function HomeScreen() {
             contentContainerStyle={styles.groupsList}
             showsVerticalScrollIndicator={false}
             refreshControl={
-              <RefreshControl 
-                refreshing={isRefreshing} 
+              <RefreshControl
+                refreshing={isRefreshing}
                 onRefresh={handleRefresh}
-                tintColor="#ea580c"
+                tintColor={colors.brand2}
               />
             }
           />
         ) : (
           <View style={styles.emptyState}>
             <View style={styles.emptyIconContainer}>
-              <Ionicons name="people-outline" size={48} color="#d1d5db" />
+              <Ionicons name="people-outline" size={48} color={colors.textFaint} />
             </View>
             <Text style={styles.emptyStateText}>No groups yet</Text>
             <Text style={styles.emptyStateSubtext}>
@@ -234,18 +243,18 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textMuted,
   },
   header: {
     flexDirection: 'row',
@@ -257,7 +266,7 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textMuted,
     fontWeight: '400',
     marginBottom: 2,
   },
@@ -266,11 +275,11 @@ const styles = StyleSheet.create({
   },
   titleNormal: {
     fontWeight: '300',
-    color: '#1f2937',
+    color: colors.text,
   },
   titleBold: {
     fontWeight: '700',
-    color: '#ea580c',
+    color: colors.brand2,
   },
   profileButton: {
     padding: 4,
@@ -279,7 +288,9 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#fed7aa',
+    backgroundColor: colors.brandFill,
+    borderWidth: 1,
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -289,21 +300,22 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 24,
   },
+  actionCardWrap: {
+    flex: 1,
+    borderRadius: radius.lg,
+    ...glow(colors.brand2, 0.45),
+  },
   actionCard: {
     flex: 1,
-    backgroundColor: '#ea580c',
-    borderRadius: 16,
+    borderRadius: radius.lg,
     padding: 16,
-    shadowColor: '#ea580c',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
   actionCardAlt: {
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    padding: 16,
   },
   actionIconContainer: {
     width: 44,
@@ -315,7 +327,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   actionIconAlt: {
-    backgroundColor: '#fff5f3',
+    backgroundColor: colors.brandFill,
   },
   actionTitle: {
     fontSize: 16,
@@ -328,10 +340,10 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
   },
   actionTitleAlt: {
-    color: '#1f2937',
+    color: colors.text,
   },
   actionSubtitleAlt: {
-    color: '#6b7280',
+    color: colors.textMuted,
   },
   groupsSection: {
     flex: 1,
@@ -340,21 +352,18 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
     marginBottom: 16,
   },
   groupsList: {
     paddingBottom: 20,
   },
   groupCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
   },
   groupCardInner: {
     flexDirection: 'row',
@@ -365,7 +374,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#fff5f3',
+    backgroundColor: colors.brandFill,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
@@ -381,19 +390,21 @@ const styles = StyleSheet.create({
   groupName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
     flex: 1,
   },
   adminBadge: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: colors.brandFill,
+    borderWidth: 1,
+    borderColor: colors.border,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: radius.pill,
     marginLeft: 8,
   },
   adminBadgeText: {
     fontSize: 11,
-    color: '#92400e',
+    color: colors.brand2,
     fontWeight: '600',
   },
   groupMeta: {
@@ -402,17 +413,17 @@ const styles = StyleSheet.create({
   },
   groupCode: {
     fontSize: 13,
-    color: '#9ca3af',
+    color: colors.textFaint,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   groupDot: {
     fontSize: 13,
-    color: '#d1d5db',
+    color: colors.textFaint,
     marginHorizontal: 6,
   },
   memberCount: {
     fontSize: 13,
-    color: '#9ca3af',
+    color: colors.textFaint,
   },
   emptyState: {
     flex: 1,
@@ -424,20 +435,22 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
   },
   emptyStateText: {
     fontSize: 18,
-    color: '#374151',
+    color: colors.text,
     fontWeight: '500',
     marginBottom: 8,
   },
   emptyStateSubtext: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: colors.textFaint,
     textAlign: 'center',
     lineHeight: 20,
     paddingHorizontal: 40,

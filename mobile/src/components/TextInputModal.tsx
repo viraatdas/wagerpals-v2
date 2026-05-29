@@ -12,6 +12,8 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, gradients, radius, glow, inputStyle } from '../theme';
 
 interface TextInputModalProps {
   visible: boolean;
@@ -89,7 +91,7 @@ export default function TextInputModal({
                   value={value}
                   onChangeText={setValue}
                   placeholder={placeholder}
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor={colors.textFaint}
                   keyboardType={keyboardType}
                   maxLength={maxLength}
                   autoCapitalize="none"
@@ -107,13 +109,20 @@ export default function TextInputModal({
                   </TouchableOpacity>
                   
                   <TouchableOpacity
-                    style={[styles.button, styles.submitButton, !value.trim() && styles.submitButtonDisabled]}
+                    style={[styles.buttonWrap, !value.trim() && styles.submitButtonDisabled]}
                     onPress={handleSubmit}
                     disabled={!value.trim()}
                   >
-                    <Text style={[styles.submitButtonText, !value.trim() && styles.submitButtonTextDisabled]}>
-                      {submitText}
-                    </Text>
+                    <LinearGradient
+                      colors={gradients.brand}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={[styles.button, styles.submitButton]}
+                    >
+                      <Text style={styles.submitButtonText}>
+                        {submitText}
+                      </Text>
+                    </LinearGradient>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -128,7 +137,7 @@ export default function TextInputModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -141,38 +150,30 @@ const styles = StyleSheet.create({
     maxWidth: 340,
   },
   modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.xl,
     padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 10,
+    ...glow(colors.brand3, 0.25),
   },
   title: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
     marginBottom: 8,
     textAlign: 'center',
   },
   message: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textMuted,
     marginBottom: 20,
     textAlign: 'center',
     lineHeight: 20,
   },
   input: {
+    ...inputStyle,
     height: 52,
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    color: '#1f2937',
-    backgroundColor: '#f9fafb',
     marginBottom: 20,
   },
   buttonRow: {
@@ -182,31 +183,33 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     height: 48,
-    borderRadius: 12,
+    borderRadius: radius.pill,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  buttonWrap: {
+    flex: 1,
+  },
   cancelButton: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#6b7280',
+    color: colors.textMuted,
   },
   submitButton: {
-    backgroundColor: '#ea580c',
+    ...glow(colors.brand2, 0.45),
   },
   submitButtonDisabled: {
-    backgroundColor: '#fed7aa',
+    opacity: 0.45,
   },
   submitButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
-  },
-  submitButtonTextDisabled: {
-    color: '#fdba74',
   },
 });
 

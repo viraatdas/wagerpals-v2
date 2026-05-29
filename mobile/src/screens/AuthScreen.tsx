@@ -15,7 +15,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import authService from '../services/auth';
+import { colors, gradients, radius, glow, inputStyle } from '../theme';
 
 const { width } = Dimensions.get('window');
 
@@ -83,7 +85,7 @@ export default function AuthScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -91,9 +93,14 @@ export default function AuthScreen() {
         <View style={styles.content}>
           {/* Logo & Header */}
           <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Ionicons name="trophy" size={40} color="#ea580c" />
-            </View>
+            <LinearGradient
+              colors={gradients.brand}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.logoContainer}
+            >
+              <Ionicons name="trophy" size={40} color="#fff" />
+            </LinearGradient>
             <Text style={styles.title}>
               <Text style={styles.titleWager}>Wager</Text>
               <Text style={styles.titlePals}>Pals</Text>
@@ -116,11 +123,11 @@ export default function AuthScreen() {
             {step === 'email' ? (
               <View style={styles.form}>
                 <View style={styles.inputContainer}>
-                  <Ionicons name="mail-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+                  <Ionicons name="mail-outline" size={20} color={colors.textFaint} style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
                     placeholder="Enter your email"
-                    placeholderTextColor="#9ca3af"
+                    placeholderTextColor={colors.textFaint}
                     value={email}
                     onChangeText={setEmail}
                     autoCapitalize="none"
@@ -131,19 +138,26 @@ export default function AuthScreen() {
                 </View>
 
                 <TouchableOpacity
-                  style={[styles.button, styles.primaryButton, (!email || isLoading) && styles.buttonDisabled]}
                   onPress={handleSendCode}
                   disabled={isLoading || !email}
                   activeOpacity={0.8}
+                  style={(!email || isLoading) && styles.buttonDisabled}
                 >
-                  {isLoading ? (
-                    <ActivityIndicator color="#fff" />
-                  ) : (
-                    <>
-                      <Text style={styles.primaryButtonText}>Continue with Email</Text>
-                      <Ionicons name="arrow-forward" size={18} color="#fff" />
-                    </>
-                  )}
+                  <LinearGradient
+                    colors={gradients.brand}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.button, styles.primaryButton]}
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      <>
+                        <Text style={styles.primaryButtonText}>Continue with Email</Text>
+                        <Ionicons name="arrow-forward" size={18} color="#fff" />
+                      </>
+                    )}
+                  </LinearGradient>
                 </TouchableOpacity>
 
                 <View style={styles.divider}>
@@ -170,7 +184,7 @@ export default function AuthScreen() {
                   <TextInput
                     style={styles.codeInput}
                     placeholder="000000"
-                    placeholderTextColor="#d1d5db"
+                    placeholderTextColor={colors.textFaint}
                     value={code}
                     onChangeText={setCode}
                     keyboardType="number-pad"
@@ -181,19 +195,26 @@ export default function AuthScreen() {
                 </View>
 
                 <TouchableOpacity
-                  style={[styles.button, styles.primaryButton, (code.length < 6 || isLoading) && styles.buttonDisabled]}
                   onPress={handleVerifyCode}
                   disabled={isLoading || code.length < 6}
                   activeOpacity={0.8}
+                  style={(code.length < 6 || isLoading) && styles.buttonDisabled}
                 >
-                  {isLoading ? (
-                    <ActivityIndicator color="#fff" />
-                  ) : (
-                    <>
-                      <Text style={styles.primaryButtonText}>Verify & Sign In</Text>
-                      <Ionicons name="checkmark" size={18} color="#fff" />
-                    </>
-                  )}
+                  <LinearGradient
+                    colors={gradients.brand}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={[styles.button, styles.primaryButton]}
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      <>
+                        <Text style={styles.primaryButtonText}>Verify & Sign In</Text>
+                        <Ionicons name="checkmark" size={18} color="#fff" />
+                      </>
+                    )}
+                  </LinearGradient>
                 </TouchableOpacity>
 
                 <View style={styles.codeActions}>
@@ -202,7 +223,7 @@ export default function AuthScreen() {
                     onPress={handleBackToEmail}
                     disabled={isLoading}
                   >
-                    <Ionicons name="arrow-back" size={16} color="#ea580c" />
+                    <Ionicons name="arrow-back" size={16} color={colors.brand2} />
                     <Text style={styles.linkButtonText}>Use different email</Text>
                   </TouchableOpacity>
 
@@ -211,7 +232,7 @@ export default function AuthScreen() {
                     onPress={handleSendCode}
                     disabled={isLoading}
                   >
-                    <Ionicons name="refresh" size={16} color="#ea580c" />
+                    <Ionicons name="refresh" size={16} color={colors.brand2} />
                     <Text style={styles.linkButtonText}>Resend code</Text>
                   </TouchableOpacity>
                 </View>
@@ -235,7 +256,7 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: colors.bg,
   },
   keyboardView: {
     flex: 1,
@@ -253,15 +274,10 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 20,
-    backgroundColor: '#fff5f3',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
-    shadowColor: '#ea580c',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 4,
+    ...glow(colors.brand2, 0.6),
   },
   title: {
     fontSize: 36,
@@ -269,37 +285,34 @@ const styles = StyleSheet.create({
   },
   titleWager: {
     fontWeight: '300',
-    color: '#1f2937',
+    color: colors.text,
   },
   titlePals: {
     fontWeight: '700',
-    color: '#ea580c',
+    color: colors.brand2,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6b7280',
+    color: colors.textMuted,
     fontWeight: '400',
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 24,
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.xl,
     padding: 28,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
-    elevation: 4,
   },
   cardTitle: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
     textAlign: 'center',
     marginBottom: 8,
   },
   cardSubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textMuted,
     textAlign: 'center',
     marginBottom: 28,
     lineHeight: 20,
@@ -311,10 +324,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     height: 56,
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 14,
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
+    borderWidth: 1,
+    borderColor: colors.border,
     marginBottom: 16,
     paddingHorizontal: 16,
   },
@@ -324,20 +337,20 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#1f2937',
+    color: colors.text,
   },
   codeContainer: {
     marginBottom: 20,
   },
   codeInput: {
     height: 64,
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 14,
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
+    borderWidth: 1,
+    borderColor: colors.border,
     fontSize: 32,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
     textAlign: 'center',
     letterSpacing: 12,
   },
@@ -350,16 +363,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   primaryButton: {
-    backgroundColor: '#ea580c',
-    shadowColor: '#ea580c',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    ...glow(colors.brand2, 0.5),
   },
   buttonDisabled: {
-    backgroundColor: '#fed7aa',
-    shadowOpacity: 0.1,
+    opacity: 0.45,
   },
   primaryButtonText: {
     color: '#fff',
@@ -374,18 +381,18 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: colors.border,
   },
   dividerText: {
     marginHorizontal: 16,
-    color: '#9ca3af',
+    color: colors.textFaint,
     fontSize: 14,
     fontWeight: '500',
   },
   googleButton: {
-    backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
+    backgroundColor: colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   googleIconContainer: {
     width: 24,
@@ -399,7 +406,7 @@ const styles = StyleSheet.create({
     color: '#ea4335',
   },
   googleButtonText: {
-    color: '#374151',
+    color: colors.text,
     fontSize: 16,
     fontWeight: '500',
   },
@@ -415,20 +422,20 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   linkButtonText: {
-    color: '#ea580c',
+    color: colors.brand2,
     fontSize: 14,
     fontWeight: '500',
   },
   termsText: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: colors.textFaint,
     textAlign: 'center',
     marginTop: 24,
     lineHeight: 18,
     paddingHorizontal: 20,
   },
   termsLink: {
-    color: '#ea580c',
+    color: colors.brand2,
     fontWeight: '500',
   },
 });
