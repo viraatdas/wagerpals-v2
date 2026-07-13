@@ -82,11 +82,7 @@ export default function Explore() {
           <button
             key={key}
             onClick={() => setFilter(key)}
-            className={`px-4 py-2 rounded-xl font-medium transition ${
-              filter === key
-                ? 'btn-primary'
-                : 'btn-glass'
-            }`}
+            className={`text-sm ${filter === key ? 'btn-primary' : 'btn-glass'}`}
           >
             {label}
           </button>

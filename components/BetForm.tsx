@@ -26,7 +26,7 @@ export default function BetForm({ sides, eventId, userId, username, onBetPlaced,
     try {
       const response = await fetch('/api/bets', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-stack-user-id': userId },
         body: JSON.stringify({
           event_id: eventId,
           user_id: userId,

@@ -15,13 +15,16 @@ export default function JoinGroupPage() {
   const [joining, setJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [alreadyMember, setAlreadyMember] = useState(false);
+  const [hasPending, setHasPending] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
 
   useEffect(() => {
     if (!user) {
       // Store the invite code for after signin
       if (typeof window !== 'undefined') {
-        sessionStorage.setItem('pendingGroupInvite', params.id as string);
+        // localStorage (not sessionStorage) so the invite survives magic-link
+        // sign-in, which frequently opens the link in a new tab.
+        localStorage.setItem('pendingGroupInvite', params.id as string);
       }
       router.push('/auth/signin');
       return;
@@ -77,11 +80,12 @@ export default function JoinGroupPage() {
       // Check if user is already a member
       if (user) {
         const isMember = data.members.some((m: any) => m.user_id === user.id && m.status === 'active');
-        const hasPending = data.pending_requests?.some((m: any) => m.user_id === user.id);
-        
+        const pendingForUser = data.pending_requests?.some((m: any) => m.user_id === user.id);
+
         if (isMember) {
           setAlreadyMember(true);
-        } else if (hasPending) {
+        } else if (pendingForUser) {
+          setHasPending(true);
           setError('You already have a pending join request for this group.');
         }
       }
@@ -102,7 +106,7 @@ export default function JoinGroupPage() {
     try {
       const response = await fetch('/api/groups/join', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-stack-user-id': user.id },
         body: JSON.stringify({
           group_id: params.id,
           user_id: user.id,
@@ -227,10 +231,10 @@ export default function JoinGroupPage() {
         <div className="flex gap-3">
           <button
             onClick={handleJoin}
-            disabled={joining}
+            disabled={joining || hasPending}
             className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {joining ? 'Joining...' : 'Join Group'}
+            {hasPending ? 'Request Pending' : joining ? 'Joining...' : 'Join Group'}
           </button>
           <button
             onClick={() => router.push('/')}

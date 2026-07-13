@@ -9,6 +9,7 @@ import Toast, { ToastType } from './Toast';
 interface LedgerProps {
   bets: Bet[];
   comments?: Comment[];
+  currentUserId?: string;
   onBetDeleted?: () => void;
   onCommentDeleted?: () => void;
   isPublic?: boolean;
@@ -16,7 +17,7 @@ interface LedgerProps {
 
 type LedgerEntry = (Bet & { type: 'bet' }) | (Comment & { type: 'comment' });
 
-export default function Ledger({ bets, comments = [], onBetDeleted, onCommentDeleted, isPublic = false }: LedgerProps) {
+export default function Ledger({ bets, comments = [], currentUserId, onBetDeleted, onCommentDeleted, isPublic = false }: LedgerProps) {
   const [deletingBets, setDeletingBets] = useState<Set<string>>(new Set());
   const [deletingComments, setDeletingComments] = useState<Set<string>>(new Set());
   const [betToDelete, setBetToDelete] = useState<string | null>(null);
@@ -42,6 +43,7 @@ export default function Ledger({ bets, comments = [], onBetDeleted, onCommentDel
     try {
       const response = await fetch(`/api/bets?id=${betToDelete}`, {
         method: 'DELETE',
+        headers: currentUserId ? { 'x-stack-user-id': currentUserId } : undefined,
       });
 
       if (!response.ok) {
@@ -78,6 +80,7 @@ export default function Ledger({ bets, comments = [], onBetDeleted, onCommentDel
     try {
       const response = await fetch(`/api/comments?id=${commentToDelete}`, {
         method: 'DELETE',
+        headers: currentUserId ? { 'x-stack-user-id': currentUserId } : undefined,
       });
 
       if (!response.ok) {

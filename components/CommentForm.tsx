@@ -22,7 +22,7 @@ export default function CommentForm({ eventId, userId, username, onCommentPosted
     try {
       const response = await fetch('/api/comments', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-stack-user-id': userId },
         body: JSON.stringify({
           event_id: eventId,
           user_id: userId,

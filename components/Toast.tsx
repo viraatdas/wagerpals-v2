@@ -61,7 +61,7 @@ export default function Toast({
   const styles = typeStyles[type];
 
   return (
-    <div className="fixed left-4 right-4 top-4 z-50 animate-fade-in sm:left-auto">
+    <div className="fixed left-4 right-4 top-20 z-[60] animate-fade-in sm:left-auto sm:right-4">
       <div className={`glass-strong ${styles.borderColor} border rounded-2xl p-4 max-w-md flex items-start gap-3`}>
         <div className={`${styles.iconBg} rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0`}>
           <span className={`${styles.textColor} font-semibold text-lg`}>{styles.icon}</span>

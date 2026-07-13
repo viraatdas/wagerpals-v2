@@ -169,7 +169,7 @@ export default function ActivityPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-8 mobile-page">
         <div className="h-9 w-48 skeleton rounded-xl mb-2" />
         <div className="h-5 w-72 skeleton rounded-lg mb-8" />
         <div className="space-y-3">
@@ -186,7 +186,7 @@ export default function ActivityPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 animate-rise">
+    <div className="max-w-4xl mx-auto px-4 py-8 mobile-page animate-rise">
       <h1 className="font-display text-3xl font-semibold text-foreground mb-2">
         Activity <span className="text-gradient">Feed</span>
       </h1>

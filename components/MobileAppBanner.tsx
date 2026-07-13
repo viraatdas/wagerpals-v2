@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 
 // TestFlight link - update this with your actual link from App Store Connect
 const TESTFLIGHT_LINK = 'https://testflight.apple.com/join/XXXXXXXX';
+// Don't advertise the app until a real invite link is configured — otherwise
+// the banner renders a dead "Download on TestFlight" button to every visitor.
+const HAS_TESTFLIGHT_LINK = !TESTFLIGHT_LINK.includes('XXXX');
 
 export default function MobileAppBanner() {
   const [isMobile, setIsMobile] = useState(false);
@@ -40,7 +43,7 @@ export default function MobileAppBanner() {
     sessionStorage.setItem('mobileAppBannerDismissed', 'true');
   };
 
-  if (!isMobile || isDismissed) {
+  if (!isMobile || isDismissed || !HAS_TESTFLIGHT_LINK) {
     return null;
   }
 

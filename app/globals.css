@@ -13,8 +13,8 @@
   --bg-2: #0b0b18;
   --surface: 255 255 255; /* rgb channels for glass, used via rgb(var(--surface) / a) */
   --foreground: #f4f5fb;
-  --muted: #9a9eb8;
-  --muted-2: #6f7390;
+  --muted: #a4a8c2;
+  --muted-2: #868bab;
 
   /* Brand "ember" gradient (orange → pink → violet) — heritage callback, gone neon */
   --brand-1: #ff7a3d;

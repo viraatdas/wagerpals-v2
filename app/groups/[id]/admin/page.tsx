@@ -54,7 +54,7 @@ export default function GroupAdminPage() {
     try {
       const response = await fetch('/api/groups/members', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-stack-user-id': user.id },
         body: JSON.stringify({
           action,
           group_id: params.id,

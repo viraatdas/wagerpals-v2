@@ -124,7 +124,7 @@ export default function EventPage() {
     try {
       const response = await fetch('/api/events/resolve', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-stack-user-id': user.id },
         body: JSON.stringify({
           event_id: event!.id,
           winning_side: winningSide,
@@ -162,7 +162,7 @@ export default function EventPage() {
     try {
       const response = await fetch('/api/events/unresolve', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-stack-user-id': user?.id ?? '' },
         body: JSON.stringify({
           event_id: event!.id,
         }),
@@ -198,7 +198,7 @@ export default function EventPage() {
     try {
       const response = await fetch('/api/events/delete', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-stack-user-id': user?.id ?? '' },
         body: JSON.stringify({
           event_id: event!.id,
         }),
@@ -404,8 +404,9 @@ export default function EventPage() {
           <h2 className="font-display text-2xl font-semibold text-foreground mb-4 border-b-2 border-brand-2/50 pb-2 inline-block">Ledger</h2>
           <div className="mt-6">
             <Ledger
-              bets={event.bets} 
+              bets={event.bets}
               comments={comments}
+              currentUserId={user?.id}
               onBetDeleted={fetchEvent}
               onCommentDeleted={fetchEvent}
               isPublic={isPublic}

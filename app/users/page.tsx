@@ -117,7 +117,7 @@ export default function UsersPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-8 mobile-page">
         <div className="h-9 w-40 skeleton rounded-xl mb-2" />
         <div className="h-5 w-56 skeleton rounded-lg mb-8" />
         <div className="h-20 skeleton rounded-2xl mb-8" />
@@ -135,7 +135,7 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 animate-rise">
+    <div className="max-w-4xl mx-auto px-4 py-8 mobile-page animate-rise">
       <h1 className="font-display text-3xl font-semibold mb-2">
         <span className="text-gradient">Users</span>
       </h1>

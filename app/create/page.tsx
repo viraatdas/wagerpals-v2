@@ -105,7 +105,7 @@ function CreateEventForm() {
 
       const response = await fetch('/api/events', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-stack-user-id': user.id },
         body: JSON.stringify(eventData),
       });
 
@@ -154,7 +154,7 @@ function CreateEventForm() {
         <div className="space-y-8">
           {/* Modern Group Selector */}
           <div>
-            <label className="block text-sm font-medium text-muted mb-3 border-b border-white/10 pb-1">
+            <label className="block text-sm font-medium text-muted mb-2">
               Select Group
             </label>
             <div className="relative group-dropdown">
@@ -241,7 +241,7 @@ function CreateEventForm() {
           </div>
 
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-muted mb-3 border-b border-white/10 pb-1">
+            <label htmlFor="title" className="block text-sm font-medium text-muted mb-2">
               Event Title
             </label>
             <input
@@ -256,7 +256,7 @@ function CreateEventForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-muted mb-3 border-b border-white/10 pb-1">
+            <label className="block text-sm font-medium text-muted mb-2">
               Sides (2-4 options)
             </label>
             <div className="space-y-3 mt-4">
@@ -305,7 +305,7 @@ function CreateEventForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-muted mb-3 border-b border-white/10 pb-1">
+            <label className="block text-sm font-medium text-muted mb-2">
               When does this end?
             </label>
             <div className="grid grid-cols-2 gap-4 mt-4">

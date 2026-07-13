@@ -170,13 +170,10 @@ function SignInContent() {
           </button>
 
           {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-background text-muted-2">or</span>
-            </div>
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-white/10" />
+            <span className="text-sm text-muted-2">or</span>
+            <div className="h-px flex-1 bg-white/10" />
           </div>
 
           {/* Google OAuth */}

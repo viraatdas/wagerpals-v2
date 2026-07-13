@@ -63,9 +63,14 @@ export default function Home() {
   const checkAndHandlePendingInvite = async () => {
     if (!user) return;
     
-    // Check if there's a pending group invite
-    const pendingInvite = sessionStorage.getItem('pendingGroupInvite');
+    // Check if there's a pending group invite (localStorage so it survives a
+    // magic-link sign-in that lands in a different tab). Fall back to the old
+    // sessionStorage key for links opened before this change.
+    const pendingInvite =
+      localStorage.getItem('pendingGroupInvite') ||
+      sessionStorage.getItem('pendingGroupInvite');
     if (pendingInvite) {
+      localStorage.removeItem('pendingGroupInvite');
       sessionStorage.removeItem('pendingGroupInvite');
       // Redirect to the join page
       router.push(`/groups/join/${pendingInvite}`);
@@ -146,7 +151,7 @@ export default function Home() {
     try {
       const response = await fetch('/api/groups', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-stack-user-id': user.id },
         body: JSON.stringify({
           name: groupName.trim(),
           created_by: user.id,
@@ -174,7 +179,7 @@ export default function Home() {
     try {
       const response = await fetch('/api/groups/join', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-stack-user-id': user.id },
         body: JSON.stringify({
           group_id: groupCode.trim(),
           user_id: user.id,
